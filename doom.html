@@ -14,11 +14,11 @@ body{transition:background .2s,color .2s}
 body::after{background:var(--scanline,none)!important}
 @media(max-width:640px){.main{padding:10px!important}.g4{grid-template-columns:repeat(2,1fr)!important}.g3{grid-template-columns:repeat(2,1fr)!important}.col-r{grid-template-columns:1fr!important}.tabs{padding:0 8px!important}.topbar{padding:0 10px!important}}
 </style>
-<script>(function(){var t=localStorage.getItem("moyu-theme")||"white";document.documentElement.setAttribute("data-theme",t)})();</script>
+<script>(function(){var t=localStorage.getItem("moyu-theme")||"white";document.documentElement.setAttribute("data-theme",t);})();</script>
 <title>末日房车 · 摸鱼工作台</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@600;700&display=swap');
-:root{--bg:#0a0b09;--surface:#111210;--card:#161714;--border:#252620;--border-l:#333428;--text:#d4d4c8;--muted:#7a7a6e;--faint:#3a3a30;--green:#5cb85c;--green-l:rgba(92,184,92,.1);--amber:#e8a020;--amber-l:rgba(232,160,32,.1);--red:#cc4444;--red-l:rgba(204,68,68,.12);--cyan:#48b8b8;--cyan-l:rgba(72,184,184,.1);--mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;}
+:root{--mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:12px;min-height:100vh}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(92,184,92,.03),transparent 60%);pointer-events:none}
@@ -739,7 +739,10 @@ render();
 dlog('🚐 末日房车系统启动...','linfo');
 dlog('☠️ 文明已崩溃。求生才是第一要务。','lbad');
 
-function st(t){localStorage.setItem('moyu-theme',t);document.documentElement.setAttribute('data-theme',t)}
+function st(t){
+  localStorage.setItem('moyu-theme',t);
+  document.documentElement.setAttribute('data-theme',t);
+}
 </script>
 </body>
 </html>

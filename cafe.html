@@ -14,11 +14,11 @@ body{transition:background .2s,color .2s}
 body::after{background:var(--scanline,none)!important}
 @media(max-width:640px){.main{padding:10px!important}.g4{grid-template-columns:repeat(2,1fr)!important}.g3{grid-template-columns:repeat(2,1fr)!important}.col-r{grid-template-columns:1fr!important}.tabs{padding:0 8px!important}.topbar{padding:0 10px!important}}
 </style>
-<script>(function(){var t=localStorage.getItem("moyu-theme")||"white";document.documentElement.setAttribute("data-theme",t)})();</script>
+<script>(function(){var t=localStorage.getItem("moyu-theme")||"white";document.documentElement.setAttribute("data-theme",t);})();</script>
 <title>咖啡门店 · 摸鱼工作台</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@600;700&display=swap');
-:root{--bg:#0e0d0b;--surface:#141310;--card:#191714;--border:#2a2720;--border-l:#38342a;--text:#e8e0d4;--muted:#8a7f6e;--faint:#4a4438;--amber:#d4a44c;--amber-l:rgba(212,164,76,.1);--green:#5a9e5a;--green-l:rgba(90,158,90,.1);--cream:#f5e8c8;--red:#cc5544;--blue:#5580aa;--mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;}
+:root{--mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:12px;min-height:100vh}
 body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.02) 2px,rgba(0,0,0,.02) 4px);pointer-events:none;z-index:9999}
@@ -487,7 +487,7 @@ function render(){
       if(isActive){
         if(step.type==='click')action=`<button class="btn ba bsm" onclick="doStepAction('click')">${step.icon} ${step.name.slice(0,4)} (${step.clicks||0}/${step.maxClicks})</button>`;
         else if(step.type==='wait')action=`<div class="step-progress"><div class="step-pf" style="width:${(step.elapsed/step.duration)*100}%"></div></div>`;
-        else if(step.type==='hold'){action=`<div class="step-progress"><div class="step-pf" style="width:${step.progress||0}%"></div></div><button class="btn ba bxs" onmousedown="window._holding=true" onmouseup="window._holding=false" ontouchstart="window._holding=true;event.preventDefault()" ontouchend="window._holding=false" style="margin-left:6px">按住</button>`}
+        else if(step.type==='hold'){action=`<div class="step-progress"><div class="step-pf" style="width:${step.progress||0}%"></div></div><button class="btn ba bxs" onmousedown="window._holding=true" onmouseup="window._holding=false" style="margin-left:6px">按住</button>`}
         else if(step.type==='temp')action=`<div style="display:flex;align-items:center;gap:6px"><span style="font-size:9px;color:var(--faint)">目标${step.target}°</span><input type="range" min="0" max="100" value="${step.current}" onchange="doStepAction('temp_set',+this.value)" style="width:80px"></div>`;
         else if(step.type==='choice')action=`<div style="display:flex;gap:4px">${step.options.map(o=>`<button class="btn ba bxs" onclick="doStepAction('choice','${o}')" style="font-size:16px;padding:2px 6px">${o}</button>`).join('')}</div>`;
       }
@@ -588,7 +588,10 @@ render();
 dlog('clog','☕ 咖啡门店系统启动','linfo');
 dlog('clog','💡 点击客户订单开始制作咖啡','linfo');
 
-function st(t){localStorage.setItem('moyu-theme',t);document.documentElement.setAttribute('data-theme',t)}
+function st(t){
+  localStorage.setItem('moyu-theme',t);
+  document.documentElement.setAttribute('data-theme',t);
+}
 </script>
 </body>
 </html>

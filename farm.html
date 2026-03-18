@@ -14,11 +14,11 @@ body{transition:background .2s,color .2s}
 body::after{background:var(--scanline,none)!important}
 @media(max-width:640px){.main{padding:10px!important}.g4{grid-template-columns:repeat(2,1fr)!important}.g3{grid-template-columns:repeat(2,1fr)!important}.col-r{grid-template-columns:1fr!important}.tabs{padding:0 8px!important}.topbar{padding:0 10px!important}}
 </style>
-<script>(function(){var t=localStorage.getItem("moyu-theme")||"white";document.documentElement.setAttribute("data-theme",t)})();</script>
+<script>(function(){var t=localStorage.getItem("moyu-theme")||"white";document.documentElement.setAttribute("data-theme",t);})();</script>
 <title>农业项目 · 摸鱼工作台</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@600;700&display=swap');
-:root{--bg:#0b0e09;--surface:#111410;--card:#161914;--border:#252920;--border-l:#34382a;--text:#d4e0c8;--muted:#7a8a6e;--faint:#3a4430;--green:#6ab84a;--green-l:rgba(106,184,74,.1);--amber:#c4a840;--amber-l:rgba(196,168,64,.1);--blue:#5090d4;--blue-l:rgba(80,144,212,.1);--red:#c05040;--mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;}
+:root{--mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:12px;min-height:100vh}
 body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.02) 2px,rgba(0,0,0,.02) 4px);pointer-events:none;z-index:9999}
@@ -573,7 +573,10 @@ render();
 flog('🌱 农业项目管理系统启动','linfo');
 flog('点击空地种植，点击成熟作物收获','linfo');
 
-function st(t){localStorage.setItem('moyu-theme',t);document.documentElement.setAttribute('data-theme',t)}
+function st(t){
+  localStorage.setItem('moyu-theme',t);
+  document.documentElement.setAttribute('data-theme',t);
+}
 </script>
 </body>
 </html>
