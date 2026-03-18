@@ -279,11 +279,11 @@ const C={
   ],
   stepDefs:{
     grind:{name:'研磨咖啡豆',type:'click',clicks:0,maxClicks:5,icon:'⚙️'},
-    bloom:{name:'注水闷蒸',type:'wait',duration:3,elapsed:0,icon:'💧'},
+    bloom:{name:'注水闷蒸',type:'wait',duration:1,elapsed:0,icon:'💧'},
     pour:{name:'缓慢注水',type:'hold',progress:0,icon:'🫗'},
-    wait:{name:'等待萃取',type:'wait',duration:4,elapsed:0,icon:'⏱️'},
+    wait:{name:'等待萃取',type:'wait',duration:2,elapsed:0,icon:'⏱️'},
     load:{name:'填充咖啡粉',type:'click',clicks:0,maxClicks:3,icon:'🔩'},
-    extract:{name:'意式萃取',type:'wait',duration:2,elapsed:0,icon:'⚡'},
+    extract:{name:'意式萃取',type:'wait',duration:1,elapsed:0,icon:'⚡'},
     serve:{name:'出品',type:'click',clicks:0,maxClicks:1,icon:'🫱'},
     dilute:{name:'注入热水',type:'hold',progress:0,icon:'💧'},
     froth:{name:'打奶泡',type:'temp',target:65,current:20,icon:'🌡️'},
@@ -397,7 +397,8 @@ function completeBrew(){
   C.satisfaction=Math.max(0,Math.min(100,C.satisfaction+(score>=80?2:-3)));
   C.starLevel=Math.floor(C.done/50);
   dlog('clog',`✅ 完成 ${order.drinkIcon}${order.drinkName} +${fmt(price)} 评分${score}`,'lok');
-  C.currentOrder=null;C.brewSteps=[];C.currentStep=0;C.brewDone=false;
+  C.currentOrder=null;
+  // 保留步骤显示，startBrew时才清空
   render();
 }
 
@@ -487,7 +488,7 @@ function render(){
       if(isActive){
         if(step.type==='click')action=`<button class="btn ba bsm" onclick="doStepAction('click')">${step.icon} ${step.name.slice(0,4)} (${step.clicks||0}/${step.maxClicks})</button>`;
         else if(step.type==='wait')action=`<div class="step-progress"><div class="step-pf" style="width:${(step.elapsed/step.duration)*100}%"></div></div>`;
-        else if(step.type==='hold'){action=`<div class="step-progress"><div class="step-pf" style="width:${step.progress||0}%"></div></div><button class="btn ba bxs" onmousedown="window._holding=true" onmouseup="window._holding=false" style="margin-left:6px">按住</button>`}
+        else if(step.type==='hold'){action=`<div class="step-progress"><div class="step-pf" style="width:${step.progress||0}%"></div></div><button class="btn ba bxs" onmousedown="window._holding=true" onmouseup="window._holding=false" ontouchstart="window._holding=true;event.preventDefault()" ontouchend="window._holding=false;event.preventDefault()" style="margin-left:6px;user-select:none">按住</button>`}
         else if(step.type==='temp')action=`<div style="display:flex;align-items:center;gap:6px"><span style="font-size:9px;color:var(--faint)">目标${step.target}°</span><input type="range" min="0" max="100" value="${step.current}" onchange="doStepAction('temp_set',+this.value)" style="width:80px"></div>`;
         else if(step.type==='choice')action=`<div style="display:flex;gap:4px">${step.options.map(o=>`<button class="btn ba bxs" onclick="doStepAction('choice','${o}')" style="font-size:16px;padding:2px 6px">${o}</button>`).join('')}</div>`;
       }
@@ -573,7 +574,7 @@ setInterval(()=>{
     if(Math.random()<.3)genOrder();
     // Wait steps
     if(C.currentOrder&&C.brewSteps[C.currentStep]?.type==='wait'){
-      const step=C.brewSteps[C.currentStep];step.elapsed=(step.elapsed||0)+0.1;
+      const step=C.brewSteps[C.currentStep];step.elapsed=(step.elapsed||0)+1;
       if(step.elapsed>=step.duration){step.done=true;nextStep()}
     }
     render();
