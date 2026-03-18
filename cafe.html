@@ -119,7 +119,11 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <button onclick="st('sky')" title="天空" style="width:14px;height:14px;border-radius:50%;background:#a8c4f0;border:1px solid #88a4d8;cursor:pointer;padding:0"></button>
   <button onclick="st('warm')" title="暖橙" style="width:14px;height:14px;border-radius:50%;background:#e8c878;border:1px solid #c8a858;cursor:pointer;padding:0"></button>
 </div>
-  <div class="flex gap8" style="font-size:10px;color:var(--faint)"><span id="starlbl">⭐</span><span id="clk">--:--:--</span></div>
+  <div class="flex gap8" style="font-size:10px;color:var(--faint);align-items:center;gap:8px">
+    <button id="open-btn" onclick="toggleOpen()" style="font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--green-l);color:var(--green);cursor:pointer;font-family:var(--mono)">营业中</button>
+    <button id="call-btn" onclick="callCustomer()" style="font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--blue-l);color:var(--blue);cursor:pointer;font-family:var(--mono)">🔔 叫号</button>
+    <span id="starlbl">⭐</span><span id="clk">--:--:--</span>
+  </div>
 </div>
 <div class="tabs">
   <button class="tab on" onclick="sw(0)">📊 营业概览</button>
@@ -128,7 +132,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <button class="tab" onclick="sw(3)">👑 VIP客户</button>
   <button class="tab" onclick="sw(4)">📦 库存管理</button>
   <button class="tab" onclick="sw(5)">⭐ 评价&活动</button>
-  <button class="tab" style="margin-left:auto;color:var(--red)" onclick="resetGame()">🔄 从头开始</button>
+  <button style="margin-left:auto;padding:8px 14px;font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-family:var(--mono)" onclick="resetGame()">🔄 从头开始</button>
 </div>
 <div class="main">
 
@@ -166,7 +170,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <div class="col-r">
     <div>
       <div class="card mb10">
-        <div class="fb mb8"><div class="ct" style="margin:0">订单队列</div><div style="display:flex;align-items:center;gap:8px"><span class="faint" id="q-count">0个订单</span><button id="call-btn" onclick="callCustomer()" class="btn bg bxs">叫号</button></div></div>
+        <div class="fb mb8"><div class="ct" style="margin:0">订单队列</div><span class="faint" id="q-count">0个订单</span></div>
         <div id="brew-orders"></div>
       </div>
     </div>
@@ -287,11 +291,11 @@ const C={
     extract:{name:'意式萃取',type:'wait',duration:2,elapsed:0,icon:'⚡'},
     serve:{name:'出品',type:'click',clicks:0,maxClicks:1,icon:'🫱'},
     dilute:{name:'注入热水',type:'hold',progress:0,icon:'💧'},
-    froth:{name:'打奶泡',type:'temp',target:65,current:20,icon:'🌡️'},
+    froth:{name:'打奶泡',type:'click',clicks:0,maxClicks:4,icon:'🥛'},
     pour2:{name:'分层倒入',type:'hold',progress:0,icon:'🫗'},
     latte_art:{name:'拉花',type:'choice',choice:null,options:['🌸','🍀','❤️','🌊'],icon:'🎨'},
     mix_matcha:{name:'调制抹茶',type:'click',clicks:0,maxClicks:4,icon:'🍵'},
-    froth_heavy:{name:'厚奶泡',type:'temp',target:55,current:20,icon:'🌡️'},
+    froth_heavy:{name:'厚奶泡',type:'click',clicks:0,maxClicks:6,icon:'🥛'},
     layer:{name:'分层',type:'hold',progress:0,icon:'🫗'},
     syrup:{name:'加入焦糖',type:'click',clicks:0,maxClicks:2,icon:'🍯'},
     top:{name:'顶层装饰',type:'choice',choice:null,options:['🍮','⭐','✨','🌈'],icon:'✨'},
@@ -299,7 +303,7 @@ const C={
     filter:{name:'过滤',type:'hold',progress:0,icon:'🔍'},
     serve_cold:{name:'加冰出品',type:'click',clicks:0,maxClicks:2,icon:'🧊'},
   },
-  orders:[],maxOrders:5,currentOrder:null,brewSteps:[],currentStep:0,brewDone:false,
+  orders:[],maxOrders:5,currentOrder:null,brewSteps:[],currentStep:0,brewDone:false,isOpen:true,
   vips:[],vipPoints:0,
   reviews:[],
   customRecipes:[],
@@ -317,13 +321,43 @@ const C={
 const CNAMES=['李先生','王女士','张先生','刘女士','陈先生','吴女士','赵先生','孙女士','周先生','徐女士','秘书小姐','程序员先生','设计师女士','老板娘','外卖小哥'];
 const ICONS=['👨','👩','🧔','👧','👴','👵','🧕','👱'];
 
-try{const s=JSON.parse(localStorage.getItem('cafe')||'{}');if(s.cash){Object.assign(C,s);C.orders=C.orders||[];C.vips=C.vips||[];C.reviews=C.reviews||[];C.customRecipes=C.customRecipes||[];C.events=C.events||C.events}}catch(e){}
-
-// Update menu unlock
-C.menu.forEach(m=>{if(m.req&&C.equipment[m.req])m.unlocked=true;if(!m.req)m.unlocked=true});
+try{
+  const s=JSON.parse(localStorage.getItem('cafe')||'{}');
+  if(s.cash){
+    Object.assign(C,s);
+    C.orders=C.orders||[];
+    C.vips=C.vips||[];
+    C.reviews=C.reviews||[];
+    C.customRecipes=C.customRecipes||[];
+    C.events=C.events||C.events;
+    // 确保staff里role字段正确（兼容旧存档）
+    const validRoles=['店主','学徒咖啡师','咖啡师','资深咖啡师'];
+    C.staff=C.staff.filter(s=>validRoles.includes(s.role));
+    if(!C.staff.some(s=>s.role==='店主')){
+      C.staff.unshift({id:'self',name:'你自己',icon:'🧑',skill:1,role:'店主',mood:90});
+    }
+    // 恢复menu状态
+    if(s.menuState){
+      s.menuState.forEach(ms=>{
+        const m=C.menu.find(x=>x.id===ms.id);
+        if(m){m.unlocked=ms.unlocked;m.pendingUnlock=ms.pendingUnlock||false;}
+      });
+    } else {
+      C.menu.forEach(m=>{if(!m.req)m.unlocked=true;});
+    }
+  } else {
+    // 全新存档，只解锁基础款
+    C.menu.forEach(m=>{if(!m.req)m.unlocked=true;});
+  }
+}catch(e){
+  // 存档读取失败，只解锁基础款
+  C.menu.forEach(m=>{if(!m.req)m.unlocked=true;});
+}
+// 确保isOpen有正确初始值（Object.assign可能覆盖掉）
+if(C.isOpen===undefined)C.isOpen=true;
 
 function saveBack(){save();location.href='index.html'}
-function save(){try{localStorage.setItem('cafe',JSON.stringify({cash:C.cash,done:C.done,satisfaction:C.satisfaction,todayRev:C.todayRev,totalRev:C.totalRev,starLevel:C.starLevel,ingredients:C.ingredients,equipment:C.equipment,staff:C.staff,vips:C.vips,reviews:C.reviews,events:C.events,activeEvent:C.activeEvent,customRecipes:C.customRecipes,popularDrinks:C.popularDrinks,maxPrice:C.maxPrice}))}catch(e){}}
+function save(){try{localStorage.setItem('cafe',JSON.stringify({isOpen:C.isOpen,cash:C.cash,done:C.done,satisfaction:C.satisfaction,todayRev:C.todayRev,totalRev:C.totalRev,starLevel:C.starLevel,ingredients:C.ingredients,equipment:C.equipment,staff:C.staff,vips:C.vips,reviews:C.reviews,events:C.events,activeEvent:C.activeEvent,customRecipes:C.customRecipes,popularDrinks:C.popularDrinks,maxPrice:C.maxPrice,menuState:C.menu.map(m=>({id:m.id,unlocked:m.unlocked,pendingUnlock:m.pendingUnlock||false}))}))}catch(e){}}
 
 function genOrder(){
   if(C.orders.length>=C.maxOrders)return;
@@ -355,8 +389,8 @@ function startBrew(orderId){
     if(def.type==='choice'){def.choice=null}
     return def;
   });
-  C.currentStep=0;C.brewDone=false;
-  render();sw(1);
+  C.currentStep=0;C.brewDone=false;window._holding=false;
+  render();
 }
 
 function doStepAction(type,extra){
@@ -410,8 +444,9 @@ function completeBrew(){
 function buyEquip(id){
   const cost=C.equipCost[id];if(C.cash<cost||C.equipment[id])return;
   C.cash-=cost;C.equipment[id]=true;
-  C.menu.forEach(m=>{if(m.req===id)m.unlocked=true});
-  dlog('clog',`🔧 购入 ${C.equipNames[id]}`,'lok');render();
+  // 不直接解锁，设为待研发状态
+  C.menu.forEach(m=>{if(m.req===id)m.pendingUnlock=true});
+  dlog('clog',`🔧 购入 ${C.equipNames[id]}！前往配方研发解锁新饮品`,'lok');render();
 }
 function hireStaff(i){
   const sp=C.staffPool[i];if(C.cash<sp.cost)return;
@@ -495,7 +530,11 @@ function render(){
       if(isActive){
         if(step.type==='click')action=`<button class="btn ba bsm" onclick="doStepAction('click')">${step.icon} ${step.name.slice(0,4)} (${step.clicks||0}/${step.maxClicks})</button>`;
         else if(step.type==='wait')action=`<div class="step-progress"><div class="step-pf" style="width:${(step.elapsed/step.duration)*100}%"></div></div>`;
-        else if(step.type==='hold'){action=`<div class="step-progress"><div class="step-pf" style="width:${step.progress||0}%"></div></div><button class="btn ba bxs" onmousedown="window._holding=true" onmouseup="window._holding=false" style="margin-left:6px">按住</button>`}
+        else if(step.type==='hold'){
+          const hasStaff=C.isOpen&&C.staff.some(s=>s.skill>=2);
+          const holdBtn=hasStaff?'':`<button class="btn ba bxs" onmousedown="window._holding=true" onmouseup="window._holding=false" ontouchstart="window._holding=true;event.preventDefault()" ontouchend="window._holding=false;event.preventDefault()" style="margin-left:6px;user-select:none">按住</button>`;
+          action=`<div class="step-progress"><div class="step-pf" style="width:${step.progress||0}%"></div></div>${holdBtn}`;
+        }
         else if(step.type==='temp')action=`<div style="display:flex;align-items:center;gap:6px"><span style="font-size:9px;color:var(--faint)">目标${step.target}°</span><input type="range" min="0" max="100" value="${step.current}" onchange="doStepAction('temp_set',+this.value)" style="width:80px"></div>`;
         else if(step.type==='choice')action=`<div style="display:flex;gap:4px">${step.options.map(o=>`<button class="btn ba bxs" onclick="doStepAction('choice','${o}')" style="font-size:16px;padding:2px 6px">${o}</button>`).join('')}</div>`;
       }
@@ -513,12 +552,39 @@ function render(){
   $('menu-list').innerHTML=C.menu.map(m=>`<div class="recipe-card">
     <div class="rc-top"><div class="rc-name">${m.icon}${m.name}</div><div class="rc-price">${fmt(m.price)}</div></div>
     <div class="rdd">${m.req?`需要: ${C.equipNames[m.req]||m.req}`:'基础款'}</div>
-    <div style="margin-top:6px">${m.unlocked?'<span class="bdg bdg-g">已解锁</span>':'<span class="bdg bdg-r">未解锁</span>'}</div>
+    <div style="margin-top:6px">${m.unlocked?'<span class="bdg bdg-g">已解锁</span>':m.pendingUnlock?'<span class="bdg bdg-a" onclick="sw(2)" style="cursor:pointer">⚗️ 点此去研发</span>':'<span class="bdg bdg-r">未解锁</span>'}</div>
   </div>`).join('');
-  $('recipe-lab').innerHTML=`<div style="font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:10px">研发新配方需要积累制作经验。每完成50杯可创建一个自定义配方。</div>
-    <div class="row"><div class="rn">当前经验</div><div class="rr"><span class="faint">${C.done}杯</span></div></div>
-    <div class="row"><div class="rn">研发次数</div><div class="rr"><span class="faint">${Math.floor(C.done/50)}次</span></div></div>
-    <button class="btn ba bfull mt8" onclick="createCustom()" ${C.done>=50&&C.customRecipes.length<Math.floor(C.done/50)?'':'disabled'}>🧪 创建自定义配方</button>`;
+  // 待研发饮品（买了设备但还没操作研发的）
+  const pendingDrinks=C.menu.filter(m=>m.pendingUnlock&&!m.unlocked);
+  const unlockedDrinks=C.menu.filter(m=>m.unlocked);
+  let recipeHtml='';
+  if(pendingDrinks.length>0){
+    recipeHtml+=`<div style="font-size:10px;font-weight:500;margin-bottom:8px;color:var(--amber)">⚗️ 待研发配方 (${pendingDrinks.length})</div>`;
+    recipeHtml+=pendingDrinks.map(m=>{
+      const ingList=Object.entries(m.ing).map(([k,v])=>`${C.ingIcons[k]}${C.ingNames[k]}×${v}`).join('、');
+      const canResearch=Object.entries(m.ing).every(([k,v])=>C.ingredients[k]>=v);
+      return `<div class="card mb8" style="padding:10px">
+        <div style="font-size:12px;font-weight:500;margin-bottom:4px">${m.icon}${m.name}</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:8px">所需食材：${ingList}</div>
+        <div style="font-size:9px;color:var(--faint);margin-bottom:8px">需要设备：${C.equipNames[m.req]}</div>
+        <button class="btn ba bfull bsm" onclick="startResearch('${m.id}')" ${canResearch?'':'disabled'}>
+          ${canResearch?'🧪 开始研发':'⚠️ 食材不足'}
+        </button>
+      </div>`;
+    }).join('');
+  }
+  if(pendingDrinks.length===0&&C.menu.filter(m=>!m.unlocked&&!m.pendingUnlock).length>0){
+    recipeHtml+=`<div style="font-size:10px;color:var(--faint);padding:8px">购买对应设备后可在此研发新饮品</div>`;
+  }
+  if(pendingDrinks.length===0&&C.menu.every(m=>m.unlocked)){
+    recipeHtml+=`<div style="font-size:10px;color:var(--green);padding:8px">✅ 所有饮品已解锁</div>`;
+  }
+  recipeHtml+=`<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">
+    <div style="font-size:10px;color:var(--muted);margin-bottom:6px">自定义配方（每完成50杯可创建1个）</div>
+    <div class="row"><div class="rn">制作经验</div><div class="rr"><span class="faint">${C.done}杯</span></div></div>
+    <button class="btn ba bfull mt8 bsm" onclick="createCustom()" ${C.done>=50&&C.customRecipes.length<Math.floor(C.done/50)?'':'disabled'}>🧪 创建自定义配方</button>
+  </div>`;
+  $('recipe-lab').innerHTML=recipeHtml;
   $('custom-recipes').innerHTML=C.customRecipes.length?C.customRecipes.map(r=>`<div class="recipe-card"><div class="rc-top"><div class="rc-name">${r.icon}${r.name}</div><div class="rc-price">${fmt(r.price)}</div></div></div>`).join(''):'<div class="faint" style="padding:8px">暂无自定义配方</div>';
 
   // VIP
@@ -563,16 +629,15 @@ function createCustom(){
 }
 
 // Hold mechanic
+window._holding=false;
 setInterval(()=>{
   const step=C.brewSteps[C.currentStep];
   if(C.currentOrder&&step?.type==='hold'){
     // 资深咖啡师在营业时自动注水（×1.2速度）
-    const hasSenior=C.isOpen&&C.staff.some(s=>s.skill>=3&&s.role==='资深咖啡师');
-    const hasMid=C.isOpen&&C.staff.some(s=>s.skill>=2&&s.skill<3&&s.role==='咖啡师');
-    if(hasSenior){
+    if(hasWorker('资深咖啡师')){
       step.progress=Math.min(100,(step.progress||0)+3.6);
       doStepAction('hold_progress',step.progress);
-    } else if(hasMid){
+    } else if(hasWorker('咖啡师')){
       step.progress=Math.min(100,(step.progress||0)+3);
       doStepAction('hold_progress',step.progress);
     } else if(window._holding){
@@ -581,6 +646,9 @@ setInterval(()=>{
     }
   }
 },100);
+
+// 员工判断helper
+function hasWorker(role){return C.isOpen&&C.staff.some(s=>s.role===role);}
 
 // Wait steps auto-progress
 let tick=0;
@@ -591,29 +659,30 @@ setInterval(()=>{
     C.orders.forEach(o=>{o.timeLeft-=1;if(o.timeLeft<=0){C.satisfaction=Math.max(0,C.satisfaction-5);C.orders.splice(C.orders.indexOf(o),1);dlog('clog',`😤 ${o.icon}${o.name}等太久离开了`,'lbad')}});
     // Auto-generate orders - 只有学徒在营业时才自动叫号
     if(C.isOpen){
-      const hasIntern=C.staff.some(s=>s.skill<2&&s.role==='学徒咖啡师');
-      if(hasIntern&&Math.random()<.3)genOrder();
+      if(hasWorker('学徒咖啡师')&&Math.random()<.3)genOrder();
     }
     // Wait steps（资深×1.2速度，咖啡师正常速度）
     if(C.currentOrder&&C.brewSteps[C.currentStep]?.type==='wait'){
-      const hasSenior=C.isOpen&&C.staff.some(s=>s.skill>=3&&s.role==='资深咖啡师');
-      const hasMid=C.isOpen&&C.staff.some(s=>s.skill>=2&&s.skill<3&&s.role==='咖啡师');
-      const speedMult=hasSenior?1.2:hasMid?1:1;
+      const speedMult=hasWorker('资深咖啡师')?1.2:1;
       const step=C.brewSteps[C.currentStep];
       step.elapsed=(step.elapsed||0)+speedMult;
       if(step.elapsed>=step.duration){step.done=true;nextStep()}
     }
     // 员工自动click（每1s一次）
-    if(C.currentOrder&&C.brewSteps[C.currentStep]?.type==='click'){
-      const hasSenior=C.isOpen&&C.staff.some(s=>s.skill>=3&&s.role==='资深咖啡师');
-      const hasMid=C.isOpen&&C.staff.some(s=>s.skill>=2&&s.skill<3&&s.role==='咖啡师');
-      if(hasSenior||hasMid) doStepAction('click');
+    if(C.currentOrder&&C.brewSteps[C.currentStep]){
+      const step=C.brewSteps[C.currentStep];
+      if(hasWorker('资深咖啡师')||hasWorker('咖啡师')){
+        if(step.type==='click') doStepAction('click');
+        if(step.type==='choice'&&step.options?.length){
+          // 随机选一个
+          const opt=step.options[Math.floor(Math.random()*step.options.length)];
+          doStepAction('choice',opt);
+        }
+      }
     }
     // 咖啡师/资深自动点订单（营业中且无当前订单）
     if(C.isOpen&&!C.currentOrder&&C.orders.length>0){
-      const hasSenior=C.staff.some(s=>s.skill>=3&&s.role==='资深咖啡师');
-      const hasMid=C.staff.some(s=>s.skill>=2&&s.skill<3&&s.role==='咖啡师');
-      if(hasSenior||hasMid) startBrew(C.orders[0].id);
+      if(hasWorker('资深咖啡师')||hasWorker('咖啡师')) startBrew(C.orders[0].id);
     }
     render();
   }
@@ -621,11 +690,25 @@ setInterval(()=>{
   if(tick%600===0)C.todayRev=0;
 },100);
 
-// Initial orders
-for(let i=0;i<2;i++)genOrder();
+// 不自动生成初始订单，需要手动叫号
 render();
 dlog('clog','☕ 咖啡门店系统启动','linfo');
 dlog('clog','💡 点击客户订单开始制作咖啡','linfo');
+
+function startResearch(drinkId){
+  const drink=C.menu.find(m=>m.id===drinkId);
+  if(!drink||!drink.pendingUnlock||drink.unlocked)return;
+  // 消耗食材
+  const ok=Object.entries(drink.ing).every(([k,v])=>C.ingredients[k]>=v);
+  if(!ok){dlog('clog','⚠️ 食材不足，无法研发','lbad');return;}
+  Object.entries(drink.ing).forEach(([k,v])=>C.ingredients[k]-=v);
+  // 解锁饮品
+  drink.unlocked=true;
+  drink.pendingUnlock=false;
+  dlog('clog',`✅ 配方研发成功！${drink.icon}${drink.name} 已加入菜单`,'lok');
+  render();
+  sw(2); // 留在配方tab
+}
 
 function toggleOpen(){
   C.isOpen=!C.isOpen;
@@ -648,7 +731,11 @@ function callCustomer(){
 
 function st(t){localStorage.setItem('moyu-theme',t);document.documentElement.setAttribute('data-theme',t);}
 
-function resetGame(){if(!confirm('确定要从头开始吗？所有进度将清空！'))return;localStorage.removeItem('cafe');location.reload();}
+function resetGame(){
+  if(!window.confirm('确定要从头开始吗？所有进度将清空！')){return;}
+  localStorage.removeItem('cafe');
+  location.reload();
+}
 </script>
 </body>
 </html>
