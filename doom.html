@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>末日房车 · 摸鱼工作台</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@600;700&display=swap');
+:root{--bg:#0a0b09;--surface:#111210;--card:#161714;--border:#252620;--border-l:#333428;--text:#d4d4c8;--muted:#7a7a6e;--faint:#3a3a30;--green:#5cb85c;--green-l:rgba(92,184,92,.1);--amber:#e8a020;--amber-l:rgba(232,160,32,.1);--red:#cc4444;--red-l:rgba(204,68,68,.12);--cyan:#48b8b8;--cyan-l:rgba(72,184,184,.1);--mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:12px;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(92,184,92,.03),transparent 60%);pointer-events:none}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.04) 3px,rgba(0,0,0,.04) 4px);pointer-events:none;z-index:9999}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
+.back{font-size:11px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:var(--mono)}.back:hover{color:var(--text)}
+.topbar-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--text)}
+.danger-strip{background:repeating-linear-gradient(-45deg,#cc4444,#cc4444 4px,#1a0a0a 4px,#1a0a0a 12px);height:4px}
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto}
+.tab{padding:8px 14px;font-size:11px;color:var(--muted);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:var(--mono);white-space:nowrap;transition:all .15s}.tab:hover{color:var(--text)}.tab.on{color:var(--amber);border-bottom-color:var(--amber)}
+.main{padding:14px 16px;max-width:1200px;margin:0 auto}
+.panel{display:none}.panel.on{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:12px}
+.card.danger-card{border-color:rgba(204,68,68,.4)}
+.ct{font-size:11px;font-weight:500;margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.col-r{display:grid;grid-template-columns:1fr 270px;gap:12px}
+.col-3{display:grid;grid-template-columns:220px 1fr 240px;gap:12px}
+.sl{font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.12em;margin-bottom:2px}
+.sv{font-size:18px;font-weight:600;line-height:1}.sv.gr{color:var(--green)}.sv.am{color:var(--amber)}.sv.rd{color:var(--red)}.sv.cy{color:var(--cyan)}
+.sd{font-size:9px;color:var(--faint);margin-top:2px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);gap:8px}.row:last-child{border-bottom:none}
+.rn{font-size:11px;font-weight:500}.rdd{font-size:9px;color:var(--faint);margin-top:1px}
+.rr{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:5px 12px;border-radius:3px;font-size:11px;font-family:var(--mono);cursor:pointer;transition:all .12s;border:1px solid transparent;white-space:nowrap}
+.bp{background:rgba(96,165,250,.15);color:#60a5fa;border-color:rgba(96,165,250,.3)}.bp:hover:not(:disabled){background:rgba(96,165,250,.25)}
+.bg{background:rgba(92,184,92,.15);color:var(--green);border-color:rgba(92,184,92,.3)}.bg:hover:not(:disabled){background:rgba(92,184,92,.25)}
+.ba{background:rgba(232,160,32,.15);color:var(--amber);border-color:rgba(232,160,32,.3)}.ba:hover:not(:disabled){background:rgba(232,160,32,.25)}
+.br{background:rgba(204,68,68,.15);color:var(--red);border-color:rgba(204,68,68,.3)}.br:hover:not(:disabled){background:rgba(204,68,68,.25)}
+.bc{background:rgba(72,184,184,.15);color:var(--cyan);border-color:rgba(72,184,184,.3)}.bc:hover:not(:disabled){background:rgba(72,184,184,.25)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.bsm{padding:3px 9px;font-size:10px}.bxs{padding:2px 7px;font-size:9px}.bfull{width:100%;display:flex}
+.bdg{display:inline-block;padding:2px 6px;border-radius:2px;font-size:9px}
+.bdg-g{background:var(--green-l);color:var(--green);border:1px solid rgba(92,184,92,.2)}
+.bdg-a{background:var(--amber-l);color:var(--amber);border:1px solid rgba(232,160,32,.2)}
+.bdg-r{background:var(--red-l);color:var(--red);border:1px solid rgba(204,68,68,.2)}
+.bdg-c{background:var(--cyan-l);color:var(--cyan);border:1px solid rgba(72,184,184,.2)}
+.pb{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px}
+.pbf{height:100%;border-radius:2px;transition:width .4s}
+.pbl{background:#60a5fa}.pbg{background:var(--green)}.pba{background:var(--amber)}.pbr{background:var(--red)}.pbc{background:var(--cyan)}
+.log{height:120px;overflow-y:auto;font-size:9px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:6px 8px}
+.ll{padding:1px 0}.lts{color:var(--faint)}.lok .lm{color:var(--green)}.lbad .lm{color:var(--red)}.linfo .lm{color:var(--amber)}
+
+/* RESOURCE BAR */
+.res-bar{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.res-bar:last-child{border-bottom:none}
+.res-icon{font-size:14px;width:20px;text-align:center}
+.res-name{font-size:10px;color:var(--muted);width:40px;flex-shrink:0}
+.res-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.res-fill{height:100%;border-radius:3px;transition:width .5s}
+.res-val{font-size:10px;font-family:var(--mono);color:var(--text);width:55px;text-align:right}
+.res-warn{font-size:9px;color:var(--red);margin-left:4px}
+
+/* MAP */
+.map-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.map-cell{aspect-ratio:1;border-radius:3px;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;position:relative;font-size:16px;background:var(--surface)}
+.map-cell:hover:not(.disabled){border-color:var(--amber)}
+.map-cell.current{border-color:var(--green);background:rgba(92,184,92,.08)}
+.map-cell.explored{opacity:.6}
+.map-cell.disabled{cursor:default;opacity:.3}
+.map-cell .cell-label{font-size:8px;font-family:var(--mono);color:var(--faint);margin-top:2px}
+.map-cell .loot-badge{position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%;background:var(--amber)}
+
+/* SURVIVOR CARD */
+.surv-card{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:8px;margin-bottom:6px}
+.surv-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.surv-name{font-size:12px;font-weight:500}
+.surv-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:9px;color:var(--faint)}.surv-stats span{color:var(--text)}
+
+/* VAN UPGRADE */
+.van-slot{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:9px;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.vs-icon{font-size:22px}.vs-info{flex:1}.vs-name{font-size:11px;font-weight:500}.vs-desc{font-size:9px;color:var(--faint);margin-top:1px}
+
+/* EVENT MODAL */
+.event-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:200;display:none}
+.event-box{background:var(--card);border:1px solid var(--border-l);border-radius:6px;padding:24px;max-width:400px;width:90%;text-align:center}
+.event-icon{font-size:48px;margin-bottom:12px}
+.event-title{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:8px}
+.event-desc{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+.event-choices{display:flex;flex-direction:column;gap:8px}
+
+/* DAY/NIGHT */
+.day-night{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:4px;margin-bottom:10px;font-size:11px}
+.dn-icon{font-size:18px}.dn-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.dn-fill{height:100%;border-radius:2px;transition:width 2s linear}
+
+/* RADIATION */
+.rad-ring{width:60px;height:60px;border-radius:50%;border:3px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+
+.mt8{margin-top:8px}.mt10{margin-top:10px}.mb8{margin-bottom:8px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}
+.flex{display:flex;align-items:center}.fb{display:flex;align-items:center;justify-content:space-between}
+.gap6{gap:6px}.gap8{gap:8px}.faint{color:var(--faint);font-size:10px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}.pulse{animation:pulse 2s infinite}
+@keyframes danger{0%,100%{border-color:rgba(204,68,68,.4)}50%{border-color:rgba(204,68,68,.9)}}.danger-pulse{animation:danger 1s infinite}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="back" onclick="saveBack()">← 返回</button>
+  <div class="topbar-title">🚐 末日房车囤货模拟器</div>
+  <div class="flex gap8" style="font-size:10px;color:var(--faint)">
+    <span id="daytxt">第0天</span>
+    <span id="clk">--:--:--</span>
+  </div>
+</div>
+<div class="danger-strip"></div>
+<div class="tabs">
+  <button class="tab on" onclick="sw(0)">📊 总览</button>
+  <button class="tab" onclick="sw(1)">🗺️ 地图探索</button>
+  <button class="tab" onclick="sw(2)">🎒 背包管理</button>
+  <button class="tab" onclick="sw(3)">🚐 房车升级</button>
+  <button class="tab" onclick="sw(4)">👥 幸存者</button>
+  <button class="tab" onclick="sw(5)">☢️ 状态&技能</button>
+</div>
+
+<div class="event-overlay" id="evt-overlay">
+  <div class="event-box">
+    <div class="event-icon" id="evt-icon">⚠️</div>
+    <div class="event-title" id="evt-title">事件</div>
+    <div class="event-desc" id="evt-desc">描述</div>
+    <div class="event-choices" id="evt-choices"></div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- TAB 0: OVERVIEW -->
+<div class="panel on" id="p0">
+  <div class="day-night">
+    <div class="dn-icon" id="dn-icon">☀️</div>
+    <div><div style="font-size:9px;color:var(--faint);letter-spacing:.08em" id="dn-phase">白天</div><div style="font-size:10px" id="dn-time">上午 08:00</div></div>
+    <div class="dn-bar"><div class="dn-fill pba" id="dn-bar" style="width:30%"></div></div>
+    <div class="faint" id="next-phase">8h后入夜</div>
+    <button class="btn ba bsm" onclick="nextDay()">⏭ 推进时间</button>
+  </div>
+  <div class="g4 mb10">
+    <div class="card"><div class="sl">存活天数</div><div class="sv am" id="days">0</div><div class="sd">末日第X天</div></div>
+    <div class="card"><div class="sl">幸存者</div><div class="sv cy" id="surv-count">1</div><div class="sd" id="surv-status">状态良好</div></div>
+    <div class="card"><div class="sl">房车状态</div><div class="sv gr" id="van-hp">100%</div><div class="sd" id="van-status">良好</div></div>
+    <div class="card"><div class="sl">辐射指数</div><div class="sv" id="rad-lv" style="color:var(--green)">0 rem</div><div class="sd" id="rad-status">安全</div></div>
+  </div>
+  <div class="col-r">
+    <div>
+      <div class="card mb10">
+        <div class="ct">生存资源</div>
+        <div id="resources"></div>
+      </div>
+      <div class="card mb10">
+        <div class="ct">今日任务</div>
+        <div id="daily-tasks"></div>
+      </div>
+      <div class="card"><div class="ct">事件日志</div><div class="log" id="dlog"></div></div>
+    </div>
+    <div>
+      <div class="card mb10">
+        <div class="ct">当前位置</div>
+        <div style="text-align:center;padding:12px">
+          <div style="font-size:32px;margin-bottom:6px" id="loc-icon">🏠</div>
+          <div style="font-size:13px;font-weight:500" id="loc-name">基地营地</div>
+          <div style="font-size:10px;color:var(--muted)" id="loc-desc">你的根据地</div>
+        </div>
+      </div>
+      <div class="card mb10">
+        <div class="ct">威胁警报</div>
+        <div id="threats"></div>
+      </div>
+      <div class="card">
+        <div class="ct">快速行动</div>
+        <div id="quick-actions"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 1: MAP -->
+<div class="panel" id="p1">
+  <div class="col-r">
+    <div>
+      <div class="card mb10">
+        <div class="fb mb10"><div class="ct" style="margin:0">末日地图</div><span class="faint" id="fuel-lbl">燃料: 0L</span></div>
+        <div class="map-grid" id="map-grid"></div>
+        <div class="mt10 faint">点击探索新地点，<span style="color:var(--amber)">●</span>表示有物资</div>
+      </div>
+      <div class="card">
+        <div class="ct">探索队伍</div>
+        <div id="explore-team"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card mb10">
+        <div class="ct">目标地点</div>
+        <div id="location-detail"></div>
+      </div>
+      <div class="card mb10">
+        <div class="ct">探索收获</div>
+        <div class="log" style="height:140px" id="loot-log"></div>
+      </div>
+      <div class="card">
+        <div class="ct">辐射区域警告</div>
+        <div id="rad-warning"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: BACKPACK -->
+<div class="panel" id="p2">
+  <div class="col-r">
+    <div>
+      <div class="card mb10">
+        <div class="fb mb8"><div class="ct" style="margin:0">背包物资</div><span class="faint" id="weight-lbl">重量: 0/50kg</span></div>
+        <div class="pb mb8"><div class="pbf pba" id="weight-bar" style="width:0%"></div></div>
+        <div id="inventory"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card mb10">
+        <div class="ct">物资使用</div>
+        <div id="item-use"></div>
+      </div>
+      <div class="card mb10">
+        <div class="ct">物品合成</div>
+        <div id="crafting"></div>
+      </div>
+      <div class="card">
+        <div class="ct">物资统计</div>
+        <div id="inv-stats"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: VAN -->
+<div class="panel" id="p3">
+  <div class="g2">
+    <div>
+      <div class="card mb10">
+        <div class="ct">房车状态</div>
+        <div id="van-status-detail"></div>
+      </div>
+      <div class="card">
+        <div class="ct">维修 & 改装</div>
+        <div id="van-repair"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card mb10">
+        <div class="ct">升级模块</div>
+        <div id="van-upgrades"></div>
+      </div>
+      <div class="card">
+        <div class="ct">车载设备</div>
+        <div id="van-equipment"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 4: SURVIVORS -->
+<div class="panel" id="p4">
+  <div class="col-r">
+    <div>
+      <div class="card mb10">
+        <div class="fb mb8"><div class="ct" style="margin:0">幸存者名单</div><button class="btn bc bsm" onclick="recruitRandom()">🔍 招募幸存者</button></div>
+        <div id="surv-list"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card mb10">
+        <div class="ct">幸存者技能</div>
+        <div id="surv-skills"></div>
+      </div>
+      <div class="card mb10">
+        <div class="ct">士气管理</div>
+        <div id="morale"></div>
+      </div>
+      <div class="card">
+        <div class="ct">任务分配</div>
+        <div id="assignments"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 5: STATUS -->
+<div class="panel" id="p5">
+  <div class="g2">
+    <div>
+      <div class="card mb10">
+        <div class="ct">个人状态</div>
+        <div id="p-status"></div>
+      </div>
+      <div class="card">
+        <div class="ct">技能树</div>
+        <div id="skill-tree"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card mb10">
+        <div class="ct">辐射与感染</div>
+        <div id="rad-detail"></div>
+      </div>
+      <div class="card mb10">
+        <div class="ct">末日统计</div>
+        <div id="doom-stats"></div>
+      </div>
+      <div class="card">
+        <div class="ct">成就</div>
+        <div id="doom-ach"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const ts=()=>new Date().toTimeString().slice(0,8);
+function dlog(msg,type=''){const b=$('dlog'),d=document.createElement('div');d.className='ll '+type;d.innerHTML=`<span class="lts">[${ts()}]</span> <span class="lm">${msg}</span>`;b.prepend(d);while(b.children.length>60)b.removeChild(b.lastChild)}
+function llog(msg,type=''){const b=$('loot-log'),d=document.createElement('div');d.className='ll '+type;d.innerHTML=`<span class="lts">[${ts()}]</span> <span class="lm">${msg}</span>`;b.prepend(d);while(b.children.length>60)b.removeChild(b.lastChild)}
+function sw(i){document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',i===j));document.querySelectorAll('.panel').forEach((p,j)=>p.classList.toggle('on',i===j));render()}
+setInterval(()=>$('clk').textContent=new Date().toTimeString().slice(0,8),1000);
+
+const D={
+  day:0,hour:8,isDay:true,timeOfDay:30,
+  resources:{food:50,water:40,medicine:10,fuel:30,ammo:20,scrap:15,battery:5},
+  maxRes:{food:100,water:100,medicine:50,fuel:80,ammo:100,scrap:200,battery:30},
+  vanHp:100,vanMaxHp:100,radiation:0,infection:0,
+  morale:80,xp:0,skillPoints:0,level:1,
+  weight:0,maxWeight:50,
+  inventory:[
+    {id:'bandage',name:'绷带',icon:'🩹',count:3,weight:.2,type:'medical',heal:15},
+    {id:'canned',name:'罐头食品',icon:'🥫',count:8,weight:.5,type:'food',food:20},
+    {id:'water_b',name:'净水器',icon:'🧴',count:2,weight:.3,type:'tool'},
+    {id:'lockpick',name:'撬锁器',icon:'🔧',count:1,weight:.1,type:'tool'},
+    {id:'molotov',name:'汽油瓶',icon:'🔥',count:0,weight:.3,type:'weapon',damage:50},
+  ],
+  survivors:[
+    {id:1,name:'主角',icon:'🧑',hp:100,maxHp:100,hunger:80,thirst:80,morale:80,skills:{scavenge:2,medic:1,combat:1,mechanic:1,cook:0},role:'领队',isPlayer:true,status:'健康'},
+  ],
+  skills:{scavenge:0,medic:0,combat:0,mechanic:0,cook:0,sneak:0,trade:0},
+  skillNames:{scavenge:'搜刮',medic:'医疗',combat:'战斗',mechanic:'机械',cook:'烹饪',sneak:'潜行',trade:'交易'},
+  vanUpgrades:[
+    {id:'armor',name:'车身装甲',desc:'房车防御+50%',cost:{scrap:30,battery:2},bought:false,icon:'🛡️'},
+    {id:'solar',name:'太阳能板',desc:'每天+5电池',cost:{scrap:20,battery:5},bought:false,icon:'☀️'},
+    {id:'storage',name:'扩容储物',desc:'背包容量+30kg',cost:{scrap:15},bought:false,icon:'📦'},
+    {id:'filter',name:'净水系统',desc:'每天产水+10L',cost:{scrap:25,battery:3},bought:false,icon:'💧'},
+    {id:'med',name:'车载药箱',desc:'医疗上限×2',cost:{scrap:20,medicine:5},bought:false,icon:'🏥'},
+    {id:'radio',name:'无线电台',desc:'提前收到威胁预警',cost:{scrap:30,battery:8},bought:false,icon:'📻'},
+    {id:'turret',name:'自动炮塔',desc:'自动抵御攻击',cost:{scrap:50,ammo:20,battery:10},bought:false,icon:'🔫'},
+    {id:'lab',name:'研究实验室',desc:'解锁配方合成',cost:{scrap:40,battery:15},bought:false,icon:'🧪'},
+  ],
+  vanEquip:[
+    {id:'gps',name:'GPS导航',desc:'显示物资点位置',cost:{battery:5},bought:false,icon:'🗺️'},
+    {id:'snorkel',name:'防水改装',desc:'可探索洪水区域',cost:{scrap:20},bought:false,icon:'🌊'},
+    {id:'gasmask',name:'防毒面具',desc:'辐射抗性+50%',cost:{scrap:15,medicine:3},bought:false,icon:'😷'},
+    {id:'winch',name:'绞盘',desc:'救援被困幸存者',cost:{scrap:10},bought:false,icon:'⛓️'},
+  ],
+  map:[
+    {id:0,name:'基地营地',icon:'🏠',explored:true,current:true,rad:0,loot:'low',desc:'你的根据地',x:3,y:3},
+    {id:1,name:'废弃超市',icon:'🏪',explored:false,rad:0,loot:'high',desc:'可能有大量食物和水',x:2,y:2,drops:{food:[10,40],water:[5,25],medicine:[0,8]}},
+    {id:2,name:'加油站',icon:'⛽',explored:false,rad:5,loot:'medium',desc:'燃料储量丰富，但有危险',x:4,y:2,drops:{fuel:[15,40],ammo:[0,15],scrap:[5,20]}},
+    {id:3,name:'医院废墟',icon:'🏥',explored:false,rad:15,loot:'high',desc:'医疗物资丰富，但辐射严重',x:2,y:4,drops:{medicine:[10,30],battery:[2,8]}},
+    {id:4,name:'军事基地',icon:'🪖',explored:false,rad:20,loot:'high',desc:'弹药和物资，但防守严密',x:4,y:1,drops:{ammo:[20,60],scrap:[10,30],food:[5,15]}},
+    {id:5,name:'居民区',icon:'🏘️',explored:false,rad:5,loot:'medium',desc:'普通住宅区，各类物资',x:1,y:3,drops:{food:[5,20],water:[5,20],scrap:[5,15]}},
+    {id:6,name:'工厂',icon:'🏭',explored:false,rad:10,loot:'medium',desc:'零件和废料',x:5,y:3,drops:{scrap:[20,50],battery:[3,10],fuel:[5,15]}},
+    {id:7,name:'学校',icon:'🏫',explored:false,rad:0,loot:'low',desc:'基础物资和少量医疗',x:3,y:1,drops:{food:[5,15],medicine:[2,8]}},
+    {id:8,name:'公园',icon:'🌳',explored:false,rad:0,loot:'low',desc:'植物和天然水源',x:1,y:1,drops:{food:[3,12],water:[10,30]}},
+    {id:9,name:'地下室',icon:'🕳️',explored:false,rad:0,loot:'high',desc:'可能有幸存者物资',x:5,y:1,drops:{food:[10,25],water:[5,20],ammo:[5,20],battery:[1,5]}},
+    {id:10,name:'核电站',icon:'☢️',explored:false,rad:80,loot:'high',desc:'危险！辐射极高，物资丰富',x:5,y:5,drops:{battery:[10,30],scrap:[30,80]}},
+    {id:11,name:'港口',icon:'⚓',explored:false,rad:5,loot:'medium',desc:'可能有船用物资',x:1,y:5,drops:{fuel:[10,30],scrap:[15,40]}},
+    {id:12,name:'地铁站',icon:'🚇',explored:false,rad:10,loot:'medium',desc:'地下网络，可连接多个地点',x:3,y:5,drops:{food:[5,20],water:[5,20],scrap:[10,25]}},
+  ],
+  currentLocId:0,selectedLocId:null,
+  exploring:false,exploreTimer:0,
+  threats:[],dailyTasks:[],
+  achievements:[
+    {name:'第一夜',desc:'存活第1天',check:d=>d.day>=1,done:false,icon:'🌙'},
+    {name:'囤货达人',desc:'食物超过80',check:d=>d.resources.food>=80,done:false,icon:'🥫'},
+    {name:'团队力量',desc:'招募3名幸存者',check:d=>d.survivors.length>=3,done:false,icon:'👥'},
+    {name:'房车改造',desc:'完成3项升级',check:d=>d.vanUpgrades.filter(u=>u.bought).length>=3,done:false,icon:'🚐'},
+    {name:'一周求生',desc:'存活7天',check:d=>d.day>=7,done:false,icon:'📅'},
+    {name:'幸运探索者',desc:'探索5个地点',check:d=>d.map.filter(m=>m.explored&&m.id!==0).length>=5,done:false,icon:'🗺️'},
+  ],
+  eventPool:[
+    {icon:'🧟',title:'丧尸来袭！',desc:'一群丧尸正在接近营地，你需要做出决策',choices:[
+      {text:'⚔️ 战斗抵御 (消耗5发弹药)',fn:d=>{if(d.resources.ammo>=5){d.resources.ammo-=5;dlog('⚔️ 战斗胜利！击退丧尸','lok')}else{d.vanHp-=20;dlog('💀 无弹药！房车受损','lbad')}}},
+      {text:'🚗 驾车逃跑 (消耗10L燃料)',fn:d=>{if(d.resources.fuel>=10){d.resources.fuel-=10;dlog('🚗 成功逃脱！','lok')}else{d.vanHp-=30;dlog('💀 燃料不足！严重损坏','lbad')}}},
+      {text:'🔒 躲藏等待 (失去一天)',fn:d=>{dlog('🔒 躲过了这波丧尸...','linfo')}},
+    ]},
+    {icon:'🌧️',title:'暴雨来临',desc:'大雨将至，这是收集雨水的好机会！',choices:[
+      {text:'💧 收集雨水 (+20水)',fn:d=>{d.resources.water=Math.min(d.maxRes.water,d.resources.water+20);dlog('💧 收集了20L雨水','lok')}},
+      {text:'🏠 留在车内休息',fn:d=>{d.survivors.forEach(s=>s.morale=Math.min(100,s.morale+5));dlog('😊 休息恢复了士气','lok')}},
+    ]},
+    {icon:'👤',title:'陌生人求助',desc:'一个受伤的陌生人敲了你的车窗...',choices:[
+      {text:'💊 给予医疗救助 (-3医药)',fn:d=>{if(d.resources.medicine>=3){d.resources.medicine-=3;if(Math.random()>.3){d.survivors.push(createSurvivor());dlog('✅ 陌生人加入了队伍！','lok')}else dlog('🙏 陌生人感激离去','linfo')}else dlog('💊 医药不足，无法救助','lbad')}},
+      {text:'🍞 给予食物 (-5食物)',fn:d=>{if(d.resources.food>=5){d.resources.food-=5;dlog('🍞 给予了食物，获得了好感','lok')}else dlog('😞 食物不足','lbad')}},
+      {text:'🚫 拒绝',fn:d=>{d.morale-=5;dlog('😔 拒绝了求助，士气下降','lbad')}},
+    ]},
+    {icon:'⚡',title:'设备故障',desc:'房车发电机出现故障，需要立即修复',choices:[
+      {text:'🔧 自行修复 (-10废料)',fn:d=>{if(d.resources.scrap>=10){d.resources.scrap-=10;dlog('🔧 成功修复发电机','lok')}else{d.vanHp-=15;dlog('💀 修复失败，房车受损','lbad')}}},
+      {text:'💰 消耗医药暂时维持 (-5医药)',fn:d=>{if(d.resources.medicine>=5){d.resources.medicine-=5;dlog('⚠️ 临时维修，后续仍需修复','linfo')}else dlog('💀 无法维持！','lbad')}},
+    ]},
+    {icon:'🔫',title:'武装劫匪',desc:'一伙武装劫匪拦截了你们的路！',choices:[
+      {text:'💥 武力对抗 (消耗10弹药)',fn:d=>{if(d.resources.ammo>=10){d.resources.ammo-=10;dlog('💥 击退了劫匪！缴获部分物资','lok');d.resources.scrap+=Math.floor(Math.random()*15+5)}else{const loss=Math.floor(Math.random()*20+10);d.resources.food=Math.max(0,d.resources.food-loss);dlog(`💀 无法对抗，损失${loss}食物`,'lbad')}}},
+      {text:'🤝 谈判交涉 (-15食物)',fn:d=>{if(d.resources.food>=15){d.resources.food-=15;dlog('🤝 成功谈判，付出食物换取通行','linfo')}else dlog('😰 无筹码谈判，被迫逃跑','lbad')}},
+      {text:'🏃 快速逃跑 (-8燃料)',fn:d=>{if(d.resources.fuel>=8){d.resources.fuel-=8;dlog('🏃 全速逃跑成功！','lok')}else{d.vanHp-=25;dlog('💀 燃料不足，房车撞毁','lbad')}}},
+    ]},
+    {icon:'🌡️',title:'疾病爆发',desc:'营地内出现了不明感染症状！',choices:[
+      {text:'💊 使用医药治疗 (-8医药)',fn:d=>{if(d.resources.medicine>=8){d.resources.medicine-=8;d.infection=Math.max(0,d.infection-30);dlog('💊 成功控制疫情','lok')}else{d.infection+=20;d.survivors.forEach(s=>s.hp=Math.max(1,s.hp-15));dlog('☠️ 疫情蔓延！','lbad')}}},
+      {text:'🔒 隔离感染者',fn:d=>{d.morale-=10;dlog('⚠️ 隔离措施降低了士气但控制了扩散','linfo')}},
+    ]},
+  ],
+  resNames:{food:'食物',water:'水',medicine:'医药',fuel:'燃料',ammo:'弹药',scrap:'废料',battery:'电池'},
+  resIcons:{food:'🥫',water:'💧',medicine:'💊',fuel:'⛽',ammo:'🔫',scrap:'🔩',battery:'🔋'},
+};
+
+function createSurvivor(){
+  const names=['老陈','小美','阿强','王叔','李姐','小黑','老周','小芳','大力','阿飞'];
+  const icons=['👩','👨','🧔','👴','👵','🧕','🧑','👱'];
+  const skills={scavenge:Math.floor(Math.random()*3),medic:Math.floor(Math.random()*3),combat:Math.floor(Math.random()*3),mechanic:Math.floor(Math.random()*3),cook:Math.floor(Math.random()*3),sneak:Math.floor(Math.random()*2),trade:Math.floor(Math.random()*2)};
+  return{id:Date.now(),name:names[Math.floor(Math.random()*names.length)],icon:icons[Math.floor(Math.random()*icons.length)],hp:60+Math.floor(Math.random()*40),maxHp:100,hunger:50+Math.floor(Math.random()*30),thirst:50+Math.floor(Math.random()*30),morale:50+Math.floor(Math.random()*30),skills,role:'幸存者',status:'健康'};
+}
+
+try{const s=JSON.parse(localStorage.getItem('doom')||'{}');if(s.day!==undefined){Object.assign(D,s);D.survivors=D.survivors||[createSurvivor()];D.map=D.map||[];D.achievements=D.achievements||[];D.vanUpgrades=D.vanUpgrades||[];D.vanEquip=D.vanEquip||[];D.inventory=D.inventory||[];D.dailyTasks=D.dailyTasks||[]}}catch(e){}
+
+function saveBack(){save();location.href='index.html'}
+function save(){try{localStorage.setItem('doom',JSON.stringify({day:D.day,hour:D.hour,isDay:D.isDay,resources:D.resources,maxRes:D.maxRes,vanHp:D.vanHp,radiation:D.radiation,infection:D.infection,morale:D.morale,xp:D.xp,level:D.level,weight:D.weight,maxWeight:D.maxWeight,inventory:D.inventory,survivors:D.survivors,skills:D.skills,vanUpgrades:D.vanUpgrades,vanEquip:D.vanEquip,map:D.map,currentLocId:D.currentLocId,achievements:D.achievements}))}catch(e){}}
+
+function nextDay(){
+  D.day++;D.hour=8;D.isDay=true;D.timeOfDay=30;
+  // Consume resources per survivor
+  const cnt=D.survivors.length;
+  D.resources.food=Math.max(0,D.resources.food-cnt*3);
+  D.resources.water=Math.max(0,D.resources.water-cnt*4);
+  // Van upgrades passive
+  if(D.vanUpgrades.find(u=>u.id==='solar')?.bought)D.resources.battery=Math.min(D.maxRes.battery,D.resources.battery+5);
+  if(D.vanUpgrades.find(u=>u.id==='filter')?.bought)D.resources.water=Math.min(D.maxRes.water,D.resources.water+10);
+  // Survivor needs
+  D.survivors.forEach(s=>{
+    s.hunger=Math.max(0,s.hunger-15);s.thirst=Math.max(0,s.thirst-20);
+    if(s.hunger<20||s.thirst<20){s.hp=Math.max(1,s.hp-10);s.morale=Math.max(0,s.morale-10)}
+    if(s.hp<30)s.status='危险';else if(s.hp<60)s.status='受伤';else s.status='健康';
+  });
+  // Random event
+  if(Math.random()<0.6){const ev=D.eventPool[Math.floor(Math.random()*D.eventPool.length)];showEvent(ev)}
+  // Daily tasks refresh
+  genDailyTasks();
+  // Check achievements
+  D.achievements.forEach(a=>{if(!a.done&&a.check(D)){a.done=true;dlog(`🏆 成就:${a.name}`,'lok')}});
+  dlog(`📅 第${D.day}天开始，消耗${cnt*3}食物${cnt*4}水`,'linfo');
+  render();
+}
+
+function genDailyTasks(){
+  D.dailyTasks=[
+    {text:'收集10L水',done:false,check:()=>D.resources.water>=10,reward:{scrap:5},icon:'💧'},
+    {text:'储备20单位食物',done:false,check:()=>D.resources.food>=20,reward:{medicine:2},icon:'🥫'},
+    {text:'修复房车',done:false,check:()=>D.vanHp>=80,reward:{xp:50},icon:'🔧'},
+  ];
+}
+
+function showEvent(ev){
+  $('evt-icon').textContent=ev.icon;$('evt-title').textContent=ev.title;$('evt-desc').textContent=ev.desc;
+  $('evt-choices').innerHTML=ev.choices.map((c,i)=>`<button class="btn ba bfull" onclick="chooseEvent(${i})" style="margin-bottom:4px">${c.text}</button>`).join('');
+  $('evt-overlay').style.display='flex';
+  window._evtChoices=ev.choices;
+}
+function chooseEvent(i){window._evtChoices[i].fn(D);$('evt-overlay').style.display='none';render()}
+
+function explore(locId){
+  const loc=D.map.find(m=>m.id===locId);
+  if(!loc||D.exploring)return;
+  const fuelNeeded=3+Math.floor(Math.abs(loc.x-3)+Math.abs(loc.y-3))*2;
+  if(D.resources.fuel<fuelNeeded){dlog(`⛽ 燃料不足！需要${fuelNeeded}L`,'lbad');return}
+  D.resources.fuel-=fuelNeeded;
+  D.exploring=true;D.selectedLocId=locId;
+  dlog(`🚐 前往 ${loc.name}...`,'linfo');
+  setTimeout(()=>finishExplore(locId),2000);render();
+}
+function finishExplore(locId){
+  const loc=D.map.find(m=>m.id===locId);
+  if(!loc)return;
+  loc.explored=true;D.currentLocId=locId;D.exploring=false;
+  D.map.forEach(m=>m.current=m.id===locId);
+  // Radiation
+  if(loc.rad>0){
+    const radRes=D.vanEquip.find(e=>e.id==='gasmask')?.bought?.5:1;
+    D.radiation=Math.min(100,D.radiation+loc.rad*(radRes||1));
+    dlog(`☢️ 受到${Math.floor(loc.rad*(radRes||1))}rem辐射`,'lbad');
+  }
+  // Loot
+  if(loc.drops){
+    Object.entries(loc.drops).forEach(([res,[min,max]])=>{
+      const scav=D.survivors.reduce((a,s)=>a+s.skills.scavenge,0);
+      const bonus=1+scav*0.1;
+      const amt=Math.floor((min+Math.random()*(max-min))*bonus);
+      D.resources[res]=Math.min(D.maxRes[res],D.resources[res]+amt);
+      if(amt>0)llog(`✅ 获得 ${D.resIcons[res]}${D.resNames[res]}×${amt}`,'lok');
+    });
+    D.xp+=20;
+  }
+  dlog(`📍 到达 ${loc.icon}${loc.name}`,'linfo');
+  render();
+}
+
+function recruitRandom(){
+  if(D.survivors.length>=6){dlog('👥 幸存者已达上限','lbad');return}
+  const sv=createSurvivor();D.survivors.push(sv);
+  dlog(`✅ ${sv.icon}${sv.name} 加入了队伍！`,'lok');render();
+}
+
+function useItem(id){
+  const item=D.inventory.find(i=>i.id===id);if(!item||item.count<=0)return;
+  item.count--;
+  if(item.type==='medical'){const s=D.survivors[0];s.hp=Math.min(s.maxHp,s.hp+item.heal);dlog(`💊 使用${item.name} 恢复${item.heal}HP`,'lok')}
+  if(item.type==='food'){D.resources.food=Math.min(D.maxRes.food,D.resources.food+item.food);dlog(`🥫 使用${item.name} 获得${item.food}食物`,'lok')}
+  render();
+}
+
+function repairVan(amount){
+  const cost=amount;
+  if(D.resources.scrap<cost){dlog(`🔩 废料不足！需要${cost}废料`,'lbad');return}
+  D.resources.scrap-=cost;D.vanHp=Math.min(D.vanMaxHp,D.vanHp+amount);
+  dlog(`🔧 修复房车 +${amount}HP`,'lok');render();
+}
+
+function buyVanUpgrade(id){
+  const u=D.vanUpgrades.find(x=>x.id===id);if(u.bought)return;
+  const canAfford=Object.entries(u.cost).every(([res,amt])=>D.resources[res]>=amt);
+  if(!canAfford){dlog('❌ 资源不足','lbad');return}
+  Object.entries(u.cost).forEach(([res,amt])=>D.resources[res]-=amt);
+  u.bought=true;
+  if(id==='storage')D.maxWeight+=30;
+  if(id==='med')D.maxRes.medicine*=2;
+  dlog(`🔧 安装升级:${u.name}`,'lok');render();
+}
+function buyVanEquip(id){
+  const e=D.vanEquip.find(x=>x.id===id);if(e.bought)return;
+  const canAfford=Object.entries(e.cost).every(([res,amt])=>D.resources[res]>=amt);
+  if(!canAfford){dlog('❌ 资源不足','lbad');return}
+  Object.entries(e.cost).forEach(([res,amt])=>D.resources[res]-=amt);
+  e.bought=true;dlog(`⚙️ 安装设备:${e.name}`,'lok');render();
+}
+
+function hpColor(v,max){const p=v/max;return p>=.6?'var(--green)':p>=.3?'var(--amber)':'var(--red)'}
+
+function render(){
+  $('daytxt').textContent=`第${D.day}天`;
+  // Day/night
+  const dn=D.timeOfDay;
+  $('dn-icon').textContent=D.isDay?'☀️':'🌙';
+  $('dn-phase').textContent=D.isDay?'白天':'夜晚';
+  const h=D.hour;$('dn-time').textContent=`${h<10?'0'+h:h}:00`;
+  $('dn-bar').style.width=(D.isDay?dn:100-dn)+'%';
+  $('next-phase').textContent=D.isDay?`${12-h}h后入夜`:`${24-h}h后日出`;
+
+  // Overview stats
+  $('days').textContent=D.day;$('surv-count').textContent=D.survivors.length;
+  $('van-hp').textContent=D.vanHp+'%';
+  $('van-status').textContent=D.vanHp>=80?'良好':D.vanHp>=50?'受损':D.vanHp>=25?'危险':'报废';
+  const radC=D.radiation>=60?'var(--red)':D.radiation>=30?'var(--amber)':'var(--green)';
+  $('rad-lv').textContent=D.radiation+' rem';$('rad-lv').style.color=radC;
+  $('rad-status').textContent=D.radiation>=60?'危险':D.radiation>=30?'警告':'安全';
+  const avgSurv=D.survivors.length?Math.floor(D.survivors.reduce((a,s)=>a+s.hp,0)/D.survivors.length):0;
+  $('surv-status').textContent=avgSurv>=80?'状态良好':avgSurv>=50?'有人受伤':'情况危急';
+
+  // Resources
+  $('resources').innerHTML=Object.entries(D.resources).map(([key,val])=>{
+    const max=D.maxRes[key],pct=Math.min(100,val/max*100);
+    const col=pct>=50?'pbg':pct>=25?'pba':'pbr';
+    const warn=pct<=15?`<span class="res-warn">⚠️低</span>`:'';
+    return`<div class="res-bar"><div class="res-icon">${D.resIcons[key]}</div><div class="res-name">${D.resNames[key]}</div><div class="res-track"><div class="res-fill ${col}" style="width:${pct}%"></div></div><div class="res-val">${val}/${max}</div>${warn}</div>`;
+  }).join('');
+
+  // Daily tasks
+  $('daily-tasks').innerHTML=D.dailyTasks.map(t=>{const done=t.check();return`<div class="row"><div><div class="rn">${t.icon} ${t.text}</div></div><div class="rr">${done?'<span class="bdg bdg-g">✓完成</span>':'<span class="faint">进行中</span>'}</div></div>`}).join('');
+
+  // Location
+  const loc=D.map.find(m=>m.id===D.currentLocId)||D.map[0];
+  $('loc-icon').textContent=loc.icon;$('loc-name').textContent=loc.name;$('loc-desc').textContent=loc.desc;
+
+  // Threats
+  $('threats').innerHTML=`
+    <div class="row"><div class="rn">🧟 丧尸密度</div><div class="rr"><span class="bdg ${D.day<3?'bdg-g':D.day<7?'bdg-a':'bdg-r'}">${D.day<3?'低':'D.day<7?中:高'}</span></div></div>
+    <div class="row"><div class="rn">☢️ 辐射扩散</div><div class="rr"><span class="bdg ${D.radiation<30?'bdg-g':'bdg-r'}">${D.radiation<30?'安全':'危险'}</span></div></div>
+    <div class="row"><div class="rn">⚡ 物资稀缺</div><div class="rr"><span class="bdg ${D.resources.food>30?'bdg-g':D.resources.food>10?'bdg-a':'bdg-r'}">${D.resources.food>30?'充足':D.resources.food>10?'紧张':'危急'}</span></div></div>`;
+
+  // Quick actions
+  $('quick-actions').innerHTML=`
+    <div class="row"><div class="rn">🔧 紧急修车</div><div class="rr"><span class="faint">需要10废料</span><button class="btn bg bsm" onclick="repairVan(20)" ${D.resources.scrap>=10?'':'disabled'}>修复</button></div></div>
+    <div class="row"><div class="rn">💧 净化用水</div><div class="rr"><span class="faint">+15水</span><button class="btn bc bsm" onclick="D.resources.water=Math.min(D.maxRes.water,D.resources.water+15);dlog('💧 净化用水+15','lok');render()" ${D.resources.battery>=2?'':'disabled'}>净化</button></div></div>
+    <div class="row"><div class="rn">🍲 烹饪食物</div><div class="rr"><span class="faint">+20食物</span><button class="btn ba bsm" onclick="D.resources.food=Math.min(D.maxRes.food,D.resources.food+20);D.resources.scrap=Math.max(0,D.resources.scrap-3);dlog('🍲 烹饪食物+20','lok');render()" ${D.resources.scrap>=3?'':'disabled'}>烹饪</button></div></div>`;
+
+  // Map
+  $('fuel-lbl').textContent=`燃料: ${D.resources.fuel}L`;
+  const mapHtml=[];
+  const mapIds=[8,7,4,1,5,0,3,6,2,11,12,10,9];
+  // simple 7-column display
+  const allLocs=D.map;
+  const gridLocs=[];
+  for(let row=0;row<3;row++)for(let col=0;col<5;col++){const i=row*5+col;gridLocs.push(allLocs[i]||null)}
+  $('map-grid').style.gridTemplateColumns='repeat(5,1fr)';
+  $('map-grid').innerHTML=D.map.slice(0,13).map(loc=>{
+    const fuelNeed=3+Math.floor(Math.abs((loc.x||3)-3)+Math.abs((loc.y||3)-3))*2;
+    const canGo=D.resources.fuel>=fuelNeed&&!D.exploring&&!loc.current;
+    return`<div class="map-cell ${loc.current?'current':''} ${loc.explored&&!loc.current?'explored':''}" onclick="${canGo?`explore(${loc.id})`:''}">
+      <div>${loc.icon}</div>
+      <div class="cell-label">${loc.name.slice(0,4)}</div>
+      ${!loc.explored&&loc.loot==='high'?'<div class="loot-badge"></div>':''}
+    </div>`;}).join('');
+
+  // Location detail
+  const selLoc=D.map.find(m=>m.id===D.selectedLocId)||loc;
+  $('location-detail').innerHTML=`<div style="text-align:center;padding:10px">
+    <div style="font-size:28px">${selLoc.icon}</div>
+    <div style="font-size:12px;font-weight:500;margin:6px 0">${selLoc.name}</div>
+    <div class="faint" style="margin-bottom:8px">${selLoc.desc}</div>
+    <div class="bdg ${selLoc.rad>50?'bdg-r':selLoc.rad>0?'bdg-a':'bdg-g'}">辐射:${selLoc.rad}rem</div>
+    <div class="bdg bdg-c" style="margin-left:4px">物资:${selLoc.loot==='high'?'丰富':selLoc.loot==='medium'?'适中':'稀少'}</div>
+    ${!selLoc.current&&!selLoc.explored?`<div class="mt10"><button class="btn ba bfull" onclick="explore(${selLoc.id})">🚐 前往探索</button></div>`:''}
+  </div>`;
+
+  $('explore-team').innerHTML=`<div class="row"><div class="rn">探索中</div><div class="rr"><span class="bdg ${D.exploring?'bdg-a pulse':'bdg-g'}">${D.exploring?'进行中':'待命'}</span></div></div>
+    <div class="row"><div class="rn">搜刮加成</div><div class="rr"><span class="faint">+${D.survivors.reduce((a,s)=>a+s.skills.scavenge,0)*10}%</span></div></div>`;
+
+  $('rad-warning').innerHTML=D.map.filter(m=>m.rad>=30).map(m=>`<div class="row"><div class="rn">${m.icon}${m.name}</div><div class="rr"><span class="bdg ${m.rad>=60?'bdg-r':'bdg-a'}">☢️${m.rad}rem</span></div></div>`).join('');
+
+  // Inventory
+  D.weight=D.inventory.reduce((a,i)=>a+i.weight*i.count,0);
+  const wp=(D.weight/D.maxWeight)*100;
+  $('weight-lbl').textContent=`重量: ${D.weight.toFixed(1)}/${D.maxWeight}kg`;
+  $('weight-bar').style.width=Math.min(100,wp)+'%';
+  $('weight-bar').className='pbf '+(wp<60?'pbg':wp<90?'pba':'pbr');
+  $('inventory').innerHTML=D.inventory.map(item=>`
+    <div class="row"><div><div class="rn">${item.icon}${item.name}</div><div class="rdd">${item.type}·${item.weight}kg/件·共${(item.weight*item.count).toFixed(1)}kg</div></div>
+    <div class="rr"><span class="faint">×${item.count}</span><button class="btn bg bxs" onclick="useItem('${item.id}')" ${item.count>0?'':'disabled'}>使用</button></div></div>`).join('');
+  $('item-use').innerHTML=`<div class="row"><div class="rn">🩹 绷带</div><div class="rr"><span class="faint">${D.inventory.find(i=>i.id==='bandage')?.count||0}个</span><button class="btn bg bsm" onclick="useItem('bandage')" ${(D.inventory.find(i=>i.id==='bandage')?.count||0)>0?'':'disabled'}>使用</button></div></div>
+    <div class="row"><div class="rn">🥫 罐头</div><div class="rr"><span class="faint">${D.inventory.find(i=>i.id==='canned')?.count||0}个</span><button class="btn ba bsm" onclick="useItem('canned')" ${(D.inventory.find(i=>i.id==='canned')?.count||0)>0?'':'disabled'}>使用</button></div></div>`;
+  $('crafting').innerHTML=D.vanUpgrades.find(u=>u.id==='lab')?.bought?`
+    <div class="row"><div class="rn">🧪 消炎药</div><div class="rr"><span class="faint">需5废料+2电池</span><button class="btn bg bsm" onclick="if(D.resources.scrap>=5&&D.resources.battery>=2){D.resources.scrap-=5;D.resources.battery-=2;const m=D.inventory.find(i=>i.id==='bandage');if(m)m.count+=3;dlog('🧪 合成消炎药×3','lok');render()}" ${D.resources.scrap>=5&&D.resources.battery>=2?'':'disabled'}>合成</button></div></div>
+    <div class="row"><div class="rn">🔥 燃烧瓶</div><div class="rr"><span class="faint">需3废料+2燃料</span><button class="btn br bsm" onclick="if(D.resources.scrap>=3&&D.resources.fuel>=2){D.resources.scrap-=3;D.resources.fuel-=2;const m=D.inventory.find(i=>i.id==='molotov');if(m)m.count+=2;dlog('🔥 合成燃烧瓶×2','lok');render()}" ${D.resources.scrap>=3&&D.resources.fuel>=2?'':'disabled'}>合成</button></div></div>`
+    :'<div class="faint" style="padding:8px">需要安装研究实验室才能合成物品</div>';
+  $('inv-stats').innerHTML=`<div class="row"><div class="rn">总重量</div><div class="rr"><span style="color:${wp<60?'var(--green)':wp<90?'var(--amber)':'var(--red)'}">${D.weight.toFixed(1)}kg</span></div></div>
+    <div class="row"><div class="rn">最大容量</div><div class="rr"><span class="faint">${D.maxWeight}kg</span></div></div>
+    <div class="row"><div class="rn">物品种类</div><div class="rr"><span class="faint">${D.inventory.filter(i=>i.count>0).length}种</span></div></div>`;
+
+  // Van
+  $('van-status-detail').innerHTML=`
+    <div class="res-bar"><div class="res-icon">❤️</div><div class="res-name">车体HP</div><div class="res-track"><div class="res-fill ${D.vanHp>=60?'pbg':D.vanHp>=30?'pba':'pbr'}" style="width:${D.vanHp}%"></div></div><div class="res-val">${D.vanHp}/100</div></div>
+    <div class="res-bar"><div class="res-icon">⛽</div><div class="res-name">燃料</div><div class="res-track"><div class="res-fill pba" style="width:${D.resources.fuel/D.maxRes.fuel*100}%"></div></div><div class="res-val">${D.resources.fuel}L</div></div>
+    <div class="res-bar"><div class="res-icon">🔋</div><div class="res-name">电量</div><div class="res-track"><div class="res-fill pbl" style="width:${D.resources.battery/D.maxRes.battery*100}%"></div></div><div class="res-val">${D.resources.battery}格</div></div>`;
+  $('van-repair').innerHTML=`
+    <div class="row"><div class="rn">🔧 小修 (+20HP)</div><div class="rr"><span class="faint">需5废料</span><button class="btn bg bsm" onclick="repairVan(20)" ${D.resources.scrap>=5?'':'disabled'}>修复</button></div></div>
+    <div class="row"><div class="rn">🔧 大修 (+50HP)</div><div class="rr"><span class="faint">需15废料</span><button class="btn bg bsm" onclick="repairVan(50);D.resources.scrap-=10" ${D.resources.scrap>=15?'':'disabled'}>修复</button></div></div>
+    <div class="row"><div class="rn">⛽ 加油 (+20L)</div><div class="rr"><span class="faint">需10废料</span><button class="btn ba bsm" onclick="if(D.resources.scrap>=10){D.resources.fuel=Math.min(D.maxRes.fuel,D.resources.fuel+20);D.resources.scrap-=10;dlog('⛽ 提炼+20燃料','lok');render()}" ${D.resources.scrap>=10?'':'disabled'}>提炼</button></div></div>`;
+  $('van-upgrades').innerHTML=D.vanUpgrades.map(u=>{
+    const canA=Object.entries(u.cost).every(([r,a])=>D.resources[r]>=a);
+    const costStr=Object.entries(u.cost).map(([r,a])=>`${D.resIcons[r]}${a}`).join(' ');
+    return`<div class="van-slot"><div class="vs-icon">${u.icon}</div><div class="vs-info"><div class="vs-name">${u.name}</div><div class="vs-desc">${u.desc}</div></div>${u.bought?'<span class="bdg bdg-g">已安装</span>':`<div style="text-align:right"><div class="faint" style="margin-bottom:3px">${costStr}</div><button class="btn bo bsm" onclick="buyVanUpgrade('${u.id}')" ${canA?'':'disabled'}>安装</button></div>`}</div>`;}).join('');
+  $('van-equipment').innerHTML=D.vanEquip.map(e=>{
+    const canA=Object.entries(e.cost).every(([r,a])=>D.resources[r]>=a);
+    const costStr=Object.entries(e.cost).map(([r,a])=>`${D.resIcons[r]}${a}`).join(' ');
+    return`<div class="van-slot"><div class="vs-icon">${e.icon}</div><div class="vs-info"><div class="vs-name">${e.name}</div><div class="vs-desc">${e.desc}</div></div>${e.bought?'<span class="bdg bdg-g">已安装</span>':`<div style="text-align:right"><div class="faint">${costStr}</div><button class="btn bo bsm" onclick="buyVanEquip('${e.id}')" ${canA?'':'disabled'}>安装</button></div>`}</div>`;}).join('');
+
+  // Survivors
+  $('surv-list').innerHTML=D.survivors.map(s=>`<div class="surv-card">
+    <div class="surv-top"><div><span style="font-size:12px;font-weight:500">${s.icon}${s.name}</span> <span class="bdg ${s.status==='健康'?'bdg-g':s.status==='受伤'?'bdg-a':'bdg-r'}">${s.status}</span></div><span style="font-size:10px;color:var(--faint)">${s.role}</span></div>
+    <div class="res-bar" style="padding:3px 0;border:none"><div class="res-icon">❤️</div><div class="res-track"><div class="res-fill ${s.hp>=60?'pbg':s.hp>=30?'pba':'pbr'}" style="width:${s.hp/s.maxHp*100}%"></div></div><div class="res-val" style="font-size:9px">${s.hp}/${s.maxHp}</div></div>
+    <div class="res-bar" style="padding:3px 0;border:none"><div class="res-icon">🍞</div><div class="res-track"><div class="res-fill pbg" style="width:${s.hunger}%"></div></div><div class="res-val" style="font-size:9px">${s.hunger}%</div></div>
+    <div class="surv-stats">${Object.entries(s.skills).map(([sk,lv])=>`<div>${D.skillNames[sk]}:<span>${lv}</span></div>`).join('')}</div>
+  </div>`).join('');
+  $('surv-skills').innerHTML=Object.entries(D.skills).map(([sk,lv])=>`<div class="row"><div class="rn">${D.skillNames[sk]}</div><div class="rr"><span style="font-family:var(--mono)">Lv.${lv}</span></div></div>`).join('');
+  $('morale').innerHTML=`<div class="res-bar" style="border:none"><div class="res-icon">💪</div><div class="res-name">士气</div><div class="res-track"><div class="res-fill ${D.morale>=60?'pbg':D.morale>=30?'pba':'pbr'}" style="width:${D.morale}%"></div></div><div class="res-val">${D.morale}%</div></div>
+    <div class="mt8"><button class="btn ba bsm" onclick="if(D.resources.food>=5){D.resources.food-=5;D.morale=Math.min(100,D.morale+20);D.survivors.forEach(s=>s.morale=Math.min(100,s.morale+15));dlog('🎉 聚餐！士气+20','lok');render()}" ${D.resources.food>=5?'':'disabled'}>🍽️ 组织聚餐 (需5食物)</button></div>`;
+  $('assignments').innerHTML=`<div class="row"><div class="rn">🔍 侦察队</div><div class="rr"><span class="faint">${Math.floor(D.survivors.length/3)}人</span></div></div>
+    <div class="row"><div class="rn">🏥 医疗队</div><div class="rr"><span class="faint">${D.survivors.filter(s=>s.skills.medic>=2).length}人</span></div></div>
+    <div class="row"><div class="rn">⚔️ 防卫队</div><div class="rr"><span class="faint">${D.survivors.filter(s=>s.skills.combat>=2).length}人</span></div></div>`;
+
+  // Status
+  $('p-status').innerHTML=`<div class="row"><div class="rn">❤️ 生命值</div><div class="rr"><span style="color:${hpColor(D.survivors[0]?.hp||100,100)}">${D.survivors[0]?.hp||100}%</span></div></div>
+    <div class="row"><div class="rn">☢️ 辐射量</div><div class="rr"><span style="color:${radC}">${D.radiation}rem</span></div></div>
+    <div class="row"><div class="rn">🦠 感染度</div><div class="rr"><span style="color:${D.infection>30?'var(--red)':'var(--green)'}">${D.infection}%</span></div></div>
+    <div class="row"><div class="rn">💪 经验值</div><div class="rr"><span class="faint">${D.xp} XP</span></div></div>
+    ${D.radiation>20?`<div class="mt8"><button class="btn bg bsm" onclick="if(D.resources.medicine>=5){D.resources.medicine-=5;D.radiation=Math.max(0,D.radiation-20);dlog('💊 服用抗辐射药','lok');render()}" ${D.resources.medicine>=5?'':'disabled'}>💊 服用抗辐射药 (需5医药)</button></div>`:''}`;
+  $('skill-tree').innerHTML=Object.entries(D.skills).map(([sk,lv])=>`<div class="row"><div><div class="rn">${D.skillNames[sk]}</div><div class="rdd">${'★'.repeat(lv)}${'☆'.repeat(5-lv)}</div></div><div class="rr"><button class="btn bc bxs" onclick="if(D.xp>=50*(D.skills['${sk}']+1)){D.xp-=50*(D.skills['${sk}']+1);D.skills['${sk}']++;dlog('⬆️ 技能升级:${D.skillNames[sk]}','lok');render()}" ${D.xp>=50*(lv+1)?'':'disabled'}>升级(${50*(lv+1)}XP)</button></div></div>`).join('');
+  $('rad-detail').innerHTML=`<div class="row"><div class="rn">当前辐射</div><div class="rr"><span style="color:${radC}">${D.radiation}rem</span></div></div>
+    <div class="row"><div class="rn">感染度</div><div class="rr"><span style="color:${D.infection>30?'var(--red)':'var(--green)'}">${D.infection}%</span></div></div>
+    <div class="row"><div class="rn">抗辐射装备</div><div class="rr"><span class="bdg ${D.vanEquip.find(e=>e.id==='gasmask')?.bought?'bdg-g':'bdg-r'}">${D.vanEquip.find(e=>e.id==='gasmask')?.bought?'已装备':'未装备'}</span></div></div>`;
+  $('doom-stats').innerHTML=`<div class="row"><div class="rn">存活天数</div><div class="rr"><span class="faint">${D.day}天</span></div></div>
+    <div class="row"><div class="rn">探索地点</div><div class="rr"><span class="faint">${D.map.filter(m=>m.explored&&m.id!==0).length}/${D.map.length-1}处</span></div></div>
+    <div class="row"><div class="rn">招募总数</div><div class="rr"><span class="faint">${D.survivors.length}人</span></div></div>
+    <div class="row"><div class="rn">升级数量</div><div class="rr"><span class="faint">${D.vanUpgrades.filter(u=>u.bought).length}项</span></div></div>`;
+  $('doom-ach').innerHTML=D.achievements.map(a=>`<div class="row"><div><div class="rn">${a.icon}${a.name}</div><div class="rdd">${a.desc}</div></div><div class="rr">${a.done?'<span class="bdg bdg-g">✓达成</span>':'<span class="faint">未达成</span>'}</div></div>`).join('');
+}
+
+// Auto time
+let tick=0;
+setInterval(()=>{
+  tick++;
+  if(tick%50===0){D.hour=(D.hour+1)%24;if(D.hour===20){D.isDay=false;dlog('🌙 夜幕降临，注意安全','linfo')}else if(D.hour===8){D.isDay=true;dlog('☀️ 黎明到来','linfo')};D.timeOfDay=D.isDay?((D.hour-8)/12*100):((D.hour<8?D.hour+4:D.hour-20)/8*100);render()}
+  if(tick%30===0){D.radiation=Math.max(0,D.radiation-0.5);D.infection=Math.max(0,D.infection-0.2)}
+  if(tick%300===0)save();
+},100);
+
+if(D.dailyTasks.length===0)genDailyTasks();
+render();
+dlog('🚐 末日房车系统启动...','linfo');
+dlog('☠️ 文明已崩溃。求生才是第一要务。','lbad');
+</script>
+</body>
+</html>

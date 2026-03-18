@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>公司运营 · 摸鱼工作台</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@600;700&display=swap');
+:root{--bg:#0e0f0e;--surface:#141514;--card:#191a19;--border:#2a2b2a;--border-l:#363736;--text:#e8e8e4;--muted:#8a8a84;--faint:#4a4a46;--green:#4ade80;--green-l:rgba(74,222,128,.1);--amber:#fbbf24;--blue:#60a5fa;--blue-l:rgba(96,165,250,.1);--red:#f87171;--red-l:rgba(248,113,113,.1);--mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:12px;min-height:100vh}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:9999}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
+.back{font-size:11px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:var(--mono);transition:color .15s}.back:hover{color:var(--text)}
+.topbar-title{font-family:var(--serif);font-size:15px;font-weight:700}
+.tabs{display:flex;gap:2px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto}
+.tab{padding:8px 14px;font-size:11px;color:var(--muted);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:var(--mono);transition:all .15s;white-space:nowrap}.tab:hover{color:var(--text)}.tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+.main{padding:14px 16px;max-width:1200px;margin:0 auto}
+.panel{display:none}.panel.on{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px}
+.ct{font-size:11px;font-weight:500;margin-bottom:8px;letter-spacing:.04em}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.col-r{display:grid;grid-template-columns:1fr 290px;gap:12px}
+.sl{font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px}
+.sv{font-size:18px;font-weight:600;line-height:1}.sv.gr{color:var(--green)}.sv.bl{color:var(--blue)}.sv.am{color:var(--amber)}.sv.rd{color:var(--red)}
+.sd{font-size:9px;color:var(--faint);margin-top:2px}.sd.up{color:var(--green)}.sd.dn{color:var(--red)}
+.row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);gap:8px}.row:last-child{border-bottom:none}
+.rn{font-size:11px;font-weight:500}.rd{font-size:9px;color:var(--faint);margin-top:1px}
+.rr{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:5px 12px;border-radius:4px;font-size:11px;font-family:var(--mono);cursor:pointer;transition:all .12s;border:1px solid transparent;white-space:nowrap}
+.bp{background:var(--blue);color:#000}.bp:hover:not(:disabled){background:#93c5fd}
+.bg{background:var(--green);color:#000}.bg:hover:not(:disabled){background:#86efac}
+.ba{background:var(--amber);color:#000}.ba:hover:not(:disabled){background:#fde68a}
+.br{background:var(--red);color:#000}.br:hover:not(:disabled){background:#fca5a5}
+.bo{background:transparent;color:var(--muted);border-color:var(--border-l)}.bo:hover:not(:disabled){color:var(--text);border-color:var(--text)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.bsm{padding:3px 9px;font-size:10px}.bxs{padding:2px 7px;font-size:9px}.bfull{width:100%;display:flex}
+.bdg{display:inline-block;padding:2px 6px;border-radius:2px;font-size:9px}
+.bdg-g{background:var(--green-l);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+.bdg-b{background:var(--blue-l);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+.bdg-r{background:var(--red-l);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.bdg-a{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.2)}
+.pb{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px}
+.pbf{height:100%;border-radius:2px;transition:width .3s}
+.pbl{background:var(--blue)}.pbg{background:var(--green)}.pba{background:var(--amber)}.pbr{background:var(--red)}
+.log{height:120px;overflow-y:auto;font-size:9px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px 8px}
+.ll{padding:1px 0}.lts{color:var(--faint)}.lok .lm{color:var(--green)}.lbad .lm{color:var(--red)}.linfo .lm{color:var(--blue)}
+.news-band{background:var(--bg);border:1px solid var(--border);border-radius:4px;overflow:hidden;height:28px;display:flex;align-items:center;margin-bottom:10px}
+.nl{font-size:9px;color:var(--red);letter-spacing:.1em;padding:0 10px;border-right:1px solid var(--border);white-space:nowrap;height:100%;display:flex;align-items:center}
+.ns{overflow:hidden;flex:1}.ni{display:flex;gap:50px;animation:ns 25s linear infinite;white-space:nowrap;font-size:9px;color:var(--muted)}
+@keyframes ns{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.slot{padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.si{font-size:20px}.sinfo{flex:1}.sn{font-size:11px;font-weight:500}.sd2{font-size:9px;color:var(--faint)}
+.emp-card{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:8px;margin-bottom:6px}
+.emp-top{display:flex;justify-content:space-between;margin-bottom:4px}
+.emp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;font-size:9px;color:var(--faint)}.emp-stats span{color:var(--text)}
+.stock-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border)}.stock-row:last-child{border-bottom:none}
+.mt8{margin-top:8px}.mt10{margin-top:10px}.mb8{margin-bottom:8px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}
+.flex{display:flex;align-items:center}.fb{display:flex;align-items:center;justify-content:space-between}
+.gap6{gap:6px}.gap8{gap:8px}.faint{color:var(--faint);font-size:10px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}.pulse{animation:pulse 2s infinite}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="back" onclick="saveBack()">← 返回</button>
+  <div class="topbar-title">🏢 公司运营模拟</div>
+  <span style="font-size:10px;color:var(--faint)" id="clk">--:--:--</span>
+</div>
+<div class="tabs">
+  <button class="tab on" onclick="sw(0)">📊 总览</button>
+  <button class="tab" onclick="sw(1)">👥 人力资源</button>
+  <button class="tab" onclick="sw(2)">📈 股票市场</button>
+  <button class="tab" onclick="sw(3)">🏗️ 部门&办公室</button>
+  <button class="tab" onclick="sw(4)">📋 项目竞标</button>
+  <button class="tab" onclick="sw(5)">📰 新闻&危机</button>
+</div>
+<div class="main">
+
+<div class="panel on" id="p0">
+  <div class="news-band"><div class="nl">⚡ 快讯</div><div class="ns"><div class="ni" id="nticker">加载中...</div></div></div>
+  <div class="g4 mb10">
+    <div class="card"><div class="sl">现金余额</div><div class="sv gr" id="cash">¥1,000</div><div class="sd up" id="cps">+0/s</div></div>
+    <div class="card"><div class="sl">员工总数</div><div class="sv" id="staff">0</div><div class="sd">人力资源</div></div>
+    <div class="card"><div class="sl">累计营收</div><div class="sv bl" id="total">¥0</div><div class="sd" id="lv">Lv.1</div></div>
+    <div class="card"><div class="sl">股票市值</div><div class="sv am" id="port">¥0</div><div class="sd" id="portd">持股:0</div></div>
+  </div>
+  <div class="col-r">
+    <div>
+      <div class="card mb10">
+        <div class="fb mb8"><div class="ct" style="margin:0">手动创收</div><span class="faint" id="cvlbl">+¥10/次</span></div>
+        <button class="btn bp bfull mb8" onclick="doClick()" style="height:48px;font-size:14px">💼 签署合同</button>
+        <div class="fb" style="font-size:9px;color:var(--faint)"><span>经验值</span><span id="xpt">0/100</span></div>
+        <div class="pb mt8"><div class="pbf pbl" id="xpb" style="width:0%"></div></div>
+      </div>
+      <div class="card mb10"><div class="ct">竞争对手</div><div id="rivals"></div></div>
+      <div class="card mb10"><div class="ct">活跃项目</div><div id="aproj0"></div></div>
+      <div class="card"><div class="ct">运营日志</div><div class="log" id="clog"></div></div>
+    </div>
+    <div>
+      <div class="card mb10">
+        <div class="ct">股价走势</div>
+        <canvas id="schart" width="270" height="56" style="background:var(--bg);border:1px solid var(--border);border-radius:4px;display:block;margin-bottom:8px"></canvas>
+        <div class="fb">
+          <div><div class="sl">当前股价</div><div style="font-size:14px;font-weight:600;color:var(--amber)" id="sp">¥10.00</div><div class="sd" id="spchg">-</div></div>
+          <div class="flex gap6"><button class="btn bg bsm" onclick="buySt('own')">买入</button><button class="btn br bsm" onclick="sellSt('own')">卖出</button></div>
+        </div>
+      </div>
+      <div class="card mb10"><div class="ct">里程碑</div><div id="miles"></div></div>
+      <div class="card"><div class="ct">公司情报</div><div id="intel"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="p1">
+  <div class="g3">
+    <div>
+      <div class="card mb10"><div class="ct">雇用员工</div><div id="hirelist"></div></div>
+    </div>
+    <div>
+      <div class="card mb10">
+        <div class="fb mb8"><div class="ct" style="margin:0">员工列表</div><span class="faint" id="avgmood">平均心情:😊</span></div>
+        <div id="emplist" style="max-height:380px;overflow-y:auto"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card mb10"><div class="ct">HR政策</div><div id="hrpol"></div></div>
+      <div class="card"><div class="ct">企业文化</div><div id="cult"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="p2">
+  <div class="col-r">
+    <div>
+      <div class="card mb10"><div class="fb mb8"><div class="ct" style="margin:0">实时行情</div><span class="faint">5档深度</span></div><div id="mktlist"></div></div>
+      <div class="card"><div class="ct">交易记录</div><div class="log" style="height:150px" id="tlog"></div></div>
+    </div>
+    <div>
+      <div class="card mb10"><div class="ct">我的持仓</div><div id="holdings"></div><div class="mt8 faint" id="profitlbl">总盈亏: ¥0</div></div>
+      <div class="card mb10"><div class="ct">走势图</div><canvas id="fchart" width="270" height="110" style="background:var(--bg);border:1px solid var(--border);border-radius:4px;display:block"></canvas></div>
+      <div class="card"><div class="ct">市场情绪</div><div id="sent"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="p3">
+  <div class="g2">
+    <div>
+      <div class="card mb10"><div class="ct">部门建设</div><div id="depts"></div></div>
+      <div class="card"><div class="ct">公司升级</div><div id="upgrades"></div></div>
+    </div>
+    <div>
+      <div class="card mb10"><div class="ct">办公室装修</div><div id="office"></div></div>
+      <div class="card"><div class="ct">效率总览</div><div id="effoverview"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="p4">
+  <div class="g2">
+    <div>
+      <div class="card mb10"><div class="fb mb8"><div class="ct" style="margin:0">可接项目</div><button class="btn bo bsm" onclick="refreshProj()">🔄 刷新</button></div><div id="projlist"></div></div>
+    </div>
+    <div>
+      <div class="card mb10"><div class="ct">进行中</div><div id="aproj"></div></div>
+      <div class="card"><div class="ct">完成记录</div><div class="log" style="height:160px" id="plog"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="p5">
+  <div class="g2">
+    <div><div class="card mb10"><div class="ct">最新新闻</div><div id="newslist"></div></div></div>
+    <div>
+      <div class="card mb10"><div class="ct">市场影响分析</div><div id="newsimpact"></div></div>
+      <div class="card"><div class="ct">危机应对能力</div><div id="crisis"></div></div>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const ts=()=>new Date().toTimeString().slice(0,8);
+const LVS=['初创公司','小型企业','中型企业','大型企业','跨国集团','世界500强'];
+function addLog(box,msg,type){const b=$(box),d=document.createElement('div');d.className='ll '+type;d.innerHTML=`<span class="lts">[${ts()}]</span> <span class="lm">${msg}</span>`;b.prepend(d);while(b.children.length>50)b.removeChild(b.lastChild)}
+function fmt(n){if(n>=1e9)return'¥'+(n/1e9).toFixed(2)+'B';if(n>=1e6)return'¥'+(n/1e6).toFixed(2)+'M';if(n>=1e3)return'¥'+(n/1e3).toFixed(1)+'K';return'¥'+Math.floor(n)}
+function sw(i){document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',i===j));document.querySelectorAll('.panel').forEach((p,j)=>p.classList.toggle('on',i===j));render()}
+setInterval(()=>$('clk').textContent=new Date().toTimeString().slice(0,8),1000);
+
+const G={
+  cash:1000,total:0,cps:0,clickVal:10,xp:0,xpMax:100,level:1,
+  staffCounts:{},employees:[],
+  shares:{},stockHist:{},avgBasis:{},
+  stocks:[
+    {id:'own',name:'本公司',price:10,vol:.04,base:10},
+    {id:'tech',name:'科技龙头',price:150,vol:.025,base:150},
+    {id:'bank',name:'国有大行',price:45,vol:.01,base:45},
+    {id:'start',name:'新兴创业',price:22,vol:.06,base:22},
+    {id:'gold',name:'黄金ETF',price:380,vol:.008,base:380},
+  ],
+  hires:[
+    {id:'intern',name:'实习生',desc:'+¥1/s',base:30,cps:1,icon:'🧑'},
+    {id:'junior',name:'初级员工',desc:'+¥5/s',base:120,cps:5,icon:'👩'},
+    {id:'senior',name:'高级员工',desc:'+¥20/s',base:500,cps:20,icon:'👨‍💼'},
+    {id:'manager',name:'项目经理',desc:'+¥80/s',base:2000,cps:80,icon:'👩‍💼'},
+    {id:'director',name:'总监',desc:'+¥300/s',base:8000,cps:300,icon:'🧑‍💼'},
+    {id:'vp',name:'副总裁',desc:'+¥1200/s',base:35000,cps:1200,icon:'🤵'},
+    {id:'ceo2',name:'联合创始人',desc:'+¥5000/s',base:150000,cps:5000,icon:'👑'},
+  ],
+  depts:[
+    {id:'hr',name:'人力资源部',desc:'雇人成本-15%',cost:800,built:false,icon:'👥'},
+    {id:'rd',name:'研发部',desc:'点击收益×2',cost:2000,built:false,icon:'🔬'},
+    {id:'sales',name:'销售部',desc:'自动+500/s',cost:5000,built:false,icon:'📊'},
+    {id:'fin',name:'财务部',desc:'股票收益×1.5',cost:10000,built:false,icon:'💹'},
+    {id:'legal',name:'法务部',desc:'解锁超大项目',cost:20000,built:false,icon:'⚖️'},
+    {id:'pr',name:'公关部',desc:'危机损失-50%',cost:15000,built:false,icon:'📣'},
+    {id:'ai',name:'AI实验室',desc:'全体CPS×2',cost:80000,built:false,icon:'🤖'},
+    {id:'global',name:'海外事业部',desc:'项目奖励×1.5',cost:200000,built:false,icon:'🌍'},
+  ],
+  office:[
+    {id:'chairs',name:'人体工学椅',desc:'效率+10%',cost:1000,bought:false,icon:'🪑'},
+    {id:'plants',name:'绿植装饰',desc:'幸福度+15%',cost:500,bought:false,icon:'🌿'},
+    {id:'coffee',name:'咖啡机',desc:'效率+5%幸福+10%',cost:800,bought:false,icon:'☕'},
+    {id:'gym',name:'健身房',desc:'离职率-30%',cost:5000,bought:false,icon:'💪'},
+    {id:'lounge',name:'休闲区',desc:'幸福+20%效率+8%',cost:8000,bought:false,icon:'🛋️'},
+    {id:'roof',name:'屋顶花园',desc:'全面+15%',cost:20000,bought:false,icon:'🌇'},
+  ],
+  upgrades:[
+    {id:'u1',name:'人才培训',desc:'点击×2',cost:500,bought:false,fn:()=>G.clickVal*=2},
+    {id:'u2',name:'绩效激励',desc:'CPS×1.5',cost:3000,bought:false,fn:()=>G.recalc()},
+    {id:'u3',name:'自动化',desc:'点击×5',cost:15000,bought:false,fn:()=>G.clickVal*=5},
+    {id:'u4',name:'全球化',desc:'CPS×2',cost:60000,bought:false,fn:()=>G.recalc()},
+    {id:'u5',name:'上市融资',desc:'+¥2M',cost:300000,bought:false,fn:()=>{G.cash+=2000000;addLog('clog','🎉 上市融资¥2M','lok')}},
+    {id:'u6',name:'垄断地位',desc:'CPS×5',cost:1000000,bought:false,fn:()=>G.recalc()},
+  ],
+  hrPolicy:[
+    {id:'flex',name:'弹性工时',desc:'效率+5%幸福+15%',cost:2000,bought:false},
+    {id:'remote',name:'远程办公',desc:'离职率-20%',cost:3000,bought:false},
+    {id:'bonus',name:'年终奖',desc:'幸福+25%',cost:5000,bought:false},
+    {id:'stock',name:'员工持股',desc:'离职率-40%效率+10%',cost:10000,bought:false},
+  ],
+  culture:[
+    {id:'c1',name:'狼性文化',desc:'CPS+20%幸福-30%',cost:1000,bought:false},
+    {id:'c2',name:'扁平管理',desc:'项目效率+15%',cost:5000,bought:false},
+    {id:'c3',name:'创新驱动',desc:'解锁新项目',cost:15000,bought:false},
+  ],
+  projects:[],activeProjects:[],
+  projPool:[
+    {name:'电商平台',reward:3000,time:20,req:2,icon:'🛒',desc:'需2人'},
+    {name:'移动App',reward:8000,time:45,req:5,icon:'📱',desc:'需5人'},
+    {name:'数据中台',reward:25000,time:90,req:15,icon:'📊',desc:'需15人'},
+    {name:'AI优化',reward:60000,time:150,req:30,icon:'🤖',desc:'需AI实验室',rd:'ai'},
+    {name:'海外并购',reward:150000,time:300,req:80,icon:'🌍',desc:'需法务部',rd:'legal'},
+    {name:'政府项目',reward:400000,time:600,req:150,icon:'🏛️',desc:'需法务部',rd:'legal'},
+    {name:'独角兽孵化',reward:1000000,time:1200,req:300,icon:'🦄',desc:'需全球部',rd:'global'},
+  ],
+  rivals:[
+    {name:'创新科技',lv:1,cash:1500,threat:'低'},
+    {name:'星联集团',lv:2,cash:8000,threat:'中'},
+    {name:'宇宙企业',lv:5,cash:500000,threat:'高'},
+  ],
+  newsPool:[
+    {t:'央行降息，市场流动性提升',e:'s+',i:'📈'},
+    {t:'科技监管出台，行业承压',e:'s-',i:'📉'},
+    {t:'消费信心指数创历史新高',e:'c+',i:'🎉'},
+    {t:'能源价格上涨，运营成本增加',e:'p-',i:'⚡'},
+    {t:'AI技术突破，生产效率提升',e:'p+',i:'🤖'},
+    {t:'贸易摩擦升级，出口受阻',e:'s-',i:'🚢'},
+    {t:'竞争对手获大额融资',e:'rv+',i:'⚔️'},
+    {t:'监管放松，营商环境改善',e:'a+',i:'✅'},
+    {t:'人才争夺加剧，薪资上涨',e:'hc+',i:'💰'},
+    {t:'突发全球经济危机',e:'crisis',i:'☠️'},
+  ],
+  news:[],
+  milestones:[
+    {name:'第一桶金',desc:'营收¥10,000',check:()=>G.total>=10000,done:false,icon:'💰'},
+    {name:'初具规模',desc:'员工10人',check:()=>G.totalStaff()>=10,done:false,icon:'👥'},
+    {name:'股市初体验',desc:'持有股票',check:()=>Object.values(G.shares).some(v=>v>0),done:false,icon:'📈'},
+    {name:'项目达人',desc:'完成5项目',check:()=>G.projDone>=5,done:false,icon:'📋'},
+    {name:'百人企业',desc:'员工100人',check:()=>G.totalStaff()>=100,done:false,icon:'🏢'},
+    {name:'亿元俱乐部',desc:'营收¥1亿',check:()=>G.total>=1e8,done:false,icon:'💎'},
+  ],
+  projDone:0,projMult:1,effMult:1,happyB:0,
+  recalc(){
+    let c=0;
+    G.hires.forEach(h=>c+=(G.staffCounts[h.id]||0)*h.cps);
+    if(G.depts.find(d=>d.id==='sales')?.built)c+=500;
+    if(G.depts.find(d=>d.id==='ai')?.built)c*=2;
+    if(G.culture.find(x=>x.id==='c1')?.bought)c*=1.2;
+    if(G.upgrades.find(x=>x.id==='u2')?.bought)c*=1.5;
+    if(G.upgrades.find(x=>x.id==='u4')?.bought)c*=2;
+    if(G.upgrades.find(x=>x.id==='u6')?.bought)c*=5;
+    c*=G.effMult;
+    G.cps=c;
+  },
+  totalStaff(){return Object.values(G.staffCounts).reduce((a,b)=>a+b,0)},
+  hcost(h){const cnt=G.staffCounts[h.id]||0,disc=G.depts.find(d=>d.id==='hr')?.built?.85:1;return Math.floor(h.base*Math.pow(1.13,cnt)*(disc||1))}
+};
+
+try{const s=JSON.parse(localStorage.getItem('corp')||'{}');if(s.cash){Object.assign(G,s);G.activeProjects=G.activeProjects||[];G.news=G.news||[];G.employees=G.employees||[]}}catch(e){}
+G.stocks.forEach(st=>{if(!G.stockHist[st.id])G.stockHist[st.id]=[st.price]});
+
+function saveBack(){save();location.href='index.html'}
+function save(){try{localStorage.setItem('corp',JSON.stringify({cash:G.cash,total:G.total,cps:G.cps,clickVal:G.clickVal,xp:G.xp,xpMax:G.xpMax,level:G.level,staffCounts:G.staffCounts,shares:G.shares,avgBasis:G.avgBasis,depts:G.depts,office:G.office,upgrades:G.upgrades,hrPolicy:G.hrPolicy,culture:G.culture,projDone:G.projDone,projMult:G.projMult,effMult:G.effMult,milestones:G.milestones}))}catch(e){}}
+
+function doClick(){
+  G.cash+=G.clickVal;G.total+=G.clickVal;G.xp+=G.clickVal;
+  while(G.xp>=G.xpMax){G.xp-=G.xpMax;G.xpMax=Math.floor(G.xpMax*1.6);G.level++;G.clickVal=Math.floor(G.clickVal*1.4);addLog('clog',`🎊 升级! Lv.${G.level} ${LVS[Math.min(G.level-1,5)]}`,'lok')}
+  checkMiles();render();
+}
+function hire(id){
+  const h=G.hires.find(x=>x.id===id),cost=G.hcost(h);
+  if(G.cash<cost)return;
+  G.cash-=cost;G.staffCounts[id]=(G.staffCounts[id]||0)+1;
+  const ns=['小李','小王','小张','小刘','小陈','小吴','小赵','小孙'];
+  G.employees.push({id:Date.now(),name:ns[Math.floor(Math.random()*ns.length)],role:h.name,mood:75+Math.floor(Math.random()*20),cps:h.cps,icon:h.icon});
+  G.recalc();checkMiles();addLog('clog',`✅ 雇用${h.icon}${h.name} 花费${fmt(cost)}`,'lok');render();
+}
+function buySt(id){
+  const st=G.stocks.find(s=>s.id===id);
+  if(G.cash<st.price)return;
+  G.cash-=st.price;G.shares[id]=(G.shares[id]||0)+1;
+  const prev=G.avgBasis[id]||st.price;G.avgBasis[id]=(prev*(G.shares[id]-1)+st.price)/G.shares[id];
+  addLog('tlog',`📈 买入${st.name}@${fmt(st.price)}`,'linfo');checkMiles();render();
+}
+function sellSt(id){
+  const st=G.stocks.find(s=>s.id===id);
+  if(!(G.shares[id]>0))return;
+  const fin=G.depts.find(d=>d.id==='fin')?.built,earn=st.price*(fin?1.5:1);
+  const pnl=earn-(G.avgBasis[id]||0);
+  G.cash+=earn;G.shares[id]--;
+  addLog('tlog',`📉 卖出${st.name}@${fmt(earn)} 盈亏:${pnl>=0?'+':''}${fmt(pnl)}`,'lok');render();
+}
+function buyDept(id){
+  const d=G.depts.find(x=>x.id===id);if(d.built||G.cash<d.cost)return;
+  G.cash-=d.cost;d.built=true;
+  if(id==='rd')G.clickVal*=2;if(id==='global')G.projMult*=1.5;
+  G.recalc();addLog('clog',`🏗️ 建立${d.icon}${d.name}`,'lok');render();
+}
+function buyOffice(id){
+  const o=G.office.find(x=>x.id===id);if(o.bought||G.cash<o.cost)return;
+  G.cash-=o.cost;o.bought=true;
+  const em={chairs:1.1,coffee:1.05,lounge:1.08,roof:1.15};
+  if(em[id])G.effMult*=em[id];
+  G.recalc();addLog('clog',`🏠 装修${o.icon}${o.name}`,'lok');render();
+}
+function buyUpgrade(id){
+  const u=G.upgrades.find(x=>x.id===id);if(u.bought||G.cash<u.cost)return;
+  G.cash-=u.cost;u.bought=true;u.fn();addLog('clog',`🚀 解锁:${u.name}`,'lok');render();
+}
+function buyPolicy(id){
+  const p=G.hrPolicy.find(x=>x.id===id);if(p.bought||G.cash<p.cost)return;
+  G.cash-=p.cost;p.bought=true;addLog('clog',`📜 实施:${p.name}`,'lok');render();
+}
+function buyCulture(id){
+  const c=G.culture.find(x=>x.id===id);if(c.bought||G.cash<c.cost)return;
+  G.cash-=c.cost;c.bought=true;G.recalc();addLog('clog',`🎯 确立:${c.name}`,'lok');render();
+}
+function refreshProj(){
+  G.projects=[];
+  const hasL=G.depts.find(d=>d.id==='legal')?.built,hasG=G.depts.find(d=>d.id==='global')?.built,hasAI=G.depts.find(d=>d.id==='ai')?.built;
+  const pool=G.projPool.filter(p=>(!p.rd)||(p.rd==='legal'&&hasL)||(p.rd==='global'&&hasG)||(p.rd==='ai'&&hasAI));
+  for(let i=0;i<4;i++){const r=pool[Math.floor(Math.random()*pool.length)];if(r)G.projects.push({...r,progress:0})}
+  render();
+}
+function startProj(i){
+  const p=G.projects[i];if(!p||G.totalStaff()<p.req||G.activeProjects.length>=3)return;
+  G.activeProjects.push({...p,progress:0});G.projects.splice(i,1);
+  addLog('clog',`📋 开始:${p.icon}${p.name}`,'linfo');render();
+}
+function checkMiles(){
+  G.milestones.forEach(m=>{if(!m.done&&m.check()){m.done=true;addLog('clog',`🏆 里程碑:${m.icon}${m.name}`,'lok')}});
+}
+function genNews(){
+  const n={...G.newsPool[Math.floor(Math.random()*G.newsPool.length)],time:ts()};
+  G.news.unshift(n);if(G.news.length>10)G.news.pop();
+  addLog('clog',`📰 ${n.i} ${n.t}`,'linfo');
+  if(n.e==='c+')G.cash*=1.04;if(n.e==='p-')G.cps*=0.97;if(n.e==='p+')G.cps*=1.03;
+  if(n.e==='crisis'){G.cash*=0.85;addLog('clog','☠️ 经济危机！现金损失15%','lbad')}
+  const inner=G.news.map(x=>`<span style="margin-right:40px">${x.i} ${x.t}</span>`).join('');
+  $('nticker').innerHTML=inner+inner;
+}
+function drawChart(id,hist,col){
+  const cv=$(id);if(!cv)return;
+  const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);
+  if(hist.length<2)return;
+  const mn=Math.min(...hist),mx=Math.max(...hist),range=mx-mn||1;
+  ctx.beginPath();
+  hist.forEach((v,i)=>{const x=i/(hist.length-1)*cv.width,y=cv.height-(v-mn)/range*(cv.height-6)-3;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});
+  ctx.strokeStyle=col||'#fbbf24';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.lineTo(cv.width,cv.height);ctx.lineTo(0,cv.height);ctx.closePath();ctx.fillStyle=(col||'#fbbf24')+'22';ctx.fill();
+}
+function mood(m){return m>=90?'🤩':m>=70?'😊':m>=50?'😐':m>=30?'😞':'😡'}
+
+function render(){
+  $('cash').textContent=fmt(G.cash);$('staff').textContent=G.totalStaff();$('total').textContent=fmt(G.total);
+  $('lv').textContent=`Lv.${G.level} ${LVS[Math.min(G.level-1,5)]}`;
+  const pv=G.stocks.reduce((a,st)=>a+(G.shares[st.id]||0)*st.price,0);
+  $('port').textContent=fmt(pv);$('portd').textContent=`持股:${Object.values(G.shares).reduce((a,b)=>a+b,0)}`;
+  $('cvlbl').textContent=`+${fmt(G.clickVal)}/次`;$('cps').textContent=`+${fmt(G.cps)}/s`;
+  $('sp').textContent=fmt(G.stocks[0].price);
+  const xp=G.xp/G.xpMax*100;$('xpb').style.width=Math.min(100,xp)+'%';$('xpt').textContent=`${Math.floor(G.xp)}/${G.xpMax}`;
+  drawChart('schart',G.stockHist['own']||[10]);drawChart('fchart',G.stockHist['own']||[10]);
+
+  $('hirelist').innerHTML=G.hires.map(h=>{const cnt=G.staffCounts[h.id]||0,cost=G.hcost(h),ok=G.cash>=cost;
+    return`<div class="row"><div><div class="rn">${h.icon}${h.name}<span class="faint">(${cnt})</span></div><div class="rd">${h.desc}</div></div><div class="rr"><span class="faint">${fmt(cost)}</span><button class="btn bo bsm" onclick="hire('${h.id}')" ${ok?'':'disabled'}>雇用</button></div></div>`;}).join('');
+
+  const avg=G.employees.length?Math.floor(G.employees.reduce((a,e)=>a+e.mood,0)/G.employees.length):80;
+  $('avgmood').textContent=`平均心情:${mood(avg)} ${avg}%`;
+  $('emplist').innerHTML=G.employees.slice(-15).reverse().map(e=>`<div class="emp-card">
+    <div class="emp-top"><span style="font-size:11px;font-weight:500">${e.icon}${e.name}</span><span>${mood(e.mood)}</span></div>
+    <div class="emp-stats"><div>职位:<span>${e.role}</span></div><div>心情:<span style="color:${e.mood>=70?'var(--green)':e.mood>=40?'var(--amber)':'var(--red)'}">${e.mood}%</span></div><div>产出:<span>${fmt(e.cps)}/s</span></div></div>
+  </div>`).join('')||'<div class="faint" style="padding:8px">还没有员工</div>';
+
+  $('hrpol').innerHTML=G.hrPolicy.map(p=>`<div class="row"><div><div class="rn">${p.bought?'✅ ':''}${p.name}</div><div class="rd">${p.desc}</div></div><div class="rr">${p.bought?'<span class="bdg bdg-g">已实施</span>':`<span class="faint">${fmt(p.cost)}</span><button class="btn bo bsm" onclick="buyPolicy('${p.id}')" ${G.cash>=p.cost?'':'disabled'}>实施</button>`}</div></div>`).join('');
+  $('cult').innerHTML=G.culture.map(c=>`<div class="row"><div><div class="rn">${c.bought?'✅ ':''}${c.name}</div><div class="rd">${c.desc}</div></div><div class="rr">${c.bought?'<span class="bdg bdg-g">已确立</span>':`<span class="faint">${fmt(c.cost)}</span><button class="btn bo bsm" onclick="buyCulture('${c.id}')" ${G.cash>=c.cost?'':'disabled'}>确立</button>`}</div></div>`).join('');
+
+  $('mktlist').innerHTML=G.stocks.map(st=>{
+    const hist=G.stockHist[st.id]||[st.price],prev=hist[hist.length-2]||st.price,chg=st.price-prev,pct=(chg/prev*100).toFixed(2);
+    const own=G.shares[st.id]||0;
+    return`<div class="stock-row"><div style="flex:1;font-size:11px;font-weight:500">${st.name}</div>
+      <div style="font-size:10px;color:${chg>=0?'var(--green)':'var(--red)'};margin-right:8px">${fmt(st.price)} <span style="font-size:9px">${chg>=0?'+':''}${pct}%</span></div>
+      <span class="faint">${own}股</span>
+      <button class="btn bg bxs" onclick="buySt('${st.id}')" ${G.cash>=st.price?'':'disabled'}>买</button>
+      <button class="btn br bxs" onclick="sellSt('${st.id}')" ${own>0?'':'disabled'}>卖</button>
+    </div>`;}).join('');
+
+  const ti=G.stocks.reduce((a,st)=>a+(G.avgBasis[st.id]||0)*(G.shares[st.id]||0),0);
+  const tn=G.stocks.reduce((a,st)=>a+st.price*(G.shares[st.id]||0),0);
+  const profit=tn-ti;
+  $('profitlbl').textContent=`总盈亏: ${profit>=0?'+':''}${fmt(profit)}`;
+  $('holdings').innerHTML=G.stocks.filter(st=>(G.shares[st.id]||0)>0).map(st=>{
+    const own=G.shares[st.id]||0,basis=G.avgBasis[st.id]||0,pnl=(st.price-basis)*own;
+    return`<div class="row"><div><div class="rn">${st.name}</div><div class="rd">均价${fmt(basis)}×${own}股</div></div><div class="rr"><div style="color:${pnl>=0?'var(--green)':'var(--red)'};font-size:11px">${pnl>=0?'+':''}${fmt(pnl)}</div></div></div>`;
+  }).join('')||'<div class="faint" style="padding:8px">暂无持仓</div>';
+  $('sent').innerHTML=`<div class="row"><div class="rn">散户情绪</div><div class="rr"><div class="pb" style="width:80px"><div class="pbf pbg" style="width:${40+Math.floor(Math.random()*40)}%"></div></div></div></div>
+    <div class="row"><div class="rn">机构持仓比</div><div class="rr"><div class="pb" style="width:80px"><div class="pbf pbl" style="width:${50+Math.floor(Math.random()*30)}%"></div></div></div></div>
+    <div class="row"><div class="rn">市场恐惧指数</div><div class="rr"><div class="pb" style="width:80px"><div class="pbf pbr" style="width:${20+Math.floor(Math.random()*50)}%"></div></div></div></div>`;
+
+  $('depts').innerHTML=G.depts.map(d=>`<div class="slot"><div class="si">${d.icon}</div><div class="sinfo"><div class="sn">${d.name}</div><div class="sd2">${d.desc}</div></div>${d.built?'<span class="bdg bdg-g">已建立</span>':`<div class="flex gap6"><span class="faint">${fmt(d.cost)}</span><button class="btn bo bsm" onclick="buyDept('${d.id}')" ${G.cash>=d.cost?'':'disabled'}>建立</button></div>`}</div>`).join('');
+  $('office').innerHTML=G.office.map(o=>`<div class="slot"><div class="si">${o.icon}</div><div class="sinfo"><div class="sn">${o.name}</div><div class="sd2">${o.desc}</div></div>${o.bought?'<span class="bdg bdg-g">已装修</span>':`<div class="flex gap6"><span class="faint">${fmt(o.cost)}</span><button class="btn bo bsm" onclick="buyOffice('${o.id}')" ${G.cash>=o.cost?'':'disabled'}>装修</button></div>`}</div>`).join('');
+  $('upgrades').innerHTML=G.upgrades.map(u=>`<div class="row"><div><div class="rn">${u.bought?'✅ ':''}${u.name}</div><div class="rd">${u.desc}</div></div><div class="rr">${u.bought?'<span class="bdg bdg-g">已解锁</span>':`<span class="faint">${fmt(u.cost)}</span><button class="btn bo bsm" onclick="buyUpgrade('${u.id}')" ${G.cash>=u.cost?'':'disabled'}>购买</button>`}</div></div>`).join('');
+  $('effoverview').innerHTML=`<div class="row"><div class="rn">办公效率加成</div><div class="rr"><span class="bdg bdg-g">×${G.effMult.toFixed(2)}</span></div></div>
+    <div class="row"><div class="rn">项目奖励加成</div><div class="rr"><span class="bdg bdg-b">×${G.projMult.toFixed(2)}</span></div></div>
+    <div class="row"><div class="rn">员工平均效率</div><div class="rr"><span class="faint">${G.employees.length?Math.floor(G.cps/Math.max(1,G.totalStaff())*10)/10:0}/s</span></div></div>`;
+
+  if(G.projects.length===0)refreshProj();
+  $('projlist').innerHTML=G.projects.map((p,i)=>{const ok=G.totalStaff()>=p.req&&G.activeProjects.length<3;
+    return`<div class="slot" style="flex-direction:column;align-items:stretch"><div class="fb mb8"><div><div class="sn">${p.icon}${p.name}</div><div class="sd2">${p.desc}·奖励<span style="color:var(--green)">${fmt(p.reward*G.projMult)}</span></div></div><button class="btn bp bsm" onclick="startProj(${i})" ${ok?'':'disabled'}>接单</button></div><div class="faint">预计${p.time}秒</div></div>`;}).join('');
+  const ap=G.activeProjects.map((p,i)=>`<div class="slot" style="flex-direction:column;align-items:stretch"><div class="fb mb6"><div class="sn">${p.icon}${p.name}</div><span class="bdg bdg-b pulse">进行中</span></div><div class="pb"><div class="pbf pbg" style="width:${Math.floor(p.progress*100)}%"></div></div><div class="faint mt8">${Math.floor(p.progress*100)}%</div></div>`).join('')||'<div class="faint" style="padding:8px">暂无项目</div>';
+  $('aproj').innerHTML=$('aproj0').innerHTML=ap;
+
+  $('rivals').innerHTML=G.rivals.map(r=>`<div class="row"><div><div class="rn">🏢${r.name}</div><div class="rd">Lv.${r.lv}·威胁:${r.threat}</div></div><div class="rr"><span class="bdg ${r.threat==='高'?'bdg-r':r.threat==='中'?'bdg-a':'bdg-g'}">${r.threat}威胁</span></div></div>`).join('');
+  $('miles').innerHTML=G.milestones.map(m=>`<div class="row"><div><div class="rn">${m.icon}${m.name}</div><div class="rd">${m.desc}</div></div><div class="rr">${m.done?'<span class="bdg bdg-g">✓达成</span>':'<span class="faint">未达成</span>'}</div></div>`).join('');
+  $('intel').innerHTML=`<div class="row"><div class="rn">市场占有率</div><div class="rr"><span class="faint">${Math.min(99,Math.floor(G.total/1e6*0.1+1))}%</span></div></div>
+    <div class="row"><div class="rn">品牌价值</div><div class="rr"><span class="faint">${fmt(G.total*0.3)}</span></div></div>
+    <div class="row"><div class="rn">员工满意度</div><div class="rr"><span class="faint">${G.employees.length?Math.floor(G.employees.reduce((a,e)=>a+e.mood,0)/G.employees.length):80}%</span></div></div>`;
+  $('newslist').innerHTML=G.news.map(n=>`<div class="row"><div><div class="rn">${n.i}${n.t}</div><div class="rd">${n.time||''}</div></div></div>`).join('')||'<div class="faint" style="padding:8px">暂无新闻</div>';
+  $('newsimpact').innerHTML=`<div class="row"><div class="rn">当前市场偏向</div><div class="rr"><span class="bdg bdg-g">温和看涨</span></div></div><div class="row"><div class="rn">新闻数量</div><div class="rr"><span class="faint">${G.news.length}条</span></div></div>`;
+  $('crisis').innerHTML=`<div class="row"><div class="rn">🛡️危机预案</div><div class="rr">${G.depts.find(d=>d.id==='pr')?.built?'<span class="bdg bdg-g">已建立公关部</span>':'<span class="bdg bdg-r">无公关部门</span>'}</div></div>
+    <div class="row"><div class="rn">⚖️法律风险</div><div class="rr">${G.depts.find(d=>d.id==='legal')?.built?'<span class="bdg bdg-g">低风险</span>':'<span class="bdg bdg-a">中等风险</span>'}</div></div>`;
+}
+
+let tick=0;
+setInterval(()=>{
+  tick++;
+  if(G.cps>0){G.cash+=G.cps/10;G.total+=G.cps/10}
+  if(tick%3===0){
+    G.stocks.forEach(st=>{
+      const chg=(Math.random()-.47)*st.vol;
+      st.price=Math.max(1,+(st.price*(1+chg)).toFixed(2));
+      G.stockHist[st.id].push(st.price);
+      if(G.stockHist[st.id].length>80)G.stockHist[st.id].shift();
+    });
+  }
+  G.activeProjects.forEach((p,i)=>{
+    p.progress+=1/(p.time*10);
+    if(p.progress>=1){
+      const r=Math.floor(p.reward*G.projMult);G.cash+=r;G.total+=r;G.projDone++;
+      addLog('plog',`✅${p.icon}${p.name}+${fmt(r)}`,'lok');addLog('clog',`🎉项目完成:${p.icon}${p.name}+${fmt(r)}`,'lok');
+      G.activeProjects.splice(i,1);checkMiles();
+    }
+  });
+  if(tick%50===0)G.rivals.forEach(r=>{r.cash*=1.02;r.lv=Math.max(r.lv,Math.floor(Math.log(r.cash/1000)+1))});
+  if(tick%30===0)G.employees.forEach(e=>{const hb=G.depts.find(d=>d.id==='hr')?.built?5:0;e.mood=Math.max(10,Math.min(100,e.mood+(Math.random()>.45?1:-1)*4+hb))});
+  if(tick%600===0)genNews();
+  if(tick%5===0)render();
+  if(tick%300===0)save();
+},100);
+
+if(G.news.length===0)genNews();
+if(G.projects.length===0)refreshProj();
+render();
+addLog('clog','🏢 公司运营系统启动','linfo');
+</script>
+</body>
+</html>

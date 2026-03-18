@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>摸鱼工作台 · 内部系统</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600;700&display=swap');
+:root{
+  --bg:#0e0f0e;--surface:#141514;--card:#191a19;--border:#2a2b2a;--border-l:#363736;
+  --text:#e8e8e4;--muted:#8a8a84;--faint:#4a4a46;
+  --green:#4ade80;--green-d:#16a34a;--green-l:rgba(74,222,128,.08);
+  --amber:#fbbf24;--amber-d:#d97706;
+  --blue:#60a5fa;--blue-d:#2563eb;--blue-l:rgba(96,165,250,.08);
+  --red:#f87171;--red-d:#dc2626;
+  --purple:#c084fc;
+  --mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* SCANLINE OVERLAY */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:9999}
+
+/* HEADER */
+.header{padding:28px 40px 0;display:flex;align-items:flex-start;justify-content:space-between}
+.logo-block{}
+.logo-main{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+.logo-title{font-family:var(--serif);font-size:32px;font-weight:700;color:var(--text);letter-spacing:-.02em;line-height:1}
+.logo-title em{color:var(--green);font-style:normal}
+.logo-sub{font-size:10px;color:var(--faint);letter-spacing:.1em;margin-top:6px}
+.header-right{text-align:right}
+.sys-status{font-size:10px;color:var(--faint);letter-spacing:.08em}
+.sys-time{font-size:22px;font-weight:500;color:var(--green);letter-spacing:.05em;margin-top:4px}
+.sys-date{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* TICKER */
+.ticker{margin:20px 40px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:8px 0;overflow:hidden;position:relative}
+.ticker-inner{display:flex;gap:40px;animation:ticker 30s linear infinite;white-space:nowrap}
+.ticker-item{font-size:10px;color:var(--faint);letter-spacing:.06em}
+.ticker-item span{color:var(--green);margin-left:6px}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* MAIN GRID */
+.main{padding:28px 40px 40px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:16px}
+
+/* GAME CARD */
+.game-card{
+  background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:24px;cursor:pointer;position:relative;overflow:hidden;
+  transition:border-color .2s,transform .15s;
+  display:flex;flex-direction:column;
+}
+.game-card:hover{border-color:var(--border-l);transform:translateY(-1px)}
+.game-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;pointer-events:none}
+.game-card.corp::before{background:radial-gradient(ellipse at top left,rgba(96,165,250,.06),transparent 60%)}
+.game-card.cafe::before{background:radial-gradient(ellipse at top left,rgba(251,191,36,.06),transparent 60%)}
+.game-card.farm::before{background:radial-gradient(ellipse at top left,rgba(74,222,128,.06),transparent 60%)}
+.game-card.doom::before{background:radial-gradient(ellipse at top left,rgba(248,113,113,.06),transparent 60%)}
+.game-card:hover::before{opacity:1}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.card-icon{font-size:32px;line-height:1}
+.card-badge{font-size:9px;letter-spacing:.1em;padding:3px 8px;border-radius:2px;text-transform:uppercase}
+.badge-blue{background:var(--blue-l);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+.badge-amber{background:rgba(251,191,36,.08);color:var(--amber);border:1px solid rgba(251,191,36,.2)}
+.badge-green{background:var(--green-l);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+.badge-red{background:rgba(248,113,113,.08);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+
+.card-name{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;letter-spacing:-.01em}
+.card-desc{font-size:10px;color:var(--muted);line-height:1.6;letter-spacing:.03em;margin-bottom:16px}
+
+.card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.cs{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:8px}
+.cs-lbl{font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.cs-val{font-size:13px;font-weight:500;color:var(--text)}
+
+.card-features{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px}
+.feat{font-size:9px;color:var(--faint);background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:2px;letter-spacing:.04em}
+
+.card-enter{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border)}
+.enter-btn{font-size:11px;letter-spacing:.08em;color:var(--text);display:flex;align-items:center;gap:6px}
+.enter-arrow{font-size:14px;transition:transform .2s}
+.game-card:hover .enter-arrow{transform:translateX(4px)}
+.enter-hint{font-size:9px;color:var(--faint)}
+
+/* PROGRESS BAR */
+.mini-bar{height:2px;background:var(--border);border-radius:1px;margin-top:6px;overflow:hidden}
+.mini-fill{height:100%;border-radius:1px;transition:width .5s}
+.fill-blue{background:var(--blue)}.fill-amber{background:var(--amber)}.fill-green{background:var(--green)}.fill-red{background:var(--red)}
+
+/* BOTTOM STATUS */
+.bottom{padding:0 40px 20px;display:flex;align-items:center;justify-content:space-between}
+.sys-info{font-size:9px;color:var(--faint);letter-spacing:.08em;line-height:1.8}
+.ver{font-size:9px;color:var(--faint);letter-spacing:.08em}
+
+/* PULSE DOT */
+.pdot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.pdot-g{background:var(--green);animation:pdot 2s infinite}
+.pdot-a{background:var(--amber);animation:pdot 2s .5s infinite}
+@keyframes pdot{0%,100%{opacity:1}50%{opacity:.3}}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.game-card{animation:fadeUp .4s ease both}
+.game-card:nth-child(1){animation-delay:.05s}
+.game-card:nth-child(2){animation-delay:.1s}
+.game-card:nth-child(3){animation-delay:.15s}
+.game-card:nth-child(4){animation-delay:.2s}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-block">
+    <div class="logo-main">// internal · workstation · v4.0</div>
+    <div class="logo-title">摸<em>鱼</em>工作台</div>
+    <div class="logo-sub">ENTERPRISE RESOURCE MANAGEMENT PORTAL</div>
+  </div>
+  <div class="header-right">
+    <div class="sys-status"><span class="pdot pdot-g"></span>ALL SYSTEMS OPERATIONAL</div>
+    <div class="sys-time" id="hub-time">--:--:--</div>
+    <div class="sys-date" id="hub-date">----/--/--</div>
+  </div>
+</div>
+
+<div class="ticker">
+  <div class="ticker-inner" id="ticker-inner">
+    <span class="ticker-item">SYS.CORP <span>▲ 运营中</span></span>
+    <span class="ticker-item">CAFE.OPS <span>▲ 营业中</span></span>
+    <span class="ticker-item">AGRI.PROJ <span>▲ 生长中</span></span>
+    <span class="ticker-item">DOOM.VAN <span style="color:var(--red)">▲ 末日存续</span></span>
+    <span class="ticker-item">市场指数 <span>+2.34%</span></span>
+    <span class="ticker-item">咖啡豆期货 <span>▲ ¥238/kg</span></span>
+    <span class="ticker-item">农产品指数 <span>▲ +1.2%</span></span>
+    <span class="ticker-item">末日预警等级 <span style="color:var(--red)">橙色</span></span>
+    <span class="ticker-item">SYS.CORP <span>▲ 运营中</span></span>
+    <span class="ticker-item">CAFE.OPS <span>▲ 营业中</span></span>
+    <span class="ticker-item">AGRI.PROJ <span>▲ 生长中</span></span>
+    <span class="ticker-item">DOOM.VAN <span style="color:var(--red)">▲ 末日存续</span></span>
+    <span class="ticker-item">市场指数 <span>+2.34%</span></span>
+    <span class="ticker-item">咖啡豆期货 <span>▲ ¥238/kg</span></span>
+    <span class="ticker-item">农产品指数 <span>▲ +1.2%</span></span>
+    <span class="ticker-item">末日预警等级 <span style="color:var(--red)">橙色</span></span>
+  </div>
+</div>
+
+<div class="main">
+  <!-- CORP -->
+  <div class="game-card corp" onclick="location.href='corp.html'">
+    <div class="card-top">
+      <div class="card-icon">🏢</div>
+      <div class="card-badge badge-blue">MODULE 01</div>
+    </div>
+    <div class="card-name">公司运营模拟</div>
+    <div class="card-desc">从零开始创业，雇员工、建部门、竞标项目、炒股票。<br>应对新闻事件与竞争对手，带领公司走向世界500强。</div>
+    <div class="card-stats">
+      <div class="cs"><div class="cs-lbl">当前规模</div><div class="cs-val" id="h-corp-size">初创</div></div>
+      <div class="cs"><div class="cs-lbl">员工数</div><div class="cs-val" id="h-corp-staff">0</div></div>
+      <div class="cs"><div class="cs-lbl">累计营收</div><div class="cs-val" id="h-corp-rev">¥0</div></div>
+    </div>
+    <div class="card-features">
+      <span class="feat">📈 股票市场</span><span class="feat">👥 员工管理</span><span class="feat">🏗️ 部门建设</span>
+      <span class="feat">📋 项目竞标</span><span class="feat">📰 新闻事件</span><span class="feat">🤖 AI竞争对手</span>
+    </div>
+    <div class="mini-bar"><div class="mini-fill fill-blue" id="h-corp-bar" style="width:5%"></div></div>
+    <div class="card-enter">
+      <div class="enter-btn">进入模块 <span class="enter-arrow">→</span></div>
+      <div class="enter-hint">CORP_SIM · v3.2</div>
+    </div>
+  </div>
+
+  <!-- CAFE -->
+  <div class="game-card cafe" onclick="location.href='cafe.html'">
+    <div class="card-top">
+      <div class="card-icon">☕</div>
+      <div class="card-badge badge-amber">MODULE 02</div>
+    </div>
+    <div class="card-name">咖啡门店经营</div>
+    <div class="card-desc">手动制作每一杯咖啡，研发独家配方，经营VIP客户。<br>管理库存、应对刁钻差评，打造五星网红咖啡馆。</div>
+    <div class="card-stats">
+      <div class="cs"><div class="cs-lbl">门店评级</div><div class="cs-val" id="h-cafe-rating">⭐</div></div>
+      <div class="cs"><div class="cs-lbl">完成订单</div><div class="cs-val" id="h-cafe-orders">0</div></div>
+      <div class="cs"><div class="cs-lbl">营业收入</div><div class="cs-val" id="h-cafe-cash">¥500</div></div>
+    </div>
+    <div class="card-features">
+      <span class="feat">☕ 手冲制作</span><span class="feat">🧪 配方研发</span><span class="feat">👑 VIP客户</span>
+      <span class="feat">📦 库存管理</span><span class="feat">⭐ 评价系统</span><span class="feat">🎪 限时活动</span>
+    </div>
+    <div class="mini-bar"><div class="mini-fill fill-amber" id="h-cafe-bar" style="width:5%"></div></div>
+    <div class="card-enter">
+      <div class="enter-btn">进入模块 <span class="enter-arrow">→</span></div>
+      <div class="enter-hint">CAFE_OPS · v2.1</div>
+    </div>
+  </div>
+
+  <!-- FARM -->
+  <div class="game-card farm" onclick="location.href='farm.html'">
+    <div class="card-top">
+      <div class="card-icon">🌱</div>
+      <div class="card-badge badge-green">MODULE 03</div>
+    </div>
+    <div class="card-name">农业项目管理</div>
+    <div class="card-desc">种植作物、养殖牲畜，应对天气灾害与病虫害。<br>开设农贸市场摊位，雇用工人，研发杂交新品种。</div>
+    <div class="card-stats">
+      <div class="cs"><div class="cs-lbl">农场等级</div><div class="cs-val" id="h-farm-level">初级</div></div>
+      <div class="cs"><div class="cs-lbl">已收获</div><div class="cs-val" id="h-farm-harvest">0</div></div>
+      <div class="cs"><div class="cs-lbl">金币</div><div class="cs-val" id="h-farm-gold">200</div></div>
+    </div>
+    <div class="card-features">
+      <span class="feat">🌾 作物种植</span><span class="feat">🐄 牲畜养殖</span><span class="feat">🌊 自然灾害</span>
+      <span class="feat">🧪 品种杂交</span><span class="feat">🏪 农贸市场</span><span class="feat">👨‍🌾 雇用工人</span>
+    </div>
+    <div class="mini-bar"><div class="mini-fill fill-green" id="h-farm-bar" style="width:5%"></div></div>
+    <div class="card-enter">
+      <div class="enter-btn">进入模块 <span class="enter-arrow">→</span></div>
+      <div class="enter-hint">AGRI_PROJ · v2.0</div>
+    </div>
+  </div>
+
+  <!-- DOOM -->
+  <div class="game-card doom" onclick="location.href='doom.html'">
+    <div class="card-top">
+      <div class="card-icon">🚐</div>
+      <div class="card-badge badge-red">MODULE 04</div>
+    </div>
+    <div class="card-name">末日房车囤货</div>
+    <div class="card-desc">文明崩溃后的第一天。驾驶改装房车探索废墟，管理生存资源。<br>招募幸存者、升级车辆、应对辐射与危机事件。</div>
+    <div class="card-stats">
+      <div class="cs"><div class="cs-lbl">存活天数</div><div class="cs-val" id="h-doom-days">0</div></div>
+      <div class="cs"><div class="cs-lbl">幸存者</div><div class="cs-val" id="h-doom-surv">1</div></div>
+      <div class="cs"><div class="cs-lbl">房车状态</div><div class="cs-val" id="h-doom-van">良好</div></div>
+    </div>
+    <div class="card-features">
+      <span class="feat">🗺️ 地图探索</span><span class="feat">🎒 背包管理</span><span class="feat">💊 生存资源</span>
+      <span class="feat">🔧 房车升级</span><span class="feat">☢️ 辐射系统</span><span class="feat">🌙 日夜事件</span>
+    </div>
+    <div class="mini-bar"><div class="mini-fill fill-red" id="h-doom-bar" style="width:5%"></div></div>
+    <div class="card-enter">
+      <div class="enter-btn">进入模块 <span class="enter-arrow">→</span></div>
+      <div class="enter-hint">DOOM_VAN · v1.0 · NEW</div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom">
+  <div class="sys-info">
+    <span class="pdot pdot-g"></span>SYS.PORTAL RUNNING · 4 MODULES ACTIVE<br>
+    <span style="margin-left:10px">数据本地存储 · 关闭标签页后进度保留</span>
+  </div>
+  <div class="ver">BUILD 4.0.1 · 摸鱼专用版 · 请勿在老板身后打开</div>
+</div>
+
+<script>
+function tick(){
+  const n=new Date();
+  document.getElementById('hub-time').textContent=n.toTimeString().slice(0,8);
+  document.getElementById('hub-date').textContent=n.toLocaleDateString('zh-CN');
+  // Load saved data
+  try{
+    const cs=JSON.parse(localStorage.getItem('corp')||'{}');
+    const lvls=['初创','小型','中型','大型','跨国','500强'];
+    document.getElementById('h-corp-size').textContent=lvls[Math.min((cs.level||1)-1,5)];
+    document.getElementById('h-corp-staff').textContent=Object.values(cs.staffCounts||{}).reduce((a,b)=>a+b,0);
+    const t=cs.total||0;
+    document.getElementById('h-corp-rev').textContent=t>=1e6?'¥'+(t/1e6).toFixed(1)+'M':t>=1e3?'¥'+(t/1e3).toFixed(0)+'K':'¥'+Math.floor(t);
+    document.getElementById('h-corp-bar').style.width=Math.min(95,((cs.level||1)/6)*100)+'%';
+
+    const cf=JSON.parse(localStorage.getItem('cafe')||'{}');
+    const stars=['⭐','⭐⭐','⭐⭐⭐','⭐⭐⭐⭐','⭐⭐⭐⭐⭐'];
+    document.getElementById('h-cafe-rating').textContent=stars[Math.min((cf.starLevel||0),4)];
+    document.getElementById('h-cafe-orders').textContent=cf.done||0;
+    const cc=cf.cash||500;
+    document.getElementById('h-cafe-cash').textContent=cc>=1e3?'¥'+(cc/1e3).toFixed(1)+'K':'¥'+Math.floor(cc);
+    document.getElementById('h-cafe-bar').style.width=Math.min(95,((cf.done||0)/500)*100)+'%';
+
+    const fm=JSON.parse(localStorage.getItem('farm')||'{}');
+    const fls=['初级','中级','高级','专家','大师'];
+    document.getElementById('h-farm-level').textContent=fls[Math.min(Math.floor((fm.harvested||0)/50),4)];
+    document.getElementById('h-farm-harvest').textContent=fm.harvested||0;
+    document.getElementById('h-farm-gold').textContent=Math.floor(fm.gold||200);
+    document.getElementById('h-farm-bar').style.width=Math.min(95,((fm.harvested||0)/500)*100)+'%';
+
+    const dm=JSON.parse(localStorage.getItem('doom')||'{}');
+    document.getElementById('h-doom-days').textContent=dm.day||0;
+    document.getElementById('h-doom-surv').textContent=(dm.survivors||[]).length||1;
+    const vhp=dm.vanHp||100;
+    document.getElementById('h-doom-van').textContent=vhp>=80?'良好':vhp>=50?'受损':vhp>=25?'危险':'报废';
+    document.getElementById('h-doom-bar').style.width=Math.min(95,((dm.day||0)/100)*100)+'%';
+  }catch(e){}
+}
+setInterval(tick,1000);tick();
+</script>
+</body>
+</html>
