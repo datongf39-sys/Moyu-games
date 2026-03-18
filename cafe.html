@@ -119,10 +119,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <button onclick="st('sky')" title="天空" style="width:14px;height:14px;border-radius:50%;background:#a8c4f0;border:1px solid #88a4d8;cursor:pointer;padding:0"></button>
   <button onclick="st('warm')" title="暖橙" style="width:14px;height:14px;border-radius:50%;background:#e8c878;border:1px solid #c8a858;cursor:pointer;padding:0"></button>
 </div>
-  <div class="flex gap8" style="font-size:10px;color:var(--faint);align-items:center;gap:8px">
-    <button id="pause-btn" onclick="togglePause()" style="font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--green-l);color:var(--green);cursor:pointer;font-family:var(--mono)">接客中</button>
-    <span id="starlbl">⭐</span><span id="clk">--:--:--</span>
-  </div>
+  <div class="flex gap8" style="font-size:10px;color:var(--faint)"><span id="starlbl">⭐</span><span id="clk">--:--:--</span></div>
 </div>
 <div class="tabs">
   <button class="tab on" onclick="sw(0)">📊 营业概览</button>
@@ -169,7 +166,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <div class="col-r">
     <div>
       <div class="card mb10">
-        <div class="fb mb8"><div class="ct" style="margin:0">订单队列</div><span class="faint" id="q-count">0个订单</span></div>
+        <div class="fb mb8"><div class="ct" style="margin:0">订单队列</div><div style="display:flex;align-items:center;gap:8px"><span class="faint" id="q-count">0个订单</span><button id="call-btn" onclick="callCustomer()" class="btn bg bxs">叫号</button></div></div>
         <div id="brew-orders"></div>
       </div>
     </div>
@@ -282,7 +279,7 @@ const C={
     {id:'caramel',name:'焦糖玛奇朵',icon:'🍮',price:42,unlocked:false,req:'frothing',steps:['extract','froth','syrup','top'],ing:{beans:12,milk:120,syrup:15},popularity:0},
   ],
   stepDefs:{
-    grind:{name:'研磨咖啡豆',type:'click',clicks:0,get maxClicks(){return C.equipment.grinder?3:5},icon:'⚙️'},
+    grind:{name:'研磨咖啡豆',type:'click',clicks:0,maxClicks:5,icon:'⚙️'},
     bloom:{name:'注水闷蒸',type:'wait',duration:3,elapsed:0,icon:'💧'},
     pour:{name:'缓慢注水',type:'hold',progress:0,icon:'🫗'},
     wait:{name:'等待萃取',type:'wait',duration:4,elapsed:0,icon:'⏱️'},
@@ -351,7 +348,7 @@ function startBrew(orderId){
   // Init brew steps
   C.brewSteps=drink.steps.map(sid=>{
     const def={...C.stepDefs[sid]};def.id=sid;
-    if(def.type==='click'){def.clicks=0}
+    if(def.type==='click'){def.clicks=0;if(sid==='grind'&&C.equipment.grinder)def.maxClicks=3;}
     if(def.type==='wait'){def.elapsed=0}
     if(def.type==='hold'){def.progress=0}
     if(def.type==='temp'){def.current=20}
@@ -368,7 +365,9 @@ function doStepAction(type,extra){
   if(type==='hold_progress'){step.progress=extra;if(step.progress>=100){step.done=true;nextStep()}}
   if(type==='temp_set'){step.current=extra;if(Math.abs(step.current-step.target)<=5){step.done=true;nextStep()}}
   // 控温壶自动完成temp步骤
-  if(C.equipment.auto_temp&&C.currentOrder&&C.brewSteps[C.currentStep]?.type==='temp'){const ts=C.brewSteps[C.currentStep];ts.current=ts.target;ts.done=true;nextStep();}
+  if(C.equipment.auto_temp&&C.currentOrder&&C.brewSteps[C.currentStep]?.type==='temp'){
+    const ts=C.brewSteps[C.currentStep];ts.current=ts.target;ts.done=true;nextStep();
+  }
   if(type==='choice'){step.choice=extra;step.done=true;nextStep()}
   render();
 }
@@ -479,6 +478,8 @@ function render(){
 
   // Brew orders
   $('q-count').textContent=`${C.orders.length}个订单`;
+  const callBtn=document.getElementById('call-btn');
+  if(callBtn){callBtn.disabled=!C.isOpen;callBtn.style.opacity=C.isOpen?'1':'0.4';}
   $('brew-orders').innerHTML=C.orders.map(o=>`<div class="order-card ${C.currentOrder?.id===o.id?'selected':''} ${o.timeLeft<20?'urgent':''}" onclick="startBrew(${o.id})">
     <div class="oc-top"><div class="oc-name">${o.icon}${o.name}${o.vip?' 👑':''}</div><div class="oc-time" style="color:${o.timeLeft<20?'var(--red)':'var(--muted)'}">${Math.ceil(o.timeLeft)}s</div></div>
     <div class="oc-drink">${o.drinkIcon}${o.drinkName}</div>
@@ -563,9 +564,21 @@ function createCustom(){
 
 // Hold mechanic
 setInterval(()=>{
-  if(window._holding&&C.currentOrder&&C.brewSteps[C.currentStep]?.type==='hold'){
-    const step=C.brewSteps[C.currentStep];step.progress=Math.min(100,(step.progress||0)+3);
-    doStepAction('hold_progress',step.progress);
+  const step=C.brewSteps[C.currentStep];
+  if(C.currentOrder&&step?.type==='hold'){
+    // 资深咖啡师在营业时自动注水（×1.2速度）
+    const hasSenior=C.isOpen&&C.staff.some(s=>s.skill>=3&&s.role==='资深咖啡师');
+    const hasMid=C.isOpen&&C.staff.some(s=>s.skill>=2&&s.skill<3&&s.role==='咖啡师');
+    if(hasSenior){
+      step.progress=Math.min(100,(step.progress||0)+3.6);
+      doStepAction('hold_progress',step.progress);
+    } else if(hasMid){
+      step.progress=Math.min(100,(step.progress||0)+3);
+      doStepAction('hold_progress',step.progress);
+    } else if(window._holding){
+      step.progress=Math.min(100,(step.progress||0)+3);
+      doStepAction('hold_progress',step.progress);
+    }
   }
 },100);
 
@@ -576,31 +589,31 @@ setInterval(()=>{
   // Order timers
   if(tick%10===0){
     C.orders.forEach(o=>{o.timeLeft-=1;if(o.timeLeft<=0){C.satisfaction=Math.max(0,C.satisfaction-5);C.orders.splice(C.orders.indexOf(o),1);dlog('clog',`😤 ${o.icon}${o.name}等太久离开了`,'lbad')}});
-    // Auto-generate orders
-    if(!C.paused&&Math.random()<.3)genOrder();
-    // Wait steps (speed boosted by senior staff)
+    // Auto-generate orders - 只有学徒在营业时才自动叫号
+    if(C.isOpen){
+      const hasIntern=C.staff.some(s=>s.skill<2&&s.role==='学徒咖啡师');
+      if(hasIntern&&Math.random()<.3)genOrder();
+    }
+    // Wait steps（资深×1.2速度，咖啡师正常速度）
     if(C.currentOrder&&C.brewSteps[C.currentStep]?.type==='wait'){
-      const senior=C.staff.filter(s=>s.skill>=3).length;
-      const mid=C.staff.filter(s=>s.skill>=2&&s.skill<3).length;
-      const speedMult=1+(senior*0.5)+(mid*0.2);
+      const hasSenior=C.isOpen&&C.staff.some(s=>s.skill>=3&&s.role==='资深咖啡师');
+      const hasMid=C.isOpen&&C.staff.some(s=>s.skill>=2&&s.skill<3&&s.role==='咖啡师');
+      const speedMult=hasSenior?1.2:hasMid?1:1;
       const step=C.brewSteps[C.currentStep];
-      step.elapsed=(step.elapsed||0)+(speedMult);
+      step.elapsed=(step.elapsed||0)+speedMult;
       if(step.elapsed>=step.duration){step.done=true;nextStep()}
     }
-    // Staff auto-click: 咖啡师每2s自动click一次，资深每1s
+    // 员工自动click（每1s一次）
     if(C.currentOrder&&C.brewSteps[C.currentStep]?.type==='click'){
-      const senior=C.staff.filter(s=>s.skill>=3).length;
-      const mid=C.staff.filter(s=>s.skill>=2&&s.skill<3).length;
-      if(senior>0&&tick%10===0) doStepAction('click');
-      else if(mid>0&&tick%20===0) doStepAction('click');
+      const hasSenior=C.isOpen&&C.staff.some(s=>s.skill>=3&&s.role==='资深咖啡师');
+      const hasMid=C.isOpen&&C.staff.some(s=>s.skill>=2&&s.skill<3&&s.role==='咖啡师');
+      if(hasSenior||hasMid) doStepAction('click');
     }
-    // 学徒：每30s自动接一个订单
-    if(tick%300===0){
-      const hasIntern=C.staff.filter(s=>s.skill<2).length>0;
-      if(hasIntern&&C.orders.length>0&&!C.currentOrder){
-        startBrew(C.orders[0].id);
-        dlog('clog',`👨 学徒自动接单：${C.orders[0]?.drinkName||''}` ,'linfo');
-      }
+    // 咖啡师/资深自动点订单（营业中且无当前订单）
+    if(C.isOpen&&!C.currentOrder&&C.orders.length>0){
+      const hasSenior=C.staff.some(s=>s.skill>=3&&s.role==='资深咖啡师');
+      const hasMid=C.staff.some(s=>s.skill>=2&&s.skill<3&&s.role==='咖啡师');
+      if(hasSenior||hasMid) startBrew(C.orders[0].id);
     }
     render();
   }
@@ -614,16 +627,28 @@ render();
 dlog('clog','☕ 咖啡门店系统启动','linfo');
 dlog('clog','💡 点击客户订单开始制作咖啡','linfo');
 
-function st(t){
-  localStorage.setItem('moyu-theme',t);
-  document.documentElement.setAttribute('data-theme',t);
+function toggleOpen(){
+  C.isOpen=!C.isOpen;
+  const btn=document.getElementById('open-btn');
+  if(btn){
+    btn.textContent=C.isOpen?'营业中':'已打烊';
+    btn.style.background=C.isOpen?'var(--green-l)':'rgba(220,38,38,.08)';
+    btn.style.color=C.isOpen?'var(--green)':'var(--red)';
+  }
+  dlog('clog',C.isOpen?'🟢 开始营业':'🔴 已打烊，完成手头订单后休息','linfo');
+  render();
 }
 
-function resetGame(){
-  if(!confirm('确定要从头开始吗？所有进度将清空！'))return;
-  localStorage.removeItem('cafe');
-  location.reload();
+function callCustomer(){
+  if(!C.isOpen){dlog('clog','⛔ 打烊中，无法叫号','lbad');return;}
+  genOrder();
+  dlog('clog','🔔 叫号！新客人进入','linfo');
+  render();
 }
+
+function st(t){localStorage.setItem('moyu-theme',t);document.documentElement.setAttribute('data-theme',t);}
+
+function resetGame(){if(!confirm('确定要从头开始吗？所有进度将清空！'))return;localStorage.removeItem('cafe');location.reload();}
 </script>
 </body>
 </html>
