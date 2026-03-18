@@ -142,6 +142,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <button class="tab" onclick="sw(3)">🚐 房车升级</button>
   <button class="tab" onclick="sw(4)">👥 幸存者</button>
   <button class="tab" onclick="sw(5)">☢️ 状态&技能</button>
+  <button class="tab" style="margin-left:auto;color:var(--red)" onclick="resetGame()">🔄 从头开始</button>
 </div>
 
 <div class="event-overlay" id="evt-overlay">
@@ -738,6 +739,12 @@ if(D.dailyTasks.length===0)genDailyTasks();
 render();
 dlog('🚐 末日房车系统启动...','linfo');
 dlog('☠️ 文明已崩溃。求生才是第一要务。','lbad');
+
+function resetGame(){
+  if(!confirm('确定要从头开始吗？所有进度将清空！'))return;
+  localStorage.removeItem('doom');
+  location.reload();
+}
 
 function st(t){
   localStorage.setItem('moyu-theme',t);

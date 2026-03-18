@@ -119,7 +119,10 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <button onclick="st('sky')" title="天空" style="width:14px;height:14px;border-radius:50%;background:#a8c4f0;border:1px solid #88a4d8;cursor:pointer;padding:0"></button>
   <button onclick="st('warm')" title="暖橙" style="width:14px;height:14px;border-radius:50%;background:#e8c878;border:1px solid #c8a858;cursor:pointer;padding:0"></button>
 </div>
-  <div class="flex gap8" style="font-size:10px;color:var(--faint)"><span id="starlbl">⭐</span><span id="clk">--:--:--</span></div>
+  <div class="flex gap8" style="font-size:10px;color:var(--faint);align-items:center;gap:8px">
+    <button id="pause-btn" onclick="togglePause()" style="font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--green-l);color:var(--green);cursor:pointer;font-family:var(--mono)">接客中</button>
+    <span id="starlbl">⭐</span><span id="clk">--:--:--</span>
+  </div>
 </div>
 <div class="tabs">
   <button class="tab on" onclick="sw(0)">📊 营业概览</button>
@@ -128,6 +131,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <button class="tab" onclick="sw(3)">👑 VIP客户</button>
   <button class="tab" onclick="sw(4)">📦 库存管理</button>
   <button class="tab" onclick="sw(5)">⭐ 评价&活动</button>
+  <button class="tab" style="margin-left:auto;color:var(--red)" onclick="resetGame()">🔄 从头开始</button>
 </div>
 <div class="main">
 
@@ -249,7 +253,7 @@ function sw(i){document.querySelectorAll('.tab').forEach((t,j)=>t.classList.togg
 setInterval(()=>$('clk').textContent=new Date().toTimeString().slice(0,8),1000);
 
 const C={
-  cash:500,done:0,satisfaction:80,todayRev:0,totalRev:0,starLevel:0,
+  cash:500,done:0,satisfaction:80,todayRev:0,totalRev:0,starLevel:0,paused:false,
   maxPrice:0,scores:[],revHistory:[],
   ingredients:{beans:100,milk:80,water:200,sugar:50,syrup:20,cream:30,matcha:15,ice:100},
   maxIng:{beans:200,milk:200,water:500,sugar:100,syrup:50,cream:80,matcha:50,ice:200},
@@ -279,11 +283,11 @@ const C={
   ],
   stepDefs:{
     grind:{name:'研磨咖啡豆',type:'click',clicks:0,maxClicks:5,icon:'⚙️'},
-    bloom:{name:'注水闷蒸',type:'wait',duration:1,elapsed:0,icon:'💧'},
+    bloom:{name:'注水闷蒸',type:'wait',duration:3,elapsed:0,icon:'💧'},
     pour:{name:'缓慢注水',type:'hold',progress:0,icon:'🫗'},
-    wait:{name:'等待萃取',type:'wait',duration:2,elapsed:0,icon:'⏱️'},
+    wait:{name:'等待萃取',type:'wait',duration:4,elapsed:0,icon:'⏱️'},
     load:{name:'填充咖啡粉',type:'click',clicks:0,maxClicks:3,icon:'🔩'},
-    extract:{name:'意式萃取',type:'wait',duration:1,elapsed:0,icon:'⚡'},
+    extract:{name:'意式萃取',type:'wait',duration:3,elapsed:0,icon:'⚡'},
     serve:{name:'出品',type:'click',clicks:0,maxClicks:1,icon:'🫱'},
     dilute:{name:'注入热水',type:'hold',progress:0,icon:'💧'},
     froth:{name:'打奶泡',type:'temp',target:65,current:20,icon:'🌡️'},
@@ -294,7 +298,7 @@ const C={
     layer:{name:'分层',type:'hold',progress:0,icon:'🫗'},
     syrup:{name:'加入焦糖',type:'click',clicks:0,maxClicks:2,icon:'🍯'},
     top:{name:'顶层装饰',type:'choice',choice:null,options:['🍮','⭐','✨','🌈'],icon:'✨'},
-    cold_steep:{name:'冷萃浸泡',type:'wait',duration:6,elapsed:0,icon:'🧊'},
+    cold_steep:{name:'冷萃浸泡',type:'wait',duration:8,elapsed:0,icon:'🧊'},
     filter:{name:'过滤',type:'hold',progress:0,icon:'🔍'},
     serve_cold:{name:'加冰出品',type:'click',clicks:0,maxClicks:2,icon:'🧊'},
   },
@@ -571,7 +575,7 @@ setInterval(()=>{
   if(tick%10===0){
     C.orders.forEach(o=>{o.timeLeft-=1;if(o.timeLeft<=0){C.satisfaction=Math.max(0,C.satisfaction-5);C.orders.splice(C.orders.indexOf(o),1);dlog('clog',`😤 ${o.icon}${o.name}等太久离开了`,'lbad')}});
     // Auto-generate orders
-    if(Math.random()<.3)genOrder();
+    if(!C.paused&&Math.random()<.3)genOrder();
     // Wait steps
     if(C.currentOrder&&C.brewSteps[C.currentStep]?.type==='wait'){
       const step=C.brewSteps[C.currentStep];step.elapsed=(step.elapsed||0)+1;
@@ -588,6 +592,22 @@ for(let i=0;i<2;i++)genOrder();
 render();
 dlog('clog','☕ 咖啡门店系统启动','linfo');
 dlog('clog','💡 点击客户订单开始制作咖啡','linfo');
+
+function togglePause(){
+  C.paused=!C.paused;
+  const btn=document.getElementById('pause-btn');
+  if(btn){
+    btn.textContent=C.paused?'已暂停接客':'接客中';
+    btn.style.background=C.paused?'rgba(220,38,38,.08)':'var(--green-l)';
+    btn.style.color=C.paused?'var(--red)':'var(--green)';
+  }
+}
+
+function resetGame(){
+  if(!confirm('确定要从头开始吗？所有进度将清空！'))return;
+  localStorage.removeItem('cafe');
+  location.reload();
+}
 
 function st(t){
   localStorage.setItem('moyu-theme',t);

@@ -124,6 +124,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <button class="tab" onclick="sw(3)">🏪 农贸市场</button>
   <button class="tab" onclick="sw(4)">👨‍🌾 员工雇用</button>
   <button class="tab" onclick="sw(5)">🧪 品种研发</button>
+  <button class="tab" style="margin-left:auto;color:var(--red)" onclick="resetGame()">🔄 从头开始</button>
 </div>
 <div class="main">
 
@@ -572,6 +573,12 @@ setInterval(()=>{
 render();
 flog('🌱 农业项目管理系统启动','linfo');
 flog('点击空地种植，点击成熟作物收获','linfo');
+
+function resetGame(){
+  if(!confirm('确定要从头开始吗？所有进度将清空！'))return;
+  localStorage.removeItem('farm');
+  location.reload();
+}
 
 function st(t){
   localStorage.setItem('moyu-theme',t);

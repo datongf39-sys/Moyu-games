@@ -96,6 +96,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <button class="tab" onclick="sw(3)">🏗️ 部门&办公室</button>
   <button class="tab" onclick="sw(4)">📋 项目竞标</button>
   <button class="tab" onclick="sw(5)">📰 新闻&危机</button>
+  <button class="tab" style="margin-left:auto;color:var(--red)" onclick="resetGame()">🔄 从头开始</button>
 </div>
 <div class="main">
 
@@ -516,6 +517,12 @@ if(G.news.length===0)genNews();
 if(G.projects.length===0)refreshProj();
 render();
 addLog('clog','🏢 公司运营系统启动','linfo');
+
+function resetGame(){
+  if(!confirm('确定要从头开始吗？所有进度将清空！'))return;
+  localStorage.removeItem('corp');
+  location.reload();
+}
 
 function st(t){
   localStorage.setItem('moyu-theme',t);
