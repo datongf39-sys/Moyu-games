@@ -546,8 +546,9 @@ setInterval(()=>{
     const wMult=WEATHERS[F.weather].mult;
     const sMult=F.season===0?1.2:F.season===2?1.1:1;
     const ghMult=F.tools.find(t=>t.id==='greenhouse')?.bought?1.3:1;
+    const wcMult=F.tools.find(t=>t.id==='watercan')?.bought?1.1:1;
     const wkMult=1+F.workers.filter(w=>w.task==='plant'||true).reduce((a,w)=>a+w.skill*0.05,0);
-    f.progress+=0.001*(1/seed.time)*100*wMult*sMult*ghMult*wkMult;
+    f.progress+=0.001*(1/seed.time)*100*wMult*sMult*ghMult*wkMult*wcMult;
     if(f.progress>=1){f.progress=1;flog(`✅ ${seed.icon}${seed.name}在地块${f.id+1}成熟了！`,'lok')}
   });
 
@@ -556,6 +557,12 @@ setInterval(()=>{
 
   // Animal timers
   F.animals.forEach(a=>{a.timer=(a.timer||0)+0.1;a.hunger=Math.max(0,a.hunger-0.02)});
+  // 农药自动消灭害虫
+  if(F.tools.find(t=>t.id==='pesticide')?.bought){
+    F.fields.forEach(f=>{if(f.pest)f.pest=false});
+  }
+  // 动物hunger归零停止产出
+  F.animals.forEach(a=>{if(a.hunger<=0)a.timer=Math.min(a.timer,a.produce.time-0.1)});
 
   // Stall passive income
   if(F.stall.active&&tick%30===0){F.stall.revenue+=5+F.workers.length*2;F.gold+=5+F.workers.length*2}
@@ -574,15 +581,15 @@ render();
 flog('🌱 农业项目管理系统启动','linfo');
 flog('点击空地种植，点击成熟作物收获','linfo');
 
+function st(t){
+  localStorage.setItem('moyu-theme',t);
+  document.documentElement.setAttribute('data-theme',t);
+}
+
 function resetGame(){
   if(!confirm('确定要从头开始吗？所有进度将清空！'))return;
   localStorage.removeItem('farm');
   location.reload();
-}
-
-function st(t){
-  localStorage.setItem('moyu-theme',t);
-  document.documentElement.setAttribute('data-theme',t);
 }
 </script>
 </body>

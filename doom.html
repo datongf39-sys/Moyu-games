@@ -416,8 +416,8 @@ const D={
   ],
   eventPool:[
     {icon:'🧟',title:'丧尸来袭！',desc:'一群丧尸正在接近营地，你需要做出决策',choices:[
-      {text:'⚔️ 战斗抵御 (消耗5发弹药)',fn:d=>{if(d.resources.ammo>=5){d.resources.ammo-=5;dlog('⚔️ 战斗胜利！击退丧尸','lok')}else{d.vanHp-=20;dlog('💀 无弹药！房车受损','lbad')}}},
-      {text:'🚗 驾车逃跑 (消耗10L燃料)',fn:d=>{if(d.resources.fuel>=10){d.resources.fuel-=10;dlog('🚗 成功逃脱！','lok')}else{d.vanHp-=30;dlog('💀 燃料不足！严重损坏','lbad')}}},
+      {text:'⚔️ 战斗抵御 (消耗5发弹药)',fn:d=>{if(d.vanUpgrades.find(u=>u.id==='turret')?.bought){dlog('🔫 炮塔自动击退丧尸！无需弹药','lok')}else if(d.resources.ammo>=5){d.resources.ammo-=Math.max(1,5-d.survivors.reduce((a,s)=>a+s.skills.combat,0));dlog('⚔️ 战斗胜利！击退丧尸','lok')}else{const armorMult=d.vanUpgrades.find(u=>u.id==='armor')?.bought?0.5:1;d.vanHp-=Math.floor(20*armorMult);dlog('💀 无弹药！房车受损','lbad')}}},
+      {text:'🚗 驾车逃跑 (消耗10L燃料)',fn:d=>{if(d.resources.fuel>=10){d.resources.fuel-=10;dlog('🚗 成功逃脱！','lok')}else{const armorMult2=d.vanUpgrades.find(u=>u.id==='armor')?.bought?0.5:1;d.vanHp-=Math.floor(30*armorMult2);dlog('💀 燃料不足！严重损坏','lbad')}}},
       {text:'🔒 躲藏等待 (失去一天)',fn:d=>{dlog('🔒 躲过了这波丧尸...','linfo')}},
     ]},
     {icon:'🌧️',title:'暴雨来临',desc:'大雨将至，这是收集雨水的好机会！',choices:[
@@ -517,7 +517,7 @@ function finishExplore(locId){
   D.map.forEach(m=>m.current=m.id===locId);
   // Radiation
   if(loc.rad>0){
-    const radRes=D.vanEquip.find(e=>e.id==='gasmask')?.bought?.5:1;
+    const radRes=D.vanEquip.find(e=>e.id==='gasmask')?.bought?0.5:1;
     D.radiation=Math.min(100,D.radiation+loc.rad*(radRes||1));
     dlog(`☢️ 受到${Math.floor(loc.rad*(radRes||1))}rem辐射`,'lbad');
   }
@@ -525,7 +525,8 @@ function finishExplore(locId){
   if(loc.drops){
     Object.entries(loc.drops).forEach(([res,[min,max]])=>{
       const scav=D.survivors.reduce((a,s)=>a+s.skills.scavenge,0);
-      const bonus=1+scav*0.1;
+      const gpsBonus=D.vanEquip.find(e=>e.id==='gps')?.bought?0.3:0;
+      const bonus=1+scav*0.1+gpsBonus;
       const amt=Math.floor((min+Math.random()*(max-min))*bonus);
       D.resources[res]=Math.min(D.maxRes[res],D.resources[res]+amt);
       if(amt>0)llog(`✅ 获得 ${D.resIcons[res]}${D.resNames[res]}×${amt}`,'lok');
@@ -730,8 +731,35 @@ function render(){
 let tick=0;
 setInterval(()=>{
   tick++;
-  if(tick%50===0){D.hour=(D.hour+1)%24;if(D.hour===20){D.isDay=false;dlog('🌙 夜幕降临，注意安全','linfo')}else if(D.hour===8){D.isDay=true;dlog('☀️ 黎明到来','linfo')};D.timeOfDay=D.isDay?((D.hour-8)/12*100):((D.hour<8?D.hour+4:D.hour-20)/8*100);render()}
-  if(tick%30===0){D.radiation=Math.max(0,D.radiation-0.5);D.infection=Math.max(0,D.infection-0.2)}
+  if(tick%50===0){
+    D.hour=(D.hour+1)%24;
+    if(D.hour===20){D.isDay=false;dlog('🌙 夜幕降临，注意安全','linfo')}
+    else if(D.hour===8){D.isDay=true;dlog('☀️ 黎明到来','linfo')};
+    D.timeOfDay=D.isDay?((D.hour-8)/12*100):((D.hour<8?D.hour+4:D.hour-20)/8*100);
+    // 太阳能：每天自动+5电池
+    if(D.hour===12&&D.vanUpgrades.find(u=>u.id==='solar')?.bought){
+      D.resources.battery=Math.min(D.maxRes.battery,D.resources.battery+5);
+      dlog('☀️ 太阳能充电+5电池','linfo');
+    }
+    // 净水：每天自动+10水
+    if(D.hour===6&&D.vanUpgrades.find(u=>u.id==='filter')?.bought){
+      D.resources.water=Math.min(D.maxRes.water,D.resources.water+10);
+      dlog('💧 净水系统产水+10L','linfo');
+    }
+    render();
+  }
+  if(tick%30===0){
+    // 辐射自然恢复（防毒面具减半增加速度）
+    const gasmask=D.vanEquip.find(e=>e.id==='gasmask')?.bought;
+    D.radiation=Math.max(0,D.radiation-0.5);
+    D.infection=Math.max(0,D.infection-0.2);
+    // 幸存者medic技能加快感染恢复
+    const medicSkill=D.survivors.reduce((a,s)=>a+s.skills.medic,0);
+    if(medicSkill>0)D.infection=Math.max(0,D.infection-medicSkill*0.1);
+    // 幸存者mechanic技能缓慢修复房车
+    const mechSkill=D.survivors.reduce((a,s)=>a+s.skills.mechanic,0);
+    if(mechSkill>0&&D.vanHp<D.vanMaxHp)D.vanHp=Math.min(D.vanMaxHp,D.vanHp+mechSkill*0.05);
+  }
   if(tick%300===0)save();
 },100);
 
@@ -740,15 +768,15 @@ render();
 dlog('🚐 末日房车系统启动...','linfo');
 dlog('☠️ 文明已崩溃。求生才是第一要务。','lbad');
 
+function st(t){
+  localStorage.setItem('moyu-theme',t);
+  document.documentElement.setAttribute('data-theme',t);
+}
+
 function resetGame(){
   if(!confirm('确定要从头开始吗？所有进度将清空！'))return;
   localStorage.removeItem('doom');
   location.reload();
-}
-
-function st(t){
-  localStorage.setItem('moyu-theme',t);
-  document.documentElement.setAttribute('data-theme',t);
 }
 </script>
 </body>
