@@ -325,6 +325,15 @@ try{
   const s=JSON.parse(localStorage.getItem('cafe')||'{}');
   if(s.cash){
     Object.assign(C,s);
+    // 修复：合并ingredients而非整体替换，防止新字段缺失导致"食材不足"误判
+    if(s.ingredients){
+      const defaultIng={beans:100,milk:80,water:200,sugar:50,syrup:20,cream:30,matcha:15,ice:100};
+      C.ingredients={...defaultIng,...s.ingredients};
+      // 确保所有值为数字且不为undefined/null
+      Object.keys(C.ingredients).forEach(k=>{
+        if(typeof C.ingredients[k]!=='number'||isNaN(C.ingredients[k]))C.ingredients[k]=defaultIng[k]||0;
+      });
+    }
     C.orders=C.orders||[];
     C.vips=C.vips||[];
     C.reviews=C.reviews||[];
@@ -455,12 +464,12 @@ function hireStaff(i){
   C.staffPool.splice(i,1);
   dlog('clog',`✅ 招聘 ${sp.icon}${sp.name}`,'lok');render();
 }
+const RCOSTS={beans:5,milk:2,water:0.5,sugar:1,syrup:3,cream:4,matcha:8,ice:0.5};
 function restock(ing,amt){
-  const costs={beans:5,milk:2,water:0.5,sugar:1,syrup:3,cream:4,matcha:8,ice:0.5};
-  const cost=Math.ceil(costs[ing]*amt);
-  if(C.cash<cost)return;
+  const cost=Math.ceil(RCOSTS[ing]*amt);
+  if(C.cash<cost){dlog('clog',`💸 现金不足！补${amt}个${C.ingNames[ing]}需¥${cost}`,'lbad');return;}
   C.cash-=cost;C.ingredients[ing]=Math.min(C.maxIng[ing],C.ingredients[ing]+amt);
-  dlog('clog',`📦 补货 ${C.ingNames[ing]}×${amt}`,'linfo');render();
+  dlog('clog',`📦 补货 ${C.ingNames[ing]}×${amt}，花费¥${cost}`,'linfo');render();
 }
 function activateEvent(i){
   const ev=C.events[i];if(ev.active||C.cash<ev.cost)return;
@@ -604,7 +613,7 @@ function render(){
     const max=C.maxIng[k],pct=v/max*100;
     return`<div class="ing-row"><div class="ing-icon">${C.ingIcons[k]}</div><div class="ing-name">${C.ingNames[k]}</div><div class="ing-track"><div class="ing-fill" style="width:${pct}%;background:${pct<20?'var(--red)':pct<50?'var(--amber)':'var(--green)'}"></div></div><div class="ing-val">${v}/${max}</div></div>`;
   }).join('');
-  $('restock').innerHTML=Object.keys(C.ingredients).map(k=>`<div class="row"><div class="rn">${C.ingIcons[k]}${C.ingNames[k]}</div><div class="rr"><button class="btn bo bxs" onclick="restock('${k}',20)">+20</button><button class="btn bo bxs" onclick="restock('${k}',50)">+50</button></div></div>`).join('');
+  $('restock').innerHTML=`<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:4px;padding:3px 0 7px;border-bottom:1px solid var(--border);margin-bottom:4px;font-size:9px;color:var(--faint)"><span>材料</span><span>单价</span><span style="text-align:center">+20件</span><span style="text-align:center">+50件</span></div>`+Object.keys(C.ingredients).map(k=>{const up=RCOSTS[k],c20=Math.ceil(up*20),c50=Math.ceil(up*50),cur=C.ingredients[k],max=C.maxIng[k],low=cur/max<0.2;return`<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:5px"><span style="font-size:14px">${C.ingIcons[k]}</span><div><div style="font-size:11px;font-weight:500">${C.ingNames[k]}${low?'<span style="color:var(--red);font-size:9px"> ⚠️</span>':''}</div><div style="font-size:9px;color:var(--faint)">${cur}/${max}</div></div></div><div style="font-size:10px;color:var(--amber);text-align:right;padding-right:6px">¥${up}/件</div><button class="btn bo bxs" onclick="restock('${k}',20)" ${C.cash>=c20?'':'disabled'} style="flex-direction:column;line-height:1.3;padding:3px 7px">+20<br><span style="font-size:8px;opacity:.75">¥${c20}</span></button><button class="btn bo bxs" onclick="restock('${k}',50)" ${C.cash>=c50?'':'disabled'} style="flex-direction:column;line-height:1.3;padding:3px 7px">+50<br><span style="font-size:8px;opacity:.75">¥${c50}</span></button></div>`;}).join('')+`<div style="margin-top:8px;padding:5px 8px;background:var(--surface);border-radius:3px;font-size:9px;color:var(--faint)">💰 当前现金：<span style="color:var(--amber);font-weight:500">${fmt(C.cash)}</span></div>`;
   $('equipment').innerHTML=Object.entries(C.equipment).map(([k,v])=>`<div class="row"><div><div class="rn">${v?'✅ ':''}${C.equipNames[k]}</div><div class="rdd">${C.equipDesc[k]}</div></div><div class="rr">${v?'<span class="bdg bdg-g">已购置</span>':`<span class="faint">${fmt(C.equipCost[k])}</span><button class="btn bo bsm" onclick="buyEquip('${k}')" ${C.cash>=C.equipCost[k]?'':'disabled'}>购买</button>`}</div></div>`).join('');
   $('hiring').innerHTML=C.staffPool.map((s,i)=>`<div class="row"><div><div class="rn">${s.icon}${s.name}</div><div class="rdd">${s.role}·技能Lv.${s.skill}</div></div><div class="rr"><span class="faint">${fmt(s.cost)}</span><button class="btn bo bsm" onclick="hireStaff(${i})" ${C.cash>=s.cost?'':'disabled'}>招聘</button></div></div>`).join('')||'<div class="faint" style="padding:8px">已无可招聘员工</div>';
 
