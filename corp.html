@@ -532,7 +532,7 @@ let tick=0;
 setInterval(()=>{
   tick++;
   if(G.cps>0){G.cash+=G.cps/10;G.total+=G.cps/10}
-  if(tick%3===0){
+  if(tick%3000===0){  // 每5分钟更新一次股价
     G.stocks.forEach(st=>{
       const chg=(Math.random()-.47)*st.vol;
       st.price=Math.max(1,+(st.price*(1+chg)).toFixed(2));
