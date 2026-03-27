@@ -1584,16 +1584,7 @@ function doMarryNPC(npc, sameGender){
   G.mood=clamp(G.mood+20);
   addLog(`🎊 与 ${npc.name} 喜结连理！${sameGender?'（同性结合）':''}${npc.estates&&npc.estates.length>0?' 对方带来'+npc.estates.map(e=>e.name).join('、')+'。':''}`, 'event');
   showModal('🎊 大喜之日！',
-    `${npc.emoji} <b>${npc.name}</b> 欣然应允，你们喜结连理！
-
-` +
-    `${sameGender?'✨ 同性结合，二人相伴，但无法孕育子嗣。
-
-':''}`+
-    `${npc.estates&&npc.estates.length>0?'💰 对方随嫁地产：'+npc.estates.map(e=>e.icon+e.name).join('、')+'
-
-':''}`+
-    `配偶好感度：${G.spouseFavor}/100`,
+    `${npc.emoji} <b>${npc.name}</b> 欣然应允，你们喜结连理！<br><br>${sameGender?'✨ 同性结合，二人相伴，但无法孕育子嗣。<br><br>':''}${npc.estates&&npc.estates.length>0?'💰 对方随嫁地产：'+npc.estates.map(e=>e.icon+e.name).join('、')+'<br><br>':''}配偶好感度：${G.spouseFavor}/100`,
     [{label:'🎉 成婚大吉！',sub:'',cost:'',id:'ok'}],
     ()=>{ closeModal(); save(); render(); }
   );
@@ -1713,11 +1704,7 @@ function haveChild(e){
     addLog(`🎉 ${isMale?'子':'女'} ${childName} 呱呱坠地，家中添丁！`,'good');
     showResult(btn,'添丁！','good');
     showModal('🎊 喜得子嗣！',
-      `${childEmoji} <b>${childName}</b> 降生，${isMale?'男孩':'女孩'}。
-
-${G.spouseName?G.spouseName+'与你同喜！配偶好感+5。
-
-':''}母子（女）平安。`,
+      `${childEmoji} <b>${childName}</b> 降生，${isMale?'男孩':'女孩'}。<br><br>${G.spouseName?G.spouseName+'与你同喜！配偶好感+5。<br><br>':''}母子（女）平安。`,
       [{label:'🎉 大吉大利！',sub:'',cost:'',id:'ok'}],
       ()=>closeModal()
     );
@@ -2056,6 +2043,8 @@ function resetGame(){ if(!confirm('确定要从头开始吗？所有进度将清
 if(!load()) initGame(null);
 else render();
 </script>
+
+
 </body>
 <!-- CHANGELOG
 {
@@ -2064,7 +2053,16 @@ else render();
   "name": "古代人生模拟",
   "entries": [
     { "v": "2.0", "date": "2026-03-27", "items": [
-      "加入反馈",
+      "属性上下限(0-100)，属性归零触发死亡结局",
+      "新增家世系统：贫困/普通/富裕，影响上学年龄与要钱限额",
+      "寿命隐藏，只显示当前岁数",
+      "工作薪资范围化，加入业绩任务与升职系统",
+      "所有事件加入成功率判定(5%-95%)，成功失败差分",
+      "每年自动缩减属性(健康/心情/魅力随机衰减)",
+      "新增商店系统与背包系统，物品需到包裹使用",
+      "按钮加入涟漪点击效果与结果浮字反馈",
+      "新增魅力属性，影响相亲、社交成功率",
+      "新增父母好感度，影响要钱成功率"
     ]}
   ]
 }
