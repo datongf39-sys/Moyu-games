@@ -171,7 +171,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 <div class="topbar">
   <button class="back" onclick="location.href='index.html'">← 返回工作台</button>
   <span class="topbar-title">古代人生</span>
-  <div class="topbar-r">
+  <div class="topbar-r" style="gap:10px">
+    <button class="back" onclick="confirmRestart()" style="color:var(--red);font-size:10px">⟳ 重开此生</button>
     <span class="topbar-ver">ANCIENT · v2.0</span>
   </div>
 </div>
@@ -382,7 +383,7 @@ function initGame(inheritFrom){
   const isMale  = Math.random() > 0.5;
   const surname  = SURNAMES[Math.floor(Math.random()*SURNAMES.length)];
   const given    = (isMale?MALE_NAMES:FEMALE_NAMES)[Math.floor(Math.random()*(isMale?MALE_NAMES:FEMALE_NAMES).length)];
-  const startAge = Math.floor(Math.random()*10); // 0~9
+  const startAge = 0; // 始终从0岁降生
   const bgKeys   = ['poor','normal','normal','rich']; // weighted
   const bgKey    = inheritFrom ? 'normal' : bgKeys[Math.floor(Math.random()*bgKeys.length)];
   const bg       = FAMILY_BG[bgKey];
@@ -408,12 +409,13 @@ function initGame(inheritFrom){
     salaryCollectedThisYear: false,
     parentMoneyAskedThisYear: false,
     tasksDoneThisYear: [],
+    actionsThisYear: [],
     inSchool: false,
     married: false,
     spouseName: null, spouseEmoji: null,
     children: [],
     parents: inheritFrom ? [] : [
-      { name:SURNAMES[Math.floor(Math.random()*SURNAMES.length)]+MALE_NAMES[Math.floor(Math.random()*MALE_NAMES.length)], rel:'父亲', emoji:'👨', alive:true },
+      { name:surname+MALE_NAMES[Math.floor(Math.random()*MALE_NAMES.length)], rel:'父亲', emoji:'👨', alive:true },
       { name:SURNAMES[Math.floor(Math.random()*SURNAMES.length)]+FEMALE_NAMES[Math.floor(Math.random()*FEMALE_NAMES.length)], rel:'母亲', emoji:'👩', alive:true },
     ],
     ancestors: inheritFrom ? [{name:inheritFrom.name,emoji:inheritFrom.emoji,age:inheritFrom.age,rel:'先祖'}] : [],
@@ -434,7 +436,7 @@ function initGame(inheritFrom){
     addLog(`🌅 承继先祖 ${inheritFrom.name} 的遗志，开始新的人生。`,'event');
   } else {
     const bgInfo = FAMILY_BG[bgKey];
-    addLog(`🎋 ${G.name} 降生于世，${G.gender==='male'?'男':'女'}，出身${bgInfo.label}，随机开始于 ${startAge} 岁。`,'event');
+    addLog(`🎋 ${G.name} 降生于世，${G.gender==='male'?'男':'女'}，出身${bgInfo.label}。`,'event');
   }
   save(); render();
 }
@@ -634,10 +636,12 @@ function renderActions(){
   const schoolCostNote=G.inSchool?'就读中':(isFree?'免费就读':'费:20文/年');
   const gradeInfo=GRADE_INFO[G.schoolGrade||'F'];
   html+=actionBtn('📖','入读学堂',schoolCostNote,G.inSchool?'ab-green':(canSchool?'ab-blue':''),'toggleSchool(event)',!canSchool);
-  html+=actionBtn('📜','自学苦读','智识+，消耗心情','ab-blue','selfStudy(event)');
+  const selfDone=actionDone('selfStudy');
+  html+=actionBtn('📜','自学苦读',selfDone?'今年已做':'智识+，消耗心情','ab-blue',selfDone?'':'selfStudy(event)',selfDone,selfDone?'今年已做':'');
   // School exam button — only when in school
   if(G.inSchool){
-    html+=actionBtn('✍️','写文应考',`当前成绩: ${G.schoolGrade||'F'}`,'ab-amber','openExamModal(event)');
+    const examDone=actionDone('exam');
+    html+=actionBtn('✍️','写文应考',examDone?'今年已考':`成绩: ${G.schoolGrade||'F'}`,'ab-amber',examDone?'':'openExamModal(event)',examDone,examDone?'今年已考':'');
   }
   // 科举按钮：需老师推荐（在校A/S成绩触发）
   if(G.examRecommended||G.examPassed){
@@ -651,18 +655,25 @@ function renderActions(){
   // Social
   html+=`<div class="sec-head">社交与婚姻</div><div class="action-grid">`;
   const canMarry=a>=14&&!G.married;
-  html+=actionBtn('💑','相亲寻缘',canMarry?'魅力影响成功率':(G.married?'已婚':'年龄限制'),canMarry?'ab-purple':'',canMarry?'marry(event)':'',!canMarry);
+  const marryDone=actionDone('marry');
+  html+=actionBtn('💑','相亲寻缘',(!canMarry&&G.married)?'已婚':(!canMarry)?'年龄限制':marryDone?'今年已相亲':'魅力影响成功率',canMarry&&!marryDone?'ab-purple':'',canMarry&&!marryDone?'marry(event)':'',!canMarry||marryDone,marryDone?'今年已相':'');
   const canChild=G.married&&G.age>=16&&G.age<=50;
-  html+=actionBtn('👶','生儿育女',canChild?'需已婚':'需已婚且适龄',canChild?'ab-green':'',canChild?'haveChild(event)':'',!canChild);
-  html+=actionBtn('🍵','拜访邻里','心情+，魅力+','ab-blue','visitNeighbor(event)');
-  html+=actionBtn('🎁','孝敬父母','父母好感+',hasParents?'ab-purple':'',hasParents?'giftParents(event)':'',!hasParents);
+  const childDone=actionDone('haveChild');
+  html+=actionBtn('👶','生儿育女',!canChild?'需已婚且适龄':childDone?'今年已尝试':'健康影响成功率',canChild&&!childDone?'ab-green':'',canChild&&!childDone?'haveChild(event)':'',!canChild||childDone,childDone?'今年已做':'');
+  const visitDone=actionDone('visitNeighbor');
+  html+=actionBtn('🍵','拜访邻里',visitDone?'今年已去':'心情+，魅力+','ab-blue',visitDone?'':'visitNeighbor(event)',visitDone,visitDone?'今年已去':'');
+  const giftDone=actionDone('giftParents');
+  html+=actionBtn('🎁','孝敬父母',giftDone?'今年已孝敬':'父母好感+',hasParents&&!giftDone?'ab-purple':'',hasParents&&!giftDone?'giftParents(event)':'',!hasParents||giftDone,giftDone?'今年已做':'');
   html+=`</div>`;
 
   // Health
   html+=`<div class="sec-head">养生与修炼</div><div class="action-grid">`;
-  html+=actionBtn('🏃','强身健体','健康+，成功率与健康挂钩','ab-green','exercise(event)');
-  html+=actionBtn('🌿','求医问药','健康+20，费:40文','ab-green','healSelf(event)');
-  html+=actionBtn('🧘','修身养性','心情+，智识+','ab-blue','meditate(event)');
+  const exDone=actionDone('exercise');
+  html+=actionBtn('🏃','强身健体',exDone?'今年已做':'健康+ 费5文','ab-green',exDone?'':'exercise(event)',exDone,exDone?'今年已做':'');
+  const healDone=actionDone('healSelf');
+  html+=actionBtn('🌿','求医问药',healDone?'今年已就医':'健康+ 费40文','ab-green',healDone?'':'healSelf(event)',healDone,healDone?'今年已就医':'');
+  const meditateDone=actionDone('meditate');
+  html+=actionBtn('🧘','修身养性',meditateDone?'今年已做':'心情+，智识+','ab-blue',meditateDone?'':'meditate(event)',meditateDone,meditateDone?'今年已做':'');
   html+=`</div>`;
 
   return html;
@@ -766,7 +777,7 @@ function renderObituary(){
         </div>`:`<div style="font-size:10px;color:var(--faint);margin-bottom:16px">无成年子嗣可继承，家族就此断绝。</div>`}
         <div style="display:flex;gap:8px;justify-content:center">
           <button class="btn ba" onclick="viewLog()">查看人生日志</button>
-          <button class="btn bc" onclick="newGame()">轮回重生</button>
+          <button class="btn bc" onclick="confirmRestart()">⟳ 重入轮回</button>
         </div>
       </div>
     </div>
@@ -783,12 +794,21 @@ function viewLog(){
     </div>
     <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
       <button class="btn ba" onclick="render()">返回墓志铭</button>
-      <button class="btn bc" onclick="newGame()">轮回重生</button>
+      <button class="btn bc" onclick="confirmRestart()">⟳ 重入轮回</button>
     </div>
   </div></div>`;
 }
 
-function newGame(){ if(confirm('确定要开启新的轮回吗？')) { localStorage.removeItem('ancient2'); initGame(null); } }
+function newGame(){ confirmRestart(); }
+function confirmRestart(){
+  showModal(
+    '⟳ 重开此生',
+    '万般皆是命，半点不由人。\n确定要放弃此生，重入轮回吗？\n\n（所有进度将清空，无法恢复）',
+    [{label:'🔄 放弃此生，重入轮回', sub:'所有数据清空', cost:'', id:'yes'},
+     {label:'↩ 再活一阵', sub:'', cost:'', id:'no'}],
+    (id)=>{ closeModal(); if(id==='yes'){ localStorage.removeItem('ancient2'); location.reload(); } }
+  );
+}
 
 /* ══════════════════════════════════════════
    BUTTON FEEDBACK
@@ -848,6 +868,13 @@ function collectSalary(e){
   save(); render();
 }
 
+
+/* ══════════════════════════════════════════
+   YEARLY ACTION LIMITER
+══════════════════════════════════════════ */
+function actionDone(key){ return (G.actionsThisYear||[]).includes(key); }
+function markAction(key){ if(!G.actionsThisYear) G.actionsThisYear=[]; if(!G.actionsThisYear.includes(key)) G.actionsThisYear.push(key); }
+
 function askParents(e){
   const btn=e&&e.currentTarget;
   if(G.parentMoneyAskedThisYear){ showToast('今年已经问过父母了！'); return; }
@@ -874,9 +901,11 @@ function askParents(e){
 
 function giftParents(e){
   const btn=e&&e.currentTarget;
+  if(actionDone('giftParents')){ showToast('今年已经孝敬过父母了！'); return; }
   const cost=20+Math.floor(G.age/5)*5;
   if(G.money<cost){ showToast(`孝敬父母需要 ${cost}文！`); return; }
   confirmSpend(cost,'🎁 孝敬父母，增加好感度', ()=>{
+    markAction('giftParents');
     G.money-=cost;
     const favorGain=5+Math.floor(Math.random()*10);
     G.parentFavor=clamp(G.parentFavor+favorGain);
@@ -929,6 +958,7 @@ function gradeFromScore(score){
 }
 
 function openExamModal(e){
+  if(actionDone('exam')){ showToast('今年已经考过试了！'); return; }
   const prompt = ESSAY_PROMPTS[Math.floor(Math.random()*ESSAY_PROMPTS.length)];
   const grades = ['F','E','D','C','B','A','S'];
   // Show 3 essay style choices, each affects score differently
@@ -953,6 +983,7 @@ ${prompt.desc}
 }
 
 function doExam(prompt, style){
+  markAction('exam');
   // Base score from intel: intel 0-100 → score 0-100, with noise
   const baseScore = G.intel * 0.85 + (Math.random()-0.5)*20;
   let finalScore = baseScore + style._mod;
@@ -977,14 +1008,28 @@ function doExam(prompt, style){
   addLog(`✍️ 《${prompt.title}》— 成绩${newGrade}（${Math.round(finalScore)}分）。${gradeInfo.desc} ${changeStr} 智识+${gradeInfo.intelBonus}`, improved?'good':dropped?'bad':'info');
 
   // 成绩A/S：老师有概率推荐参加科举
+  let recMsg='';
   if((newGrade==='A'||newGrade==='S')&&!G.examRecommended&&!G.examPassed){
     const recChance=newGrade==='S'?0.85:0.5;
     if(Math.random()<recChance){
       G.examRecommended=true;
+      recMsg='\n\n🌟 先生大为赞赏，特别推荐你参加科举！科举入口已解锁。';
       addLog(`🌟 先生对你的文章赞不绝口，特别推荐你参加科举考试！科举入口已解锁。`,'event');
     }
   }
   save(); render();
+
+  // 弹窗展示考试结果
+  const gradeColor=gradeInfo.color;
+  const resultHTML=`题目：《${prompt.title}》
+风格：${style.label.replace(/[📋📑📊🏆✍️⚡🌿📖🖌️📋]/u,'')}
+得分：${Math.round(finalScore)} 分
+成绩：<span style="color:${gradeColor};font-size:18px;font-weight:700">${newGrade}</span>
+
+${gradeInfo.desc}
+${changeStr}
+智识 +${gradeInfo.intelBonus}${recMsg}`;
+  showModal('📜 考试结果', resultHTML, [{label:'✅ 知道了', sub:'', cost:'', id:'ok'}], ()=>closeModal());
 }
 
 function selfStudy(e){
@@ -1002,11 +1047,14 @@ function selfStudy(e){
     addLog(`😞 苦读半日，毫无所得，心情烦躁。`,'bad');
     showResult(btn,'没学进去','bad');
   }
+  markAction('selfStudy');
   save(); render();
 }
 
 function takeExam(e){
   const btn=e&&e.currentTarget;
+  if(actionDone('takeExam')){ showToast('今年已经参加过科举了！'); return; }
+  markAction('takeExam');
   if(!G.examRecommended&&G.intel<60){ showToast('需要老师推荐或智识≥60才能参加科举！'); return; }
   const rate=(Math.max(60,G.intel)-60)/40*0.65+0.1;
   const success=roll(rate);
@@ -1030,8 +1078,10 @@ function takeExam(e){
 
 function exercise(e){
   const btn=e&&e.currentTarget;
+  if(actionDone('exercise')){ showToast('今年已经锻炼过了！'); return; }
   if(G.money<5){ showToast('没有钱买补品练功！'); return; }
   confirmSpend(5,'🏃 购买补品强身健体（健康+，有概率扭伤）', ()=>{
+  markAction('exercise');
   G.money-=5;
   const rate=0.4+(G.health/100)*0.5;
   const success=roll(rate);
@@ -1050,8 +1100,10 @@ function exercise(e){
 
 function healSelf(e){
   const btn=e&&e.currentTarget;
+  if(actionDone('healSelf')){ showToast('今年已经看过大夫了！'); return; }
   if(G.money<40){ showToast('没有足够的钱看大夫！'); return; }
   confirmSpend(40,'⚕️ 求医问药（健康+，效果有概率不佳）', ()=>{
+  markAction('healSelf');
   G.money-=40;
   const rate=0.7+(G.money>100?0.1:0);
   const success=roll(rate);
@@ -1082,6 +1134,7 @@ function meditate(e){
     addLog(`🙄 坐立难安，心猿意马，修身养性失败了。`,'info');
     showResult(btn,'心神不定','info');
   }
+  markAction('meditate');
   save(); render();
 }
 
@@ -1100,6 +1153,7 @@ function visitNeighbor(e){
     addLog(`😒 邻里今日不在，扑了个空，略感无聊。`,'info');
     showResult(btn,'扑空了','info');
   }
+  markAction('visitNeighbor');
   save(); render();
 }
 
@@ -1174,8 +1228,10 @@ function openJobModal(){
 ══════════════════════════════════════════ */
 function marry(e){
   const btn=e&&e.currentTarget;
+  if(actionDone('marry')){ showToast('今年已经相亲过了！'); return; }
   if(G.money<100){ showToast('办婚事需要100文！'); return; }
   confirmSpend(100,'💑 操办婚事（成功率与魅力挂钩）', ()=>{
+  markAction('marry');
   // Success rate tied to charm
   const rate=0.1+(G.charm/100)*0.8;
   const success=roll(rate);
@@ -1200,6 +1256,8 @@ function marry(e){
 
 function haveChild(e){
   const btn=e&&e.currentTarget;
+  if(actionDone('haveChild')){ showToast('今年已经尝试过了！'); return; }
+  markAction('haveChild');
   const rate=0.4+(G.health/100)*0.4;
   const success=roll(rate);
   if(success){
@@ -1291,6 +1349,7 @@ function nextYear(){
   G.salaryCollectedThisYear=false;
   G.parentMoneyAskedThisYear=false;
   G.tasksDoneThisYear=[];
+  G.actionsThisYear=[];
 
   // Age children
   G.children.forEach(c=>c.age+=1);
@@ -1459,7 +1518,7 @@ else render();
   "name": "古代人生模拟",
   "entries": [
     { "v": "2.0", "date": "2026-03-27", "items": [
-      "花钱bug修复",
+      "修复bug",
     ]}
   ]
 }
