@@ -163,6 +163,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 /* Family favor bar */
 .favor-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;width:60px}
 .favor-fill{height:100%;border-radius:2px;background:var(--purple);transition:width .4s}
+.shop-item.job-book{border-color:rgba(217,119,6,.35);background:rgba(217,119,6,.05)}
+.shop-item.job-book:hover:not(.sold-out){background:var(--amber-l)}
 </style>
 </head>
 <body>
@@ -203,99 +205,111 @@ const FAMILY_BG = {
 // Job definitions with rank system
 const JOBS = [
   { id:'none',    name:'无业',   icon:'🏠', minAge:0,  maxAge:100, salaryRange:[0,0],      desc:'闲散度日',
-    ranks:['无'], xpPerRank:0, tasks:[] },
+    ranks:['无'], profPerRank:0, tasks:[] },
   { id:'farmer',  name:'农夫',   icon:'🌾', minAge:16, maxAge:60,  salaryRange:[20,50],    desc:'耕作田地，收成看天',
-    ranks:['农户','老农','庄头','田官'], xpPerRank:30,
+    ranks:['农户','老农','庄头','田官'], profPerRank:30,
     tasks:[
-      {name:'除草松土',diff:1,xp:3,text:'今日除草松土，辛苦劳作。'},
-      {name:'春耕播种',diff:2,xp:5,text:'春耕播种，望老天眷顾。'},
-      {name:'水利修渠',diff:3,xp:8,text:'参与修渠引水，获得乡邻赞赏。'},
-      {name:'丰收售粮',diff:4,xp:12,text:'丰收之年售粮，收益颇丰！'},
+      {name:'除草松土',diff:1,prof:3,text:'今日除草松土，辛苦劳作。'},
+      {name:'春耕播种',diff:2,prof:5,text:'春耕播种，望老天眷顾。'},
+      {name:'水利修渠',diff:3,prof:8,text:'参与修渠引水，获得乡邻赞赏。'},
+      {name:'丰收售粮',diff:4,prof:12,text:'丰收之年售粮，收益颇丰！'},
     ]},
   { id:'smith',   name:'铁匠',   icon:'🔨', minAge:16, maxAge:55,  salaryRange:[40,70],    desc:'锻造器具，收入稳定',
-    ranks:['学徒','工匠','技匠','宗师'], xpPerRank:35,
+    ranks:['学徒','工匠','技匠','宗师'], profPerRank:35,
     tasks:[
-      {name:'打制农具',diff:1,xp:3,text:'打制农具，完工交货。'},
-      {name:'锻造兵器',diff:2,xp:6,text:'为军营锻造兵器，质量上乘。'},
-      {name:'精铸宝刀',diff:3,xp:9,text:'耗时三日精铸宝刀，买家大喜。'},
-      {name:'仿古器皿',diff:4,xp:14,text:'仿制古器皿，被贵人高价收购！'},
+      {name:'打制农具',diff:1,prof:3,text:'打制农具，完工交货。'},
+      {name:'锻造兵器',diff:2,prof:6,text:'为军营锻造兵器，质量上乘。'},
+      {name:'精铸宝刀',diff:3,prof:9,text:'耗时三日精铸宝刀，买家大喜。'},
+      {name:'仿古器皿',diff:4,prof:14,text:'仿制古器皿，被贵人高价收购！'},
     ]},
   { id:'merchant',name:'行商',   icon:'🛒', minAge:18, maxAge:65,  salaryRange:[50,150],   desc:'走南闯北，财运不定',
-    ranks:['小贩','商人','富商','大贾'], xpPerRank:40,
+    ranks:['小贩','商人','富商','大贾'], profPerRank:40,
     tasks:[
-      {name:'摆摊叫卖',diff:1,xp:3,text:'街头摆摊，薄利多销。'},
-      {name:'丝绸贸易',diff:2,xp:6,text:'贩卖丝绸，获利不少。'},
-      {name:'远行贸易',diff:3,xp:10,text:'跋山涉水远行贸易，利润丰厚。'},
-      {name:'囤货倒卖',diff:4,xp:15,text:'精准囤货，时机成熟大赚一笔！'},
+      {name:'摆摊叫卖',diff:1,prof:3,text:'街头摆摊，薄利多销。'},
+      {name:'丝绸贸易',diff:2,prof:6,text:'贩卖丝绸，获利不少。'},
+      {name:'远行贸易',diff:3,prof:10,text:'跋山涉水远行贸易，利润丰厚。'},
+      {name:'囤货倒卖',diff:4,prof:15,text:'精准囤货，时机成熟大赚一笔！'},
     ]},
   { id:'doctor',  name:'药师',   icon:'⚕️', minAge:20, maxAge:70,  salaryRange:[50,100],   desc:'悬壶济世，口碑为先',
-    ranks:['学医','坐堂','名医','圣手'], xpPerRank:45,
+    ranks:['学医','坐堂','名医','圣手'], profPerRank:45,
     tasks:[
-      {name:'抓药配方',diff:1,xp:3,text:'日常抓药配方，无甚差错。'},
-      {name:'巡诊问脉',diff:2,xp:6,text:'出诊巡访乡邻，声誉渐好。'},
-      {name:'救治重症',diff:3,xp:10,text:'救治一名重症患者，活人无数之誉渐起。'},
-      {name:'研制奇药',diff:4,xp:16,text:'研制出新奇药方，四方求购！'},
+      {name:'抓药配方',diff:1,prof:3,text:'日常抓药配方，无甚差错。'},
+      {name:'巡诊问脉',diff:2,prof:6,text:'出诊巡访乡邻，声誉渐好。'},
+      {name:'救治重症',diff:3,prof:10,text:'救治一名重症患者，活人无数之誉渐起。'},
+      {name:'研制奇药',diff:4,prof:16,text:'研制出新奇药方，四方求购！'},
     ]},
   { id:'dancer',  name:'歌舞伎', icon:'💃', minAge:14, maxAge:30,  salaryRange:[40,90],    desc:'歌舞升平，名动一方',
-    ranks:['学徒','伎人','名伶','花魁'], xpPerRank:25,
+    ranks:['学徒','伎人','名伶','花魁'], profPerRank:25,
     tasks:[
-      {name:'练功学艺',diff:1,xp:3,text:'每日练功，基本功日渐扎实。'},
-      {name:'小楼献艺',diff:2,xp:5,text:'在小楼献艺，博得满堂喝彩。'},
-      {name:'大宴表演',diff:3,xp:9,text:'受邀在贵人宴席上表演，赏钱丰厚。'},
-      {name:'名震四方',diff:4,xp:14,text:'名声大噪，慕名而来的客人络绎不绝！'},
+      {name:'练功学艺',diff:1,prof:3,text:'每日练功，基本功日渐扎实。'},
+      {name:'小楼献艺',diff:2,prof:5,text:'在小楼献艺，博得满堂喝彩。'},
+      {name:'大宴表演',diff:3,prof:9,text:'受邀在贵人宴席上表演，赏钱丰厚。'},
+      {name:'名震四方',diff:4,prof:14,text:'名声大噪，慕名而来的客人络绎不绝！'},
     ]},
   { id:'scholar', name:'书生',   icon:'📖', minAge:16, maxAge:40,  salaryRange:[10,35],    desc:'寒窗苦读，以待科举',
-    ranks:['童生','秀才','举人','进士'], xpPerRank:50,
+    ranks:['童生','秀才','举人','进士'], profPerRank:50,
     tasks:[
-      {name:'抄书誊录',diff:1,xp:3,text:'为书坊抄书誊录，换取微薄束脩。'},
-      {name:'私塾讲学',diff:2,xp:6,text:'在私塾讲学，得束脩若干。'},
-      {name:'参加科考',diff:3,xp:10,text:'参加地方科考，颇有斩获。'},
-      {name:'撰写经义',diff:4,xp:16,text:'撰写经义文章，被大儒推介！'},
+      {name:'抄书誊录',diff:1,prof:3,text:'为书坊抄书誊录，换取微薄束脩。'},
+      {name:'私塾讲学',diff:2,prof:6,text:'在私塾讲学，得束脩若干。'},
+      {name:'参加科考',diff:3,prof:10,text:'参加地方科考，颇有斩获。'},
+      {name:'撰写经义',diff:4,prof:16,text:'撰写经义文章，被大儒推介！'},
     ]},
-  { id:'officer', name:'官员',   icon:'🎖️', minAge:20, maxAge:65,  salaryRange:[120,220],  desc:'入朝为官，高俸厚禄', reqIntel:70,
-    ranks:['从九品','正七品','从五品','正三品'], xpPerRank:60,
+  { id:'officer', name:'官员',   icon:'🎖️', minAge:20, maxAge:65,  salaryRange:[120,220],  desc:'入朝为官，高俸厚禄（仅科举高中可解锁）', examOnly:true,
+    ranks:['从九品','正七品','从五品','正三品'], profPerRank:60,
     tasks:[
-      {name:'批阅公文',diff:1,xp:3,text:'批阅一摞公文，事务繁琐。'},
-      {name:'断案审狱',diff:2,xp:7,text:'断理一桩案件，百姓称颂。'},
-      {name:'治理水患',diff:3,xp:11,text:'主持治理水患，政绩斐然。'},
-      {name:'出使邦交',diff:4,xp:18,text:'代表朝廷出使，不辱使命，龙颜大悦！'},
+      {name:'批阅公文',diff:1,prof:3,text:'批阅一摞公文，事务繁琐。'},
+      {name:'断案审狱',diff:2,prof:7,text:'断理一桩案件，百姓称颂。'},
+      {name:'治理水患',diff:3,prof:11,text:'主持治理水患，政绩斐然。'},
+      {name:'出使邦交',diff:4,prof:18,text:'代表朝廷出使，不辱使命，龙颜大悦！'},
     ]},
   { id:'monk',    name:'僧侣',   icon:'🧘', minAge:16, maxAge:100, salaryRange:[5,20],     desc:'青灯古佛，清心寡欲',
-    ranks:['沙弥','比丘','法师','住持'], xpPerRank:40,
+    ranks:['沙弥','比丘','法师','住持'], profPerRank:40,
     tasks:[
-      {name:'早课诵经',diff:1,xp:3,text:'黎明早课，心得清宁。'},
-      {name:'化缘布施',diff:2,xp:5,text:'外出化缘，得香客布施。'},
-      {name:'讲经说法',diff:3,xp:9,text:'讲经说法，信众云集。'},
-      {name:'斩妖除魔',diff:4,xp:14,text:'降服一方妖邪，美名远扬！'},
+      {name:'早课诵经',diff:1,prof:3,text:'黎明早课，心得清宁。'},
+      {name:'化缘布施',diff:2,prof:5,text:'外出化缘，得香客布施。'},
+      {name:'讲经说法',diff:3,prof:9,text:'讲经说法，信众云集。'},
+      {name:'斩妖除魔',diff:4,prof:14,text:'降服一方妖邪，美名远扬！'},
     ]},
   { id:'painter', name:'画师',   icon:'🖌️', minAge:16, maxAge:70,  salaryRange:[30,70],    desc:'丹青妙手，笔墨留情',
-    ranks:['学徒','画工','画师','画圣'], xpPerRank:35,
+    ranks:['学徒','画工','画师','画圣'], profPerRank:35,
     tasks:[
-      {name:'临摹描绘',diff:1,xp:3,text:'临摹名家作品，技艺有所精进。'},
-      {name:'为人作像',diff:2,xp:6,text:'为乡绅作画像，得润笔费。'},
-      {name:'山水长卷',diff:3,xp:10,text:'创作山水长卷，被书画馆收藏。'},
-      {name:'御前献画',diff:4,xp:16,text:'受召入宫献画，得皇上御赐！'},
+      {name:'临摹描绘',diff:1,prof:3,text:'临摹名家作品，技艺有所精进。'},
+      {name:'为人作像',diff:2,prof:6,text:'为乡绅作画像，得润笔费。'},
+      {name:'山水长卷',diff:3,prof:10,text:'创作山水长卷，被书画馆收藏。'},
+      {name:'御前献画',diff:4,prof:16,text:'受召入宫献画，得皇上御赐！'},
     ]},
   { id:'soldier', name:'士兵',   icon:'⚔️', minAge:18, maxAge:45,  salaryRange:[40,75],    desc:'保家卫国，沙场征战', dangerRisk:true,
-    ranks:['新兵','伍长','百户','将军'], xpPerRank:30,
+    ranks:['新兵','伍长','百户','将军'], profPerRank:30,
     tasks:[
-      {name:'操练阵法',diff:1,xp:4,text:'日常操练阵法，体力充沛。'},
-      {name:'守城戍边',diff:2,xp:6,text:'奉命守城，驱散来犯小股敌军。'},
-      {name:'出征作战',diff:3,xp:10,text:'出征交战，斩敌立功，获嘉奖。'},
-      {name:'奇袭敌营',diff:4,xp:16,text:'率部奇袭敌营，大获全胜，晋升有望！'},
+      {name:'操练阵法',diff:1,prof:4,text:'日常操练阵法，体力充沛。'},
+      {name:'守城戍边',diff:2,prof:6,text:'奉命守城，驱散来犯小股敌军。'},
+      {name:'出征作战',diff:3,prof:10,text:'出征交战，斩敌立功，获嘉奖。'},
+      {name:'奇袭敌营',diff:4,prof:16,text:'率部奇袭敌营，大获全胜，晋升有望！'},
     ]},
 ];
 
 // Shop items
 const SHOP_ITEMS = [
-  { id:'herbal',   name:'草药包',    icon:'🌿', price:15,  effect:{health:15},          desc:'服用后恢复健康+15',  stackable:true },
-  { id:'book',     name:'经典文集',  icon:'📚', price:30,  effect:{intel:10},            desc:'研读后智识+10',      stackable:true },
-  { id:'rouge',    name:'胭脂水粉',  icon:'💄', price:25,  effect:{charm:12},            desc:'使用后魅力+12',      stackable:true },
-  { id:'wine',     name:'美酒一坛',  icon:'🍶', price:20,  effect:{mood:15},             desc:'饮后心情+15',        stackable:true },
-  { id:'tonic',    name:'大补丸',    icon:'💊', price:60,  effect:{health:30},           desc:'服用后恢复健康+30',  stackable:true },
-  { id:'jade',     name:'翡翠玉佩',  icon:'💚', price:80,  effect:{charm:20,mood:10},    desc:'佩戴后魅力+20 心情+10', stackable:false },
-  { id:'sword',    name:'宝剑一柄',  icon:'⚔️', price:100, effect:{health:10,mood:10},   desc:'强身健体，健康+10 心情+10', stackable:false },
-  { id:'bigbag',   name:'大布袋',    icon:'🎒', price:50,  effect:{bagExpand:5},         desc:'背包容量+5（最大20）', stackable:false },
+  // 通用物品
+  { id:'herbal',   name:'草药包',    icon:'🌿', price:15,  effect:{health:15},           desc:'服用后恢复健康+15',         stackable:true  },
+  { id:'book',     name:'经典文集',  icon:'📚', price:30,  effect:{intel:10},             desc:'研读后智识+10',             stackable:true  },
+  { id:'rouge',    name:'胭脂水粉',  icon:'💄', price:25,  effect:{charm:12},             desc:'使用后魅力+12',             stackable:true  },
+  { id:'wine',     name:'美酒一坛',  icon:'🍶', price:20,  effect:{mood:15},              desc:'饮后心情+15',               stackable:true  },
+  { id:'tonic',    name:'大补丸',    icon:'💊', price:60,  effect:{health:30},            desc:'服用后恢复健康+30',         stackable:true  },
+  { id:'jade',     name:'翡翠玉佩',  icon:'💚', price:80,  effect:{charm:20,mood:10},     desc:'佩戴后魅力+20 心情+10',     stackable:false },
+  { id:'sword',    name:'宝剑一柄',  icon:'⚔️', price:100, effect:{health:10,mood:10},    desc:'强身健体，健康+10 心情+10', stackable:false },
+  { id:'bigbag',   name:'大布袋',    icon:'🎒', price:50,  effect:{bagExpand:5},          desc:'背包容量+5（最大20）',      stackable:false },
+  // 职业专属书籍（提升对应职业熟练度）
+  { id:'book_farmer',  name:'农耕要术',  icon:'📗', price:40,  effect:{jobProf:15}, jobReq:'farmer',   desc:'农夫专用·职业熟练度+15',   stackable:true },
+  { id:'book_smith',   name:'锻造秘典',  icon:'📘', price:45,  effect:{jobProf:15}, jobReq:'smith',    desc:'铁匠专用·职业熟练度+15',   stackable:true },
+  { id:'book_merchant',name:'商道经',    icon:'📙', price:50,  effect:{jobProf:15}, jobReq:'merchant', desc:'行商专用·职业熟练度+15',   stackable:true },
+  { id:'book_doctor',  name:'医典精要',  icon:'📕', price:55,  effect:{jobProf:15}, jobReq:'doctor',   desc:'药师专用·职业熟练度+15',   stackable:true },
+  { id:'book_dancer',  name:'乐府舞谱',  icon:'📓', price:40,  effect:{jobProf:15}, jobReq:'dancer',   desc:'歌舞伎专用·职业熟练度+15', stackable:true },
+  { id:'book_scholar', name:'科举指要',  icon:'📒', price:45,  effect:{jobProf:15}, jobReq:'scholar',  desc:'书生专用·职业熟练度+15',   stackable:true },
+  { id:'book_officer', name:'为官之道',  icon:'📔', price:60,  effect:{jobProf:20}, jobReq:'officer',  desc:'官员专用·职业熟练度+20',   stackable:true },
+  { id:'book_monk',    name:'禅宗心法',  icon:'📃', price:40,  effect:{jobProf:15}, jobReq:'monk',     desc:'僧侣专用·职业熟练度+15',   stackable:true },
+  { id:'book_painter', name:'画论全集',  icon:'🗒️', price:45,  effect:{jobProf:15}, jobReq:'painter',  desc:'画师专用·职业熟练度+15',   stackable:true },
+  { id:'book_soldier', name:'兵法三十六计',icon:'📜',price:45, effect:{jobProf:15}, jobReq:'soldier',  desc:'士兵专用·职业熟练度+15',   stackable:true },
 ];
 
 const RANDOM_EVENTS = [
@@ -325,13 +339,37 @@ const RANDOM_EVENTS = [
 ];
 
 const SCHOOL_EVENTS = [
-  '先生今日讲授《论语》，受益匪浅。',
-  '在学堂与同窗切磋文章，大有所获。',
-  '先生布置了繁重功课，挑灯夜读。',
-  '学堂考试，名列前茅，先生大加赞赏！',
-  '逃课去河边玩耍，被先生罚抄《孟子》三遍。',
-  '同窗欺侮，心情低落，但意志更坚。',
+  { text:'先生今日讲授《论语》，受益匪浅。',            mood:0,  intel:1 },
+  { text:'在学堂与同窗切磋文章，相互砥砺。',            mood:3,  intel:1 },
+  { text:'先生布置繁重功课，挑灯夜读，甚是辛苦。',      mood:-4, intel:2 },
+  { text:'同窗欺侮，心情低落，但意志愈发坚定。',        mood:-5, intel:0 },
+  { text:'今日偷懒打盹，被先生罚站半日。',              mood:-3, intel:0 },
+  { text:'逃课去河边玩耍，被先生罚抄《孟子》三遍。',    mood:-2, intel:0 },
+  { text:'与先生对答如流，得到当众夸赞，心情大好。',    mood:6,  intel:1 },
+  { text:'阅览藏书阁，读到一本奇书，眼界大开。',        mood:2,  intel:3 },
+  { text:'参加学堂辩论，据理力争，颇有收获。',          mood:4,  intel:2 },
+  { text:'同窗好友突然辍学，心中惆怅。',               mood:-3, intel:0 },
 ];
+
+const ESSAY_PROMPTS = [
+  { title:'论仁义礼智信',       desc:'儒家五常，试论其要义与践行之道。' },
+  { title:'试论君子之道',       desc:'何为君子？从修身、齐家、治国三方面阐述。' },
+  { title:'水善利万物而不争',    desc:'以老子之言，论处世之哲学。' },
+  { title:'民为贵，社稷次之',   desc:'论民本思想在治国中的体现。' },
+  { title:'知行合一',           desc:'王阳明之学，论知与行的关系。' },
+  { title:'天下兴亡，匹夫有责', desc:'论个人与国家命运之关联。' },
+  { title:'己所不欲，勿施于人', desc:'以此为题，论人际交往之道。' },
+];
+
+const GRADE_INFO = {
+  F:{ label:'F', color:'#ef4444', intelBonus:0,  desc:'惨不忍睹，先生摇头叹气。' },
+  E:{ label:'E', color:'#f97316', intelBonus:1,  desc:'勉强及格，仍需努力。' },
+  D:{ label:'D', color:'#f59e0b', intelBonus:2,  desc:'中规中矩，马马虎虎。' },
+  C:{ label:'C', color:'#84cc16', intelBonus:3,  desc:'成绩尚可，略有所得。' },
+  B:{ label:'B', color:'#22c55e', intelBonus:4,  desc:'颇为出色，先生点头称许。' },
+  A:{ label:'A', color:'#06b6d4', intelBonus:6,  desc:'才华横溢，同窗侧目。' },
+  S:{ label:'S', color:'#a855f7', intelBonus:10, desc:'天纵奇才，名动学堂！' },
+};
 
 /* ══════════════════════════════════════════
    GAME STATE
@@ -366,9 +404,10 @@ function initGame(inheritFrom){
     money: startMoney,
     job: 'none',
     jobRank: 0,
-    jobXP: 0,
+    jobProf: 0,
     salaryCollectedThisYear: false,
     parentMoneyAskedThisYear: false,
+    tasksDoneThisYear: [],
     inSchool: false,
     married: false,
     spouseName: null, spouseEmoji: null,
@@ -383,8 +422,11 @@ function initGame(inheritFrom){
     yearsLived: 0,
     totalMoney: 0,
     dead: false, deathCause: '',
+    examPassed: false,      // 科举高中标记
+    examRecommended: false, // 老师推荐参加科举
     schoolYears: 0,
-    inventory: [],   // [{id, name, icon, effect}]
+    schoolGrade: 'F',
+    inventory: [],
     bagLimit: 5,
   };
 
@@ -427,8 +469,8 @@ function renderMain(){
   const agePhase = G.age<7?'幼年':G.age<15?'少年':G.age<30?'青年':G.age<50?'壮年':G.age<70?'中老年':'暮年';
   const bgInfo = FAMILY_BG[G.familyBg]||FAMILY_BG.normal;
   const rankLabel = job ? job.ranks[Math.min(G.jobRank, job.ranks.length-1)] : '';
-  const xpNeeded = job ? job.xpPerRank : 0;
-  const xpPct = xpNeeded>0 ? Math.min(100,(G.jobXP/xpNeeded)*100) : 0;
+  const profNeeded = job ? job.profPerRank : 0;
+  const profPct = profNeeded>0 ? Math.min(100,(G.jobProf/profNeeded)*100) : 0;
 
   app.innerHTML = `
   <div class="main">
@@ -443,12 +485,12 @@ function renderMain(){
             <span class="avatar-tag tag-job">${job.icon} ${job.name}${rankLabel?` · ${rankLabel}`:''}</span>
             <span class="avatar-tag tag-family">${bgInfo.icon} ${bgInfo.label}</span>
             ${G.married?`<span class="avatar-tag tag-married">💑 已婚</span>`:''}
-            ${G.inSchool?`<span class="avatar-tag tag-alive">📖 就读中</span>`:''}
+            ${G.inSchool?`<span class="avatar-tag tag-alive">📖 就读中 · 成绩<span style="color:${GRADE_INFO[G.schoolGrade]?.color||'#888'}">${G.schoolGrade||'F'}</span></span>`:''} 
           </div>
-          ${job && job.id!=='none' && xpNeeded>0 ? `
-          <div class="xp-bar-wrap" title="升职进度 ${G.jobXP}/${xpNeeded}">
-            <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--faint);margin-bottom:2px"><span>升职进度</span><span>${G.jobXP}/${xpNeeded}</span></div>
-            <div class="xp-bar"><div class="xp-fill" style="width:${xpPct}%"></div></div>
+          ${job && job.id!=='none' && profNeeded>0 ? `
+          <div class="xp-bar-wrap" title="职业熟练度 ${G.jobProf}/${profNeeded}">
+            <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--faint);margin-bottom:2px"><span>职业熟练度</span><span>${G.jobProf}/${profNeeded}</span></div>
+            <div class="xp-bar"><div class="xp-fill" style="width:${profPct}%"></div></div>
           </div>` : ''}
         </div>
 
@@ -578,7 +620,7 @@ function renderActions(){
     html+=`<div class="sec-head">工作任务（完成获得升职点）</div><div class="action-grid">`;
     job.tasks.forEach((t,i)=>{
       const stars='★'.repeat(t.diff)+'☆'.repeat(4-t.diff);
-      html+=actionBtn(['📋','📑','📊','🏆'][t.diff-1],t.name,`难度${stars} +${t.xp}xp`,'ab-amber',`doWorkTask(event,${i})`);
+      html+=actionBtn(['📋','📑','📊','🏆'][t.diff-1],t.name,`难度${stars} +${t.xp}熟练度`,'ab-amber',`doWorkTask(event,${i})`);
     });
     html+=`</div>`;
   }
@@ -588,11 +630,22 @@ function renderActions(){
   const bgInfo=FAMILY_BG[G.familyBg]||FAMILY_BG.normal;
   const freeSchoolAge=bgInfo.freeSchoolAge;
   const canSchool=a>=6&&a<=18;
-  const schoolCostNote=freeSchoolAge===0?'家贫无法就学':(a<freeSchoolAge?'免费就读':'费:20文/年');
-  const schoolDisabled=!canSchool||(freeSchoolAge===0);
-  html+=actionBtn('📖','入读学堂',G.inSchool?'就读中':schoolCostNote,G.inSchool?'ab-green':(canSchool&&freeSchoolAge>0?'ab-blue':''),'toggleSchool(event)',schoolDisabled);
+  const isFree=freeSchoolAge>0&&a<freeSchoolAge;
+  const schoolCostNote=G.inSchool?'就读中':(isFree?'免费就读':'费:20文/年');
+  const gradeInfo=GRADE_INFO[G.schoolGrade||'F'];
+  html+=actionBtn('📖','入读学堂',schoolCostNote,G.inSchool?'ab-green':(canSchool?'ab-blue':''),'toggleSchool(event)',!canSchool);
   html+=actionBtn('📜','自学苦读','智识+，消耗心情','ab-blue','selfStudy(event)');
-  html+=actionBtn('🏛️','参加科举','需智识≥60',a>=20&&G.intel>=60?'ab-amber':'',a>=20&&G.intel>=60?'takeExam(event)':'',!(a>=20&&G.intel>=60));
+  // School exam button — only when in school
+  if(G.inSchool){
+    html+=actionBtn('✍️','写文应考',`当前成绩: ${G.schoolGrade||'F'}`,'ab-amber','openExamModal(event)');
+  }
+  // 科举按钮：需老师推荐（在校A/S成绩触发）
+  if(G.examRecommended||G.examPassed){
+    const examNote=G.examPassed?'已高中，可再考':'老师推荐！';
+    html+=actionBtn('🏛️','参加科举',examNote,a>=16?'ab-amber':'',a>=16?'takeExam(event)':'',a<16);
+  } else if(!G.inSchool&&G.intel>=60&&a>=20){
+    html+=actionBtn('🏛️','参加科举','需老师推荐（在校A/S成绩）','','' ,true);
+  }
   html+=`</div>`;
 
   // Social
@@ -633,14 +686,25 @@ function renderShop(){
   let html=`<div class="ct">商店 — 买物品放入包裹，在包裹中使用</div>`;
   html+=`<div style="font-size:9px;color:var(--faint);margin-bottom:10px">包裹 ${G.inventory.length}/${G.bagLimit} · 余钱 🪙${G.money}文</div>`;
   html+=`<div class="shop-grid">`;
-  SHOP_ITEMS.forEach(item=>{
-    const canBuy=G.money>=item.price&&G.inventory.length<G.bagLimit;
+  // Split items: general + job-specific for current job
+  const generalItems=SHOP_ITEMS.filter(i=>!i.jobReq);
+  const jobItems=SHOP_ITEMS.filter(i=>i.jobReq&&i.jobReq===G.job);
+  const displayItems=[...generalItems,...jobItems];
+
+  if(jobItems.length>0){
+    html+=`<div style="font-size:9px;color:var(--amber);letter-spacing:.08em;margin-bottom:6px">▸ 当前职业专属书籍已显示在下方</div>`;
+  }
+
+  displayItems.forEach(item=>{
     const tooFull=G.inventory.length>=G.bagLimit;
-    html+=`<div class="shop-item${canBuy?'':' sold-out'}" onclick="${canBuy?`buyItem('${item.id}')`:''}" title="${tooFull?'包裹已满':''}">
-      <div class="si-icon">${item.icon}</div>
+    const cantAfford=G.money<item.price;
+    const canBuy=!tooFull&&!cantAfford;
+    const isJobBook=!!item.jobReq;
+    html+=`<div class="shop-item${canBuy?'':' sold-out'}${isJobBook?' job-book':''}" onclick="${canBuy?`buyItem('${item.id}')`:''}" title="${tooFull?'包裹已满':cantAfford?'钱不够':''}">
+      <div class="si-icon">${item.icon}${isJobBook?'<span style="font-size:8px;vertical-align:top;color:var(--amber)">职</span>':''}</div>
       <div class="si-name">${item.name}</div>
       <div class="si-desc">${item.desc}</div>
-      <div class="si-price">🪙 ${item.price}文${tooFull?' · 包裹满':''}${G.money<item.price?' · 钱不够':''}</div>
+      <div class="si-price">🪙 ${item.price}文${tooFull?' · 包裹满':''}${cantAfford?' · 钱不够':''}</div>
     </div>`;
   });
   html+=`</div>`;
@@ -760,8 +824,11 @@ function showResult(btn, text, type='good'){
 function collectSalary(e){
   if(G.salaryCollectedThisYear){ showToast('今年已领过薪俸了！'); return; }
   const job=JOBS.find(j=>j.id===G.job);
-  const [lo,hi]=job.salaryRange;
-  // Success rate: base 0.8, modified by job rank
+  // 每升一级薪资上下限各提升 30%
+  const rankMult=1+G.jobRank*0.3;
+  const lo=Math.round(job.salaryRange[0]*rankMult);
+  const hi=Math.round(job.salaryRange[1]*rankMult);
+  const rankLabel=job.ranks[Math.min(G.jobRank,job.ranks.length-1)];
   const rankBonus=G.jobRank*0.04;
   const success=roll(0.75+rankBonus);
   const btn=e&&e.currentTarget;
@@ -769,7 +836,7 @@ function collectSalary(e){
     const earned=lo+Math.floor(Math.random()*(hi-lo+1));
     G.money+=earned; G.totalMoney+=earned;
     G.salaryCollectedThisYear=true;
-    addLog(`💰 ${job.name}薪俸到手 +${earned}文，辛苦一年有所回报。`,'good');
+    addLog(`💰 【${rankLabel}】薪俸到手 +${earned}文（本级区间 ${lo}~${hi}文）。`,'good');
     showResult(btn,`+${earned}文`,'good');
   } else {
     const deducted=Math.floor((lo+hi)/4);
@@ -809,12 +876,14 @@ function giftParents(e){
   const btn=e&&e.currentTarget;
   const cost=20+Math.floor(G.age/5)*5;
   if(G.money<cost){ showToast(`孝敬父母需要 ${cost}文！`); return; }
-  G.money-=cost;
-  const favorGain=5+Math.floor(Math.random()*10);
-  G.parentFavor=clamp(G.parentFavor+favorGain);
-  addLog(`🎁 花费 ${cost}文 孝敬父母，父母眉开眼笑，好感度+${favorGain}。`,'good');
-  showResult(btn,`好感+${favorGain}`,'good');
-  save(); render();
+  confirmSpend(cost,'🎁 孝敬父母，增加好感度', ()=>{
+    G.money-=cost;
+    const favorGain=5+Math.floor(Math.random()*10);
+    G.parentFavor=clamp(G.parentFavor+favorGain);
+    addLog(`🎁 花费 ${cost}文 孝敬父母，父母眉开眼笑，好感度+${favorGain}。`,'good');
+    showResult(btn,`好感+${favorGain}`,'good');
+    save(); render();
+  });
 }
 
 function toggleSchool(e){
@@ -825,12 +894,95 @@ function toggleSchool(e){
     showResult(btn,'退学','info');
   } else {
     const bg=FAMILY_BG[G.familyBg]||FAMILY_BG.normal;
-    const needPay=G.age>=bg.freeSchoolAge;
-    if(needPay&&G.money<20){ showToast('没有足够的钱交学费！'); return; }
-    if(needPay) G.money-=20;
+    const isFree=bg.freeSchoolAge>0&&G.age<bg.freeSchoolAge;
+    const needPay=!isFree;
+    if(needPay&&G.money<20){ showToast('没有足够的钱交学费！需要20文。'); return; }
+    if(needPay){
+      confirmSpend(20,'📖 缴纳束脩，入读学堂（之后每年自动扣费20文）', ()=>{
+        G.money-=20;
+        G.inSchool=true;
+        addLog(`📖 交了束脩，入读学堂，开始求学之路。`,'event');
+        showResult(btn,'入学','good');
+        save(); render();
+      });
+      return;
+    }
     G.inSchool=true;
-    addLog(`📖 ${needPay?'交了束脩，':'家里供着，'}入读学堂，开始求学之路。`,'event');
+    addLog(`📖 家里供着，入读学堂，开始求学之路。`,'event');
     showResult(btn,'入学','good');
+  }
+  save(); render();
+}
+
+/* ══════════════════════════════════════════
+   SCHOOL EXAM SYSTEM
+══════════════════════════════════════════ */
+function gradeFromScore(score){
+  // score 0~100
+  if(score>=95) return 'S';
+  if(score>=85) return 'A';
+  if(score>=72) return 'B';
+  if(score>=58) return 'C';
+  if(score>=42) return 'D';
+  if(score>=25) return 'E';
+  return 'F';
+}
+
+function openExamModal(e){
+  const prompt = ESSAY_PROMPTS[Math.floor(Math.random()*ESSAY_PROMPTS.length)];
+  const grades = ['F','E','D','C','B','A','S'];
+  // Show 3 essay style choices, each affects score differently
+  const styles = [
+    { id:'safe',    label:'🖌️ 四平八稳，中规中矩', sub:'稳妥保守，失误较少，但难获高分', scoreMod: 0   },
+    { id:'bold',    label:'⚡ 文采飞扬，大胆立意', sub:'创意十足，成功则高分，失败则低分', scoreMod: 20  },
+    { id:'copy',    label:'📋 照抄经典，引经据典', sub:'引用典故，智识要求高，通过率稳定',  scoreMod: -5  },
+  ];
+  showModal(
+    `✍️ 写文应考`,
+    `题目：《${prompt.title}》
+${prompt.desc}
+
+当前成绩：${G.schoolGrade||'F'} · 智识：${G.intel}`,
+    styles.map(s=>({ label:s.label, sub:s.sub, cost:'', id:s.id, _mod:s.scoreMod })),
+    (id)=>{
+      closeModal();
+      const style = styles.find(s=>s.id===id);
+      doExam(prompt, style);
+    }
+  );
+}
+
+function doExam(prompt, style){
+  // Base score from intel: intel 0-100 → score 0-100, with noise
+  const baseScore = G.intel * 0.85 + (Math.random()-0.5)*20;
+  let finalScore = baseScore + style._mod;
+  // Bold style: high variance
+  if(style.id==='bold') finalScore += (Math.random()-0.5)*30;
+  finalScore = Math.max(0, Math.min(100, finalScore));
+
+  const newGrade = gradeFromScore(finalScore);
+  const gradeInfo = GRADE_INFO[newGrade];
+  const oldGrade = G.schoolGrade || 'F';
+  G.schoolGrade = newGrade;
+
+  const grades = ['F','E','D','C','B','A','S'];
+  const improved = grades.indexOf(newGrade) > grades.indexOf(oldGrade);
+  const dropped  = grades.indexOf(newGrade) < grades.indexOf(oldGrade);
+
+  // Intel bonus from grade
+  G.intel = clamp(G.intel + gradeInfo.intelBonus);
+  G.mood  = clamp(G.mood + (improved?8:dropped?-8:2));
+
+  const changeStr = improved ? `↑ 从${oldGrade}提升至${newGrade}！` : dropped ? `↓ 从${oldGrade}跌至${newGrade}…` : `持平${newGrade}`;
+  addLog(`✍️ 《${prompt.title}》— 成绩${newGrade}（${Math.round(finalScore)}分）。${gradeInfo.desc} ${changeStr} 智识+${gradeInfo.intelBonus}`, improved?'good':dropped?'bad':'info');
+
+  // 成绩A/S：老师有概率推荐参加科举
+  if((newGrade==='A'||newGrade==='S')&&!G.examRecommended&&!G.examPassed){
+    const recChance=newGrade==='S'?0.85:0.5;
+    if(Math.random()<recChance){
+      G.examRecommended=true;
+      addLog(`🌟 先生对你的文章赞不绝口，特别推荐你参加科举考试！科举入口已解锁。`,'event');
+    }
   }
   save(); render();
 }
@@ -855,19 +1007,22 @@ function selfStudy(e){
 
 function takeExam(e){
   const btn=e&&e.currentTarget;
-  const rate=(G.intel-60)/40*0.7+0.1;
+  if(!G.examRecommended&&G.intel<60){ showToast('需要老师推荐或智识≥60才能参加科举！'); return; }
+  const rate=(Math.max(60,G.intel)-60)/40*0.65+0.1;
   const success=roll(rate);
   if(success){
     const reward=200+Math.floor(Math.random()*200);
     G.money+=reward; G.totalMoney+=reward;
     G.mood=clamp(G.mood+20); G.charm=clamp(G.charm+10);
+    G.examPassed=true;
     addLog(`🎉 科举高中！朝廷赐银 ${reward}文，名动乡里！`,'good');
-    G.job='officer'; G.jobRank=0; G.jobXP=0;
+    G.job='officer'; G.jobRank=0; G.jobProf=0;
     addLog(`🎖️ 入朝为官，从此衣食无忧。`,'event');
     showResult(btn,'高中！','good');
   } else {
     G.mood=clamp(G.mood-15);
-    addLog(`😞 科举落榜，心灰意冷，来年再战。`,'bad');
+    G.examRecommended=false; // 落榜需要再次被推荐
+    addLog(`😞 科举落榜，心灰意冷，来年再战。推荐资格已消耗。`,'bad');
     showResult(btn,'落榜','bad');
   }
   save(); render();
@@ -876,6 +1031,7 @@ function takeExam(e){
 function exercise(e){
   const btn=e&&e.currentTarget;
   if(G.money<5){ showToast('没有钱买补品练功！'); return; }
+  confirmSpend(5,'🏃 购买补品强身健体（健康+，有概率扭伤）', ()=>{
   G.money-=5;
   const rate=0.4+(G.health/100)*0.5;
   const success=roll(rate);
@@ -889,11 +1045,13 @@ function exercise(e){
     showResult(btn,'受伤了','bad');
   }
   save(); render();
+  }); // confirmSpend
 }
 
 function healSelf(e){
   const btn=e&&e.currentTarget;
   if(G.money<40){ showToast('没有足够的钱看大夫！'); return; }
+  confirmSpend(40,'⚕️ 求医问药（健康+，效果有概率不佳）', ()=>{
   G.money-=40;
   const rate=0.7+(G.money>100?0.1:0);
   const success=roll(rate);
@@ -907,6 +1065,7 @@ function healSelf(e){
     showResult(btn,'效果一般','bad');
   }
   save(); render();
+  }); // confirmSpend
 }
 
 function meditate(e){
@@ -957,16 +1116,16 @@ function doWorkTask(e, taskIdx){
   const attrBonus=(G.intel+G.health)/(200)*0.25;
   const success=roll(baseRate+attrBonus);
   if(success){
-    G.jobXP+=task.xp;
-    addLog(`✅ [${job.name}] ${task.text} 获得升职积分+${task.xp}。`,'good');
-    showResult(btn,`+${task.xp}xp`,'good');
+    G.jobProf+=task.xp;
+    addLog(`✅ [${job.name}] ${task.text} 获得职业熟练度+${task.xp}。`,'good');
+    showResult(btn,`+${task.prof}熟练`,'good');
     // Check promotion
     checkPromotion();
   } else {
     const xpLoss=Math.floor(task.xp/3);
-    G.jobXP=Math.max(0,G.jobXP-xpLoss);
+    G.jobProf=Math.max(0,G.jobProf-xpLoss);
     G.mood=clamp(G.mood-4);
-    addLog(`❌ [${job.name}] ${task.text.replace('。','') }，然而出了差错，升职积分-${xpLoss}。`,'bad');
+    addLog(`❌ [${job.name}] ${task.text.replace('。','') }，然而出了差错，职业熟练度-${xpLoss}。`,'bad');
     showResult(btn,'出了差错','bad');
   }
   save(); render();
@@ -974,16 +1133,16 @@ function doWorkTask(e, taskIdx){
 
 function checkPromotion(){
   const job=JOBS.find(j=>j.id===G.job);
-  if(!job||job.xpPerRank===0) return;
+  if(!job||job.profPerRank===0) return;
   const maxRank=job.ranks.length-1;
-  while(G.jobXP>=job.xpPerRank&&G.jobRank<maxRank){
-    G.jobXP-=job.xpPerRank;
+  while(G.jobProf>=job.profPerRank&&G.jobRank<maxRank){
+    G.jobProf-=job.profPerRank;
     G.jobRank++;
     const newRank=job.ranks[G.jobRank];
     const bonus=50+G.jobRank*30;
     G.money+=bonus; G.totalMoney+=bonus;
     G.mood=clamp(G.mood+20);
-    addLog(`🎊 恭喜！职位晋升为【${newRank}】，获得升职奖赏 ${bonus}文！`,'event');
+    addLog(`🎊 恭喜晋升！职位升为【${newRank}】，薪资随之提升，获得奖赏 ${bonus}文！`,'event');
   }
 }
 
@@ -994,13 +1153,14 @@ function openJobModal(){
   const available=JOBS.filter(j=>{
     if(j.minAge>G.age||j.maxAge<G.age) return false;
     if(j.reqIntel&&G.intel<j.reqIntel) return false;
+    if(j.examOnly&&!G.examPassed) return false; // 官员只能科举解锁
     return true;
   });
-  showModal('选择职业','选择一份工作，每年领取薪俸，完成任务获取升职积分。',
+  showModal('选择职业','选择一份工作，每年领取薪俸，完成任务获取职业熟练度。',
     available.map(j=>({label:`${j.icon} ${j.name}`,sub:`${j.desc} · 薪俸${j.salaryRange[0]}~${j.salaryRange[1]}文/年`,cost:j.ranks.join('→'),id:j.id})),
     (id)=>{
       if(id!==G.job){
-        G.job=id; G.jobRank=0; G.jobXP=0;
+        G.job=id; G.jobRank=0; G.jobProf=0;
         const j=JOBS.find(x=>x.id===id);
         addLog(`💼 开始从事 ${j.icon}${j.name} 一职，从头做起。`,'event');
       }
@@ -1015,6 +1175,7 @@ function openJobModal(){
 function marry(e){
   const btn=e&&e.currentTarget;
   if(G.money<100){ showToast('办婚事需要100文！'); return; }
+  confirmSpend(100,'💑 操办婚事（成功率与魅力挂钩）', ()=>{
   // Success rate tied to charm
   const rate=0.1+(G.charm/100)*0.8;
   const success=roll(rate);
@@ -1034,6 +1195,7 @@ function marry(e){
     showResult(btn,'相亲失败','bad');
   }
   save(); render();
+  }); // confirmSpend
 }
 
 function haveChild(e){
@@ -1063,18 +1225,21 @@ function buyItem(itemId){
   if(!item) return;
   if(G.money<item.price){ showToast('钱不够！'); return; }
   if(G.inventory.length>=G.bagLimit){ showToast('包裹已满！请先使用物品或购买大布袋。'); return; }
-  G.money-=item.price;
-  G.inventory.push({id:item.id,name:item.name,icon:item.icon,effect:item.effect});
-  addLog(`🛍️ 在商店购入【${item.name}】，花费 ${item.price}文。`,'info');
-  save(); render();
-  // Switch to bag tab hint
-  showToast(`已购入【${item.name}】，前往包裹使用！`);
+  confirmSpend(item.price, `${item.icon} 购买【${item.name}】\n${item.desc}`, ()=>{
+    G.money-=item.price;
+    G.inventory.push({id:item.id,name:item.name,icon:item.icon,effect:item.effect});
+    addLog(`🛍️ 在商店购入【${item.name}】，花费 ${item.price}文。`,'info');
+    save(); render();
+    showToast(`已购入【${item.name}】，前往包裹使用！`);
+  });
 }
 
 function useItem(slotIdx){
   const item=G.inventory[slotIdx];
   if(!item) return;
-  if(!confirm(`确定使用【${item.name}】吗？`)) return;
+  const effectDesc=item.effect?Object.entries(item.effect).map(([k,v])=>{const names={health:'健康',mood:'心情',intel:'智识',charm:'魅力',bagExpand:'包裹'};return `${names[k]||k}+${v}`;}).join('  '):'';
+  showModal('📦 使用物品',`${item.icon} ${item.name}\n效果：${effectDesc||'特殊'}\n\n确认使用此物品？`,[{label:`✅ 确认使用【${item.name}】`,sub:effectDesc,cost:'',id:'yes'}],(id)=>{
+    closeModal();
   const e=item.effect;
   let msg=`✨ 使用了【${item.name}】`;
   if(e.health){ G.health=clamp(G.health+e.health); msg+=`，健康+${e.health}`; }
@@ -1085,9 +1250,20 @@ function useItem(slotIdx){
     G.bagLimit=Math.min(20,G.bagLimit+e.bagExpand);
     msg+=`，包裹上限+${e.bagExpand}（现为${G.bagLimit}）`;
   }
+  if(e.jobProf){
+    const curJob=JOBS.find(j=>j.id===G.job);
+    if(curJob&&curJob.id!=='none'){
+      G.jobProf+=e.jobProf;
+      msg+=`，职业熟练度+${e.jobProf}`;
+      checkPromotion();
+    } else {
+      msg+=`（当前无业，熟练度无效）`;
+    }
+  }
   G.inventory.splice(slotIdx,1);
   addLog(msg+'。','good');
   save(); render();
+  }); // showModal callback
 }
 
 /* ══════════════════════════════════════════
@@ -1114,6 +1290,7 @@ function nextYear(){
   G.age+=1; G.yearsLived+=1;
   G.salaryCollectedThisYear=false;
   G.parentMoneyAskedThisYear=false;
+  G.tasksDoneThisYear=[];
 
   // Age children
   G.children.forEach(c=>c.age+=1);
@@ -1134,33 +1311,35 @@ function nextYear(){
   const healthDecay=1+Math.floor(Math.random()*3)+(G.age>50?2:0)+(G.age>70?3:0);
   const moodDecay=1+Math.floor(Math.random()*4);
   const charmDecay=G.age>40?1+Math.floor(Math.random()*2):Math.random()<0.3?1:0;
+  const intelDecay=Math.random()<0.5?1:0; // 每年50%概率智识-1，老年必衰
+  const intelDecayOld=G.age>60?1+Math.floor(Math.random()*2):0;
   G.health=clamp(G.health-healthDecay);
   G.mood=clamp(G.mood-moodDecay);
   G.charm=clamp(G.charm-charmDecay);
+  G.intel=clamp(G.intel-intelDecay-intelDecayOld);
 
   // School
   if(G.inSchool){
     const bg=FAMILY_BG[G.familyBg]||FAMILY_BG.normal;
-    if(G.age>18||G.age>bg.freeSchoolAge){
-      // Check if still paying
-      if(G.age>bg.freeSchoolAge&&G.money>=20){
-        G.money-=20;
-        G.intel=clamp(G.intel+8); G.schoolYears++;
-        const ev=SCHOOL_EVENTS[Math.floor(Math.random()*SCHOOL_EVENTS.length)];
-        addLog(`📖 ${ev}`,'info');
-      } else if(G.age>bg.freeSchoolAge&&G.money<20){
-        G.inSchool=false;
-        addLog(`📚 交不起学费，不得不辍学。`,'bad');
-      } else {
-        G.intel=clamp(G.intel+8); G.schoolYears++;
-        const ev=SCHOOL_EVENTS[Math.floor(Math.random()*SCHOOL_EVENTS.length)];
-        addLog(`📖 ${ev}`,'info');
-      }
-      if(G.age>18){ G.inSchool=false; addLog(`📚 年岁渐长，离开了学堂。`,'info'); }
-    } else {
-      G.intel=clamp(G.intel+8); G.schoolYears++;
+    const isFree=bg.freeSchoolAge>0&&G.age<bg.freeSchoolAge;
+    if(G.age>18){
+      G.inSchool=false; addLog(`📚 年岁渐长，离开了学堂。`,'info');
+    } else if(!isFree&&G.money>=20){
+      G.money-=20;
+      G.schoolYears++;
       const ev=SCHOOL_EVENTS[Math.floor(Math.random()*SCHOOL_EVENTS.length)];
-      addLog(`📖 ${ev}`,'info');
+      G.intel=clamp(G.intel+8+(ev.intel||0));
+      G.mood=clamp(G.mood+(ev.mood||0));
+      addLog(`📖 ${ev.text}`,'info');
+    } else if(!isFree&&G.money<20){
+      G.inSchool=false;
+      addLog(`📚 交不起学费，不得不辍学。`,'bad');
+    } else {
+      G.schoolYears++;
+      const ev=SCHOOL_EVENTS[Math.floor(Math.random()*SCHOOL_EVENTS.length)];
+      G.intel=clamp(G.intel+8+(ev.intel||0));
+      G.mood=clamp(G.mood+(ev.mood||0));
+      addLog(`📖 ${ev.text}`,'info');
     }
   }
 
@@ -1169,7 +1348,7 @@ function nextYear(){
   if(job&&G.job!=='none'){
     if(G.age>job.maxAge){
       addLog(`👴 年岁太大，从 ${job.name} 退休。`,'info');
-      G.job='none'; G.jobRank=0; G.jobXP=0;
+      G.job='none'; G.jobRank=0; G.jobProf=0;
     } else if(job.dangerRisk&&Math.random()<0.12){
       G.health=clamp(G.health-20);
       addLog(`⚔️ 在战场上受了重伤，死里逃生！健康大减。`,'bad');
@@ -1244,6 +1423,18 @@ function closeModal(){ document.getElementById('modal').classList.remove('show')
 function modalBgClick(e){ if(e.target===document.getElementById('modal')) closeModal(); }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
 
+/* ══════════════════════════════════════════
+   CONFIRM SPEND DIALOG
+══════════════════════════════════════════ */
+function confirmSpend(cost, desc, onConfirm){
+  showModal(
+    '💰 确认花费',
+    `${desc}\n\n需要花费：🪙 ${cost} 文\n当前余钱：🪙 ${G.money} 文`,
+    [{ label:`✅ 确认花费 ${cost}文`, sub:'', cost:'', id:'yes' }],
+    (id)=>{ closeModal(); onConfirm(); }
+  );
+}
+
 function showToast(msg){
   let t=document.getElementById('toast');
   if(!t){ t=document.createElement('div'); t.id='toast'; t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 18px;border-radius:6px;font-size:11px;font-family:var(--mono);z-index:9999;transition:opacity .3s;white-space:nowrap'; document.body.appendChild(t); }
@@ -1268,16 +1459,7 @@ else render();
   "name": "古代人生模拟",
   "entries": [
     { "v": "2.0", "date": "2026-03-27", "items": [
-      "属性上下限",
-      "新增家世系统",
-      "寿命隐藏",
-      "加入业绩任务与升职系统",
-      "加入成功率判定",
-      "每年自动缩减属性",
-      "新增商店系统与背包系统",
-      "按钮加入涟漪点击效果与结果浮字反馈",
-      "新增魅力属性",
-      "新增父母好感度"
+      "花钱bug修复",
     ]}
   ]
 }
