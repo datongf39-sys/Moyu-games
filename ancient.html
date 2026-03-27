@@ -165,6 +165,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .favor-fill{height:100%;border-radius:2px;background:var(--purple);transition:width .4s}
 .shop-item.job-book{border-color:rgba(217,119,6,.35);background:rgba(217,119,6,.05)}
 .shop-item.job-book:hover:not(.sold-out){background:var(--amber-l)}
+.favor-chip{display:inline-flex;align-items:center;gap:3px;font-size:9px;color:var(--purple)}
 </style>
 </head>
 <body>
@@ -430,6 +431,19 @@ function initGame(inheritFrom){
     schoolGrade: 'F',
     inventory: [],
     bagLimit: 5,
+    // 地产
+    estates: [],       // [{...ESTATES定义, residents:[], eid}]
+    // 社交NPC
+    npcs: [],          // genNPC() 对象列表，最多保留10个
+    // 配偶详细信息（扩展）
+    spouseGender: null,
+    spouseBg: null,
+    spouseMoney: 0,
+    spouseEstates: [],
+    // 妾室/面首
+    concubines: [],    // [{name, gender, emoji, age, favor}]
+    // 配偶好感
+    spouseFavor: 80,
   };
 
   if(inheritFrom){
@@ -527,6 +541,8 @@ function renderMain(){
       <div>
         <div class="tabs" id="tabs">
           <button class="tab on" onclick="switchTab('actions')">行动</button>
+          <button class="tab" onclick="switchTab('social')">社交</button>
+          <button class="tab" onclick="switchTab('estate')">地产</button>
           <button class="tab" onclick="switchTab('shop')">商店</button>
           <button class="tab" onclick="switchTab('bag')">包裹</button>
           <button class="tab" onclick="switchTab('log')">日志</button>
@@ -538,6 +554,12 @@ function renderMain(){
           <button class="next-btn" onclick="nextYear()">岁月流逝 · 度过一年 →</button>
         </div>
 
+        <div class="panel card" id="panel-social" style="border-top:none;border-radius:0 0 6px 6px">
+          ${renderSocial()}
+        </div>
+        <div class="panel card" id="panel-estate" style="border-top:none;border-radius:0 0 6px 6px">
+          ${renderEstate()}
+        </div>
         <div class="panel card" id="panel-shop" style="border-top:none;border-radius:0 0 6px 6px">
           ${renderShop()}
         </div>
@@ -613,7 +635,7 @@ function renderActions(){
   const canWork=G.job!=='none'&&a>=job.minAge&&a<=job.maxAge;
   html+=actionBtn('🪙','领取薪俸',canWork?`本年薪俸`:'无业',canWork?'ab-green':'',canWork?`collectSalary(event)`:''  ,!canWork||G.salaryCollectedThisYear, G.salaryCollectedThisYear?'今年已领':'');
   const hasParents=G.parents&&G.parents.some(p=>p.alive);
-  const canAsk=hasParents&&a<18&&!G.parentMoneyAskedThisYear;
+  const canAsk=hasParents&&a>=3&&a<18&&!G.parentMoneyAskedThisYear;
   html+=actionBtn('🙏','向父母要钱','与好感度挂钩',canAsk?'ab-blue':'',canAsk?'askParents(event)':'',!canAsk,G.parentMoneyAskedThisYear?'今年已要':'');
   html+=`</div>`;
 
@@ -622,7 +644,7 @@ function renderActions(){
     html+=`<div class="sec-head">工作任务（完成获得升职点）</div><div class="action-grid">`;
     job.tasks.forEach((t,i)=>{
       const stars='★'.repeat(t.diff)+'☆'.repeat(4-t.diff);
-      html+=actionBtn(['📋','📑','📊','🏆'][t.diff-1],t.name,`难度${stars} +${t.xp}熟练度`,'ab-amber',`doWorkTask(event,${i})`);
+      html+=actionBtn(['📋','📑','📊','🏆'][t.diff-1],t.name,`难度${stars} +${t.prof}熟练度`,'ab-amber',`doWorkTask(event,${i})`);
     });
     html+=`</div>`;
   }
@@ -636,8 +658,9 @@ function renderActions(){
   const schoolCostNote=G.inSchool?'就读中':(isFree?'免费就读':'费:20文/年');
   const gradeInfo=GRADE_INFO[G.schoolGrade||'F'];
   html+=actionBtn('📖','入读学堂',schoolCostNote,G.inSchool?'ab-green':(canSchool?'ab-blue':''),'toggleSchool(event)',!canSchool);
+  const canSelfStudy=a>=8;
   const selfDone=actionDone('selfStudy');
-  html+=actionBtn('📜','自学苦读',selfDone?'今年已做':'智识+，消耗心情','ab-blue',selfDone?'':'selfStudy(event)',selfDone,selfDone?'今年已做':'');
+  html+=actionBtn('📜','自学苦读',!canSelfStudy?'年龄太小':selfDone?'今年已做':'智识+，消耗心情',canSelfStudy?'ab-blue':'',canSelfStudy&&!selfDone?'selfStudy(event)':'',!canSelfStudy||selfDone,selfDone?'今年已做':'');
   // School exam button — only when in school
   if(G.inSchool){
     const examDone=actionDone('exam');
@@ -660,20 +683,24 @@ function renderActions(){
   const canChild=G.married&&G.age>=16&&G.age<=50;
   const childDone=actionDone('haveChild');
   html+=actionBtn('👶','生儿育女',!canChild?'需已婚且适龄':childDone?'今年已尝试':'健康影响成功率',canChild&&!childDone?'ab-green':'',canChild&&!childDone?'haveChild(event)':'',!canChild||childDone,childDone?'今年已做':'');
+  const canVisit=a>=5;
   const visitDone=actionDone('visitNeighbor');
-  html+=actionBtn('🍵','拜访邻里',visitDone?'今年已去':'心情+，魅力+','ab-blue',visitDone?'':'visitNeighbor(event)',visitDone,visitDone?'今年已去':'');
+  html+=actionBtn('🍵','拜访邻里',!canVisit?'年龄太小':visitDone?'今年已去':'心情+，魅力+',canVisit?'ab-blue':'',canVisit&&!visitDone?'visitNeighbor(event)':'',!canVisit||visitDone,visitDone?'今年已去':'');
+  const canGift=a>=8&&hasParents;
   const giftDone=actionDone('giftParents');
-  html+=actionBtn('🎁','孝敬父母',giftDone?'今年已孝敬':'父母好感+',hasParents&&!giftDone?'ab-purple':'',hasParents&&!giftDone?'giftParents(event)':'',!hasParents||giftDone,giftDone?'今年已做':'');
+  html+=actionBtn('🎁','孝敬父母',!canGift?(!hasParents?'无父母':'年龄太小'):giftDone?'今年已孝敬':'父母好感+',canGift&&!giftDone?'ab-purple':'',canGift&&!giftDone?'giftParents(event)':'',!canGift||giftDone,giftDone?'今年已做':'');
   html+=`</div>`;
 
   // Health
   html+=`<div class="sec-head">养生与修炼</div><div class="action-grid">`;
+  const canEx=a>=6;
   const exDone=actionDone('exercise');
-  html+=actionBtn('🏃','强身健体',exDone?'今年已做':'健康+ 费5文','ab-green',exDone?'':'exercise(event)',exDone,exDone?'今年已做':'');
+  html+=actionBtn('🏃','强身健体',!canEx?'年龄太小':exDone?'今年已做':'健康+ 费5文',canEx?'ab-green':'',canEx&&!exDone?'exercise(event)':'',!canEx||exDone,exDone?'今年已做':'');
   const healDone=actionDone('healSelf');
   html+=actionBtn('🌿','求医问药',healDone?'今年已就医':'健康+ 费40文','ab-green',healDone?'':'healSelf(event)',healDone,healDone?'今年已就医':'');
+  const canMeditate=a>=10;
   const meditateDone=actionDone('meditate');
-  html+=actionBtn('🧘','修身养性',meditateDone?'今年已做':'心情+，智识+','ab-blue',meditateDone?'':'meditate(event)',meditateDone,meditateDone?'今年已做':'');
+  html+=actionBtn('🧘','修身养性',!canMeditate?'年龄太小':meditateDone?'今年已做':'心情+，智识+',canMeditate?'ab-blue':'',canMeditate&&!meditateDone?'meditate(event)':'',!canMeditate||meditateDone,meditateDone?'今年已做':'');
   html+=`</div>`;
 
   return html;
@@ -688,6 +715,81 @@ function actionBtn(icon,name,desc,cls,onclick,disabled=false,badge=''){
     <div class="ab-name">${name}</div>
     <div class="ab-cost">${desc}</div>
   </button>`;
+}
+
+/* ══════════════════════════════════════════
+   地产系统渲染 & 操作
+══════════════════════════════════════════ */
+function renderEstate(){
+  if(!G.estates) G.estates=[];
+  let html=`<div class="ct">地产 — 安居乐业，广置田产</div>`;
+
+  // 已有地产
+  if(G.estates.length>0){
+    html+=`<div class="sec-head">名下地产</div>`;
+    G.estates.forEach((e,i)=>{
+      const residents=e.residents||[];
+      const occupied=residents.length;
+      const hasKids=G.children.some(c=>residents.includes(c.name));
+      html+=`<div class="family-item" style="flex-wrap:wrap">
+        <span class="fi-icon">${e.icon}</span>
+        <div class="fi-info">
+          <div class="fi-name">${e.name} <span style="font-size:8px;color:var(--amber)">入住${occupied}/${e.capacity}人</span></div>
+          <div class="fi-rel">${e.desc}</div>
+          <div style="font-size:9px;color:var(--faint);margin-top:2px">
+            ${e.incomePerYear>0?`每年收入+${e.incomePerYear}文 · `:''}
+            ${residents.length>0?'居住：'+residents.join('、'):'空置'}
+            ${hasKids?' · 🧒有孩子居住':''}
+          </div>
+        </div>
+        <button class="fi-btn" onclick="sellEstate(${i})" style="color:var(--red)">售出</button>
+      </div>`;
+    });
+  } else {
+    html+=`<div style="color:var(--faint);font-size:10px;text-align:center;padding:12px">名下尚无房产田产。</div>`;
+  }
+
+  // 购买地产
+  html+=`<div class="sec-head">购置地产（当前余钱 🪙${G.money}文）</div>`;
+  html+=`<div class="shop-grid">`;
+  ESTATES.forEach(e=>{
+    const canBuy=G.money>=e.price;
+    html+=`<div class="shop-item${canBuy?'':' sold-out'}" onclick="${canBuy?`buyEstate('${e.id}')`:''}" >
+      <div class="si-icon">${e.icon}</div>
+      <div class="si-name">${e.name} <span style="font-size:8px;color:var(--faint)">容${e.capacity}人</span></div>
+      <div class="si-desc">${e.desc}</div>
+      <div class="si-price">🪙 ${e.price}文${e.incomePerYear>0?' · 年入'+e.incomePerYear+'文':''}${!canBuy?' · 钱不够':''}</div>
+    </div>`;
+  });
+  html+=`</div>`;
+  return html;
+}
+
+function buyEstate(estateId){
+  const tmpl=ESTATES.find(e=>e.id===estateId);
+  if(!tmpl) return;
+  if(G.money<tmpl.price){ showToast('钱不够！'); return; }
+  confirmSpend(tmpl.price,`${tmpl.icon} 购置【${tmpl.name}】
+${tmpl.desc}
+容纳 ${tmpl.capacity} 人${tmpl.incomePerYear>0?' · 每年收入+'+tmpl.incomePerYear+'文':''}`,()=>{
+    G.money-=tmpl.price;
+    if(!G.estates) G.estates=[];
+    G.estates.push({...tmpl, eid:'e_'+Date.now(), residents:[]});
+    addLog(`🏠 购置了【${tmpl.name}】，花费 ${tmpl.price}文。`,'event');
+    save(); render();
+  });
+}
+
+function sellEstate(idx){
+  const e=G.estates[idx];
+  if(!e) return;
+  const sellPrice=Math.floor(e.price*0.6);
+  if(!confirm(`确定以 ${sellPrice}文 售出【${e.name}】吗？（原价${e.price}文，六折回收）`)) return;
+  G.money+=sellPrice;
+  // 居住者须迁出
+  G.estates.splice(idx,1);
+  addLog(`🏠 售出【${e.name}】，得 ${sellPrice}文。`,'info');
+  save(); render();
 }
 
 /* ══════════════════════════════════════════
@@ -947,13 +1049,12 @@ function toggleSchool(e){
    SCHOOL EXAM SYSTEM
 ══════════════════════════════════════════ */
 function gradeFromScore(score){
-  // score 0~100
-  if(score>=95) return 'S';
-  if(score>=85) return 'A';
-  if(score>=72) return 'B';
-  if(score>=58) return 'C';
-  if(score>=42) return 'D';
-  if(score>=25) return 'E';
+  if(score>=92) return 'S';
+  if(score>=80) return 'A';
+  if(score>=70) return 'B';
+  if(score>=60) return 'C';
+  if(score>=48) return 'D';
+  if(score>=35) return 'E';
   return 'F';
 }
 
@@ -984,14 +1085,39 @@ ${prompt.desc}
 
 function doExam(prompt, style){
   markAction('exam');
-  // Base score from intel: intel 0-100 → score 0-100, with noise
-  const baseScore = G.intel * 0.85 + (Math.random()-0.5)*20;
-  let finalScore = baseScore + style._mod;
-  // Bold style: high variance
-  if(style.id==='bold') finalScore += (Math.random()-0.5)*30;
+  // 基础分 = 智识映射到0~100，加随机噪声
+  const intelScore = G.intel * 0.9 + (Math.random()-0.5)*14;
+  const scoreMod = (style&&style._mod)||0;
+  let finalScore = intelScore + scoreMod;
+  if(style&&style.id==='bold') finalScore += (Math.random()-0.5)*28;
   finalScore = Math.max(0, Math.min(100, finalScore));
 
-  const newGrade = gradeFromScore(finalScore);
+  // 成绩分层：越高越难升，需要比当前等级门槛高出更多才能突破
+  // 当前等级对应的"保级分"，低于此分会掉级
+  const gradeFloors={F:0,E:28,D:40,C:52,B:64,A:76,S:92};
+  const gradeOrder=['F','E','D','C','B','A','S'];
+  const curGradeIdx=gradeOrder.indexOf(G.schoolGrade||'F');
+  // 升级门槛：越高越难，需超出当前等级上限更多
+  const gradeThresholds={
+    // [保级线, 升级线]
+    F:[0, 35],   // 得≥35才能升E
+    E:[22, 48],  // 低于22掉F，得≥48升D
+    D:[35, 60],  // 低于35掉E，得≥60升C
+    C:[48, 70],  // 低于48掉D，得≥70升B
+    B:[60, 80],  // 低于60掉C，得≥80升A
+    A:[72, 91],  // 低于72掉B，得≥91升S
+    S:[80, 999], // 低于80掉A
+  };
+  const [keepLine, upLine] = gradeThresholds[G.schoolGrade||'F'];
+  let newGradeIdx;
+  if(finalScore >= upLine){
+    newGradeIdx = Math.min(curGradeIdx+1, 6);
+  } else if(finalScore < keepLine){
+    newGradeIdx = Math.max(curGradeIdx-1, 0);
+  } else {
+    newGradeIdx = curGradeIdx;
+  }
+  const newGrade = gradeOrder[newGradeIdx];
   const gradeInfo = GRADE_INFO[newGrade];
   const oldGrade = G.schoolGrade || 'F';
   G.schoolGrade = newGrade;
@@ -1038,7 +1164,7 @@ function selfStudy(e){
   const rate=0.5+(G.intel/100)*0.4;
   const success=roll(rate);
   if(success){
-    const gain=2+Math.floor(Math.random()*4);
+    const gain=1+Math.floor(Math.random()*2);
     G.intel=clamp(G.intel+gain); G.mood=clamp(G.mood-5);
     addLog(`📜 挑灯夜读，智识+${gain}，略感疲倦。`,'good');
     showResult(btn,`智识+${gain}`,'good');
@@ -1086,7 +1212,7 @@ function exercise(e){
   const rate=0.4+(G.health/100)*0.5;
   const success=roll(rate);
   if(success){
-    const gain=6+Math.floor(Math.random()*5);
+    const gain=3+Math.floor(Math.random()*4);
     G.health=clamp(G.health+gain);
     addLog(`🏃 强身健体，精气神足，健康+${gain}。`,'good');
     showResult(btn,`健康+${gain}`,'good');
@@ -1108,7 +1234,7 @@ function healSelf(e){
   const rate=0.7+(G.money>100?0.1:0);
   const success=roll(rate);
   if(success){
-    const gain=15+Math.floor(Math.random()*12);
+    const gain=8+Math.floor(Math.random()*8);
     G.health=clamp(G.health+gain);
     addLog(`⚕️ 找药师看诊，身体好转了不少，健康+${gain}。`,'good');
     showResult(btn,`健康+${gain}`,'good');
@@ -1125,8 +1251,8 @@ function meditate(e){
   const rate=0.6+(G.mood/100)*0.3;
   const success=roll(rate);
   if(success){
-    const moodGain=8+Math.floor(Math.random()*8);
-    const intelGain=1+Math.floor(Math.random()*2);
+    const moodGain=3+Math.floor(Math.random()*5);
+    const intelGain=Math.random()<0.5?1:0;
     G.mood=clamp(G.mood+moodGain); G.intel=clamp(G.intel+intelGain);
     addLog(`🧘 静心打坐，心旷神怡，心情+${moodGain} 智识+${intelGain}。`,'good');
     showResult(btn,`心情+${moodGain}`,'good');
@@ -1143,7 +1269,7 @@ function visitNeighbor(e){
   const rate=0.55+(G.charm/100)*0.35;
   const success=roll(rate);
   if(success){
-    const moodGain=5+Math.floor(Math.random()*8);
+    const moodGain=2+Math.floor(Math.random()*4);
     const charmGain=Math.floor(Math.random()*3);
     G.mood=clamp(G.mood+moodGain); G.charm=clamp(G.charm+charmGain);
     addLog(`🍵 与邻里闲话家常，笑语欢声，心情+${moodGain}${charmGain>0?` 魅力+${charmGain}`:''}。`,'good');
@@ -1170,13 +1296,13 @@ function doWorkTask(e, taskIdx){
   const attrBonus=(G.intel+G.health)/(200)*0.25;
   const success=roll(baseRate+attrBonus);
   if(success){
-    G.jobProf+=task.xp;
-    addLog(`✅ [${job.name}] ${task.text} 获得职业熟练度+${task.xp}。`,'good');
+    G.jobProf+=task.prof;
+    addLog(`✅ [${job.name}·${job.ranks[Math.min(G.jobRank,job.ranks.length-1)]}] ${task.text} 职业熟练度+${task.prof}。`,'good');
     showResult(btn,`+${task.prof}熟练`,'good');
     // Check promotion
     checkPromotion();
   } else {
-    const xpLoss=Math.floor(task.xp/3);
+    const xpLoss=Math.floor(task.prof/3);
     G.jobProf=Math.max(0,G.jobProf-xpLoss);
     G.mood=clamp(G.mood-4);
     addLog(`❌ [${job.name}] ${task.text.replace('。','') }，然而出了差错，职业熟练度-${xpLoss}。`,'bad');
@@ -1226,48 +1352,375 @@ function openJobModal(){
 /* ══════════════════════════════════════════
    MARRIAGE & CHILDREN
 ══════════════════════════════════════════ */
-function marry(e){
-  const btn=e&&e.currentTarget;
-  if(actionDone('marry')){ showToast('今年已经相亲过了！'); return; }
-  if(G.money<100){ showToast('办婚事需要100文！'); return; }
-  confirmSpend(100,'💑 操办婚事（成功率与魅力挂钩）', ()=>{
-  markAction('marry');
-  // Success rate tied to charm
-  const rate=0.1+(G.charm/100)*0.8;
-  const success=roll(rate);
-  if(success){
-    G.money-=100;
-    const isMaleSpouse=G.gender==='female';
-    const spouseSurname=SURNAMES[Math.floor(Math.random()*SURNAMES.length)];
-    const spouseName=spouseSurname+(isMaleSpouse?MALE_NAMES:FEMALE_NAMES)[Math.floor(Math.random()*MALE_NAMES.length)];
-    const spouseEmoji=(isMaleSpouse?MALE_EMOJI:FEMALE_EMOJI)[Math.floor(Math.random()*3)];
-    G.married=true; G.spouseName=spouseName; G.spouseEmoji=spouseEmoji;
-    G.mood=clamp(G.mood+20); G.charm=clamp(G.charm+5);
-    addLog(`💑 与 ${spouseName} 喜结连理，成双入对！`,'event');
-    showResult(btn,'成婚！','good');
+/* ══════════════════════════════════════════
+   社交 & 婚姻系统
+══════════════════════════════════════════ */
+
+// ── 渲染社交面板 ──
+function renderSocial(){
+  if(!G.npcs) G.npcs=[];
+  let html=`<div class="ct">社交 — 结识人脉，培养感情</div>`;
+
+  // 前往场所按钮
+  html+=`<div class="sec-head">前往场所（每年一次）</div><div class="action-grid">`;
+  const venueDone=actionDone('goVenue');
+  SOCIAL_VENUES.filter(v=>G.age>=v.minAge).forEach(v=>{
+    html+=actionBtn(v.icon, v.name, venueDone?'今年已出行':v.desc,
+      venueDone?'':'ab-blue', venueDone?'':`goVenue('${v.id}',event)`, venueDone, venueDone?'今年已去':'');
+  });
+  html+=`</div>`;
+
+  // 已认识的NPC列表
+  if(G.npcs.length>0){
+    html+=`<div class="sec-head">相识之人</div>`;
+    G.npcs.forEach((npc,i)=>{
+      const favorPct=Math.min(100,npc.favor);
+      const canPropose=npc.favor>=80&&!G.married;
+      const canConcubine=npc.favor>=70&&G.married;
+      const sameGender=npc.gender===G.gender;
+      html+=`<div class="family-item" style="flex-wrap:wrap;gap:4px">
+        <span class="fi-icon">${npc.emoji}</span>
+        <div class="fi-info" style="min-width:120px">
+          <div class="fi-name">${npc.name} <span style="font-size:9px;color:var(--faint)">${npc.gender==='male'?'男':'女'} · ${npc.age}岁 · ${npc.job}</span></div>
+          <div class="fi-rel">${npc.bg}家境 · ${npc.trait}</div>
+          <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
+            <span style="font-size:9px;color:var(--faint)">好感</span>
+            <div style="width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+              <div style="width:${favorPct}%;height:100%;background:${favorPct>=80?'var(--purple)':favorPct>=50?'var(--amber)':'var(--blue)'};border-radius:2px;transition:width .3s"></div>
+            </div>
+            <span style="font-size:9px;color:var(--purple)">${npc.favor}</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <button class="fi-btn" onclick="interactNPC(${i},event)" ${actionDone('interact_'+npc.id)?'disabled title="今年已互动"':''}>互动</button>
+          ${canPropose&&!sameGender?`<button class="fi-btn" style="color:var(--purple);border-color:var(--purple)" onclick="proposeToNPC(${i})">提亲</button>`:''}
+          ${canPropose&&sameGender?`<button class="fi-btn" style="color:var(--purple);border-color:var(--purple)" onclick="proposeToNPC(${i})">求婚</button>`:''}
+          ${canConcubine?`<button class="fi-btn" style="color:var(--amber);border-color:var(--amber)" onclick="offerConcubine(${i})">纳为妾室</button>`:''}
+          <button class="fi-btn" style="color:var(--red)" onclick="removeNPC(${i})">疏远</button>
+        </div>
+      </div>`;
+    });
   } else {
-    G.mood=clamp(G.mood-10);
-    addLog(`😢 相亲不成，对方不满意，心情低落。`,'bad');
-    showResult(btn,'相亲失败','bad');
+    html+=`<div style="color:var(--faint);font-size:10px;text-align:center;padding:20px">尚无相识之人，前往各处场所结交新朋友吧。</div>`;
+  }
+
+  // 配偶互动
+  if(G.married){
+    html+=`<div class="sec-head">配偶关系</div>`;
+    html+=`<div class="family-item">
+      <span class="fi-icon">${G.spouseEmoji||'👤'}</span>
+      <div class="fi-info">
+        <div class="fi-name">${G.spouseName}</div>
+        <div class="fi-rel">${G.spouseGender==='male'?'夫君':'夫人'} · 好感度 ${G.spouseFavor||50}</div>
+        <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
+          <div style="width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+            <div style="width:${Math.min(100,G.spouseFavor||50)}%;height:100%;background:var(--purple);border-radius:2px;transition:width .3s"></div>
+          </div>
+          <span style="font-size:9px;color:var(--purple)">${G.spouseFavor||50}/100</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button class="fi-btn" onclick="giftSpouse()" ${actionDone('giftSpouse')?'disabled':''}>赠礼增感情</button>
+        <button class="fi-btn" onclick="divorceSpouse()" style="color:var(--red)">和离</button>
+      </div>
+    </div>`;
+    // 妾室/面首列表
+    if(G.concubines&&G.concubines.length>0){
+      html+=`<div class="sec-head">内室成员</div>`;
+      G.concubines.forEach((c,i)=>{
+        html+=`<div class="family-item">
+          <span class="fi-icon">${c.emoji}</span>
+          <div class="fi-info"><div class="fi-name">${c.name}</div><div class="fi-rel">${c.role==='concubine'?'妾室':'面首'} · 好感${c.favor}</div></div>
+          <button class="fi-btn" onclick="dismissConcubine(${i})" style="color:var(--red)">遣散</button>
+        </div>`;
+      });
+    }
+  }
+  return html;
+}
+
+// ── 前往场所 ──
+function goVenue(venueId, e){
+  const btn=e&&e.currentTarget;
+  if(actionDone('goVenue')){ showToast('今年已经出行过了！'); return; }
+  markAction('goVenue');
+  const venue=SOCIAL_VENUES.find(v=>v.id===venueId);
+  if(!venue) return;
+
+  // 有概率遇到新人
+  const meetNew = Math.random()<0.65;
+  if(meetNew){
+    const npc=genNPC(G.gender);
+    npc.venue=venueId;
+    npc.favor=5+Math.floor(Math.random()*15);
+    if(!G.npcs) G.npcs=[];
+    if(G.npcs.length>=10) G.npcs.shift(); // 最多保留10人
+    G.npcs.push(npc);
+    addLog(`${venue.icon} 在${venue.name}结识了 ${npc.name}（${npc.age}岁·${npc.job}·${npc.trait}），初始好感+${npc.favor}。`,'event');
+    showResult(btn,`遇见${npc.name}`,'good');
+  } else {
+    G.mood=clamp(G.mood+3);
+    addLog(`${venue.icon} 在${venue.name}四处走走，心情舒畅，未有特别结识。`,'info');
+    showResult(btn,'心情+3','info');
+  }
+
+  // 也有小概率对方主动追求（好感已≥70者）
+  if(G.npcs){
+    G.npcs.forEach(npc=>{
+      if(npc.favor>=70&&!G.married&&Math.random()<0.08){
+        addLog(`💌 ${npc.name} 托人带来书信，言辞间似有情意，欲向你提亲……`,'event');
+        // 弹窗询问玩家是否接受
+        setTimeout(()=>{
+          showModal(`💌 ${npc.name} 有意提亲`,
+            `${npc.emoji} ${npc.name}（${npc.age}岁·${npc.gender==='male'?'男':'女'}·${npc.job}）
+家境：${npc.bg} · 性格：${npc.trait}
+好感度：${npc.favor}/100
+
+对方有意与你缔结良缘，你意下如何？`,
+            [{label:'💑 欣然应允',sub:'接受对方提亲',cost:'',id:'yes'},
+             {label:'↩ 婉言谢绝',sub:'拒绝对方',cost:'',id:'no'}],
+            (id)=>{ closeModal(); if(id==='yes') doMarryNPC(npc); else { npc.favor=clamp(npc.favor-20); save(); render(); } }
+          );
+        },300);
+      }
+    });
   }
   save(); render();
-  }); // confirmSpend
 }
+
+// ── 与NPC互动 ──
+function interactNPC(idx, e){
+  const btn=e&&e.currentTarget;
+  const npc=G.npcs&&G.npcs[idx];
+  if(!npc) return;
+  const key='interact_'+npc.id;
+  if(actionDone(key)){ showToast('今年已经和此人互动过了！'); return; }
+  markAction(key);
+
+  // 成功率与魅力/智识挂钩
+  const rate=0.3+(G.charm/100)*0.4+(G.intel/100)*0.2;
+  const success=roll(rate);
+  if(success){
+    const gain=5+Math.floor(Math.random()*10);
+    npc.favor=Math.min(100,npc.favor+gain);
+    G.mood=clamp(G.mood+3);
+    addLog(`🍵 与 ${npc.name} 相谈甚欢，对方好感+${gain}（现为${npc.favor}）。`,'good');
+    showResult(btn,`好感+${gain}`,'good');
+  } else {
+    const loss=2+Math.floor(Math.random()*4);
+    npc.favor=Math.max(0,npc.favor-loss);
+    addLog(`😅 与 ${npc.name} 交谈不甚投机，好感-${loss}。`,'bad');
+    showResult(btn,`好感-${loss}`,'bad');
+  }
+  save(); render();
+}
+
+// ── 向NPC提亲 ──
+function proposeToNPC(idx){
+  const npc=G.npcs&&G.npcs[idx];
+  if(!npc){ return; }
+  if(npc.favor<80){ showToast('好感度不足80，对方还没准备好！'); return; }
+  if(G.married){ showToast('你已有配偶！'); return; }
+
+  const sameGender=npc.gender===G.gender;
+  showModal(
+    `💑 向 ${npc.name} 提亲`,
+    `${npc.emoji} <b>${npc.name}</b>（${npc.age}岁 · ${npc.gender==='male'?'男':'女'} · ${npc.job}）
+` +
+    `家境：${npc.bg} &nbsp; 身家：约${npc.money}文
+性格：${npc.trait}
+好感度：${npc.favor}/100
+` +
+    `${npc.estates&&npc.estates.length>0?'随嫁地产：'+npc.estates.map(e=>e.name).join('、'):'无随嫁地产'}
+
+` +
+    `${sameGender?'（同性结合，将无法孕育子嗣）':''}
+确定向对方提亲吗？`,
+    [{label:`💍 正式提亲`,sub:sameGender?'同性婚姻，无法生子':'缔结良缘',cost:'',id:'yes'},
+     {label:'↩ 再考虑一下',sub:'',cost:'',id:'no'}],
+    (id)=>{ closeModal(); if(id==='yes') sendProposal(npc,sameGender); }
+  );
+}
+
+function sendProposal(npc, sameGender){
+  // 对方是否同意：随机事件，与好感挂钩
+  const agreeRate=0.3+(npc.favor-80)/20*0.5; // 80好感=30%，100好感=80%
+  const agreed=roll(agreeRate);
+  if(agreed){
+    doMarryNPC(npc, sameGender);
+  } else {
+    G.mood=clamp(G.mood-12);
+    npc.favor=clamp(npc.favor-15);
+    addLog(`💔 ${npc.name} 婉言谢绝了提亲，心中失落。`,'bad');
+    showModal('💔 提亲结果',
+      `${npc.emoji} ${npc.name} 思量再三，婉言谢绝了你的提亲。
+
+"缘分未到，还需缘分。"
+
+好感度-15，心情受损。`,
+      [{label:'↩ 黯然离去',sub:'',cost:'',id:'ok'}],
+      ()=>{ closeModal(); save(); render(); }
+    );
+  }
+}
+
+function doMarryNPC(npc, sameGender){
+  if(!G.npcs) G.npcs=[];
+  // 移除npc出好友列表
+  G.npcs=G.npcs.filter(n=>n.id!==npc.id);
+  G.married=true;
+  G.spouseName=npc.name;
+  G.spouseEmoji=npc.emoji;
+  G.spouseGender=npc.gender;
+  G.spouseBg=npc.bg;
+  G.spouseMoney=npc.money;
+  G.spouseEstates=npc.estates||[];
+  G.spouseFavor=80;
+  G.sameGenderMarriage=sameGender||false;
+  // 随嫁地产并入
+  if(npc.estates&&npc.estates.length>0){
+    npc.estates.forEach(e=>{ G.estates.push({...e,eid:'se_'+Date.now()+Math.random(),residents:[]}); });
+  }
+  G.mood=clamp(G.mood+20);
+  addLog(`🎊 与 ${npc.name} 喜结连理！${sameGender?'（同性结合）':''}${npc.estates&&npc.estates.length>0?' 对方带来'+npc.estates.map(e=>e.name).join('、')+'。':''}`, 'event');
+  showModal('🎊 大喜之日！',
+    `${npc.emoji} <b>${npc.name}</b> 欣然应允，你们喜结连理！
+
+` +
+    `${sameGender?'✨ 同性结合，二人相伴，但无法孕育子嗣。
+
+':''}`+
+    `${npc.estates&&npc.estates.length>0?'💰 对方随嫁地产：'+npc.estates.map(e=>e.icon+e.name).join('、')+'
+
+':''}`+
+    `配偶好感度：${G.spouseFavor}/100`,
+    [{label:'🎉 成婚大吉！',sub:'',cost:'',id:'ok'}],
+    ()=>{ closeModal(); save(); render(); }
+  );
+}
+
+// ── 向NPC提出纳妾/养面首 ──
+function offerConcubine(idx){
+  const npc=G.npcs&&G.npcs[idx];
+  if(!npc) return;
+  if(!G.married){ showToast('尚未成婚，此事不妥！'); return; }
+  // 需要有一间空置（无孩子居住）的额外房产
+  const spareEstate=G.estates.find(e=>{
+    const hasKids=G.children.some(c=>e.residents&&e.residents.includes(c.name));
+    const occupied=(e.residents&&e.residents.length||0);
+    return occupied<e.capacity&&!hasKids;
+  });
+  if(!spareEstate){ showToast('需要一间空置（无孩子）的额外房产才能纳妾！'); return; }
+  if(npc.favor<70){ showToast('好感度不足70，对方不愿意！'); return; }
+
+  const role=G.gender==='male'?'concubine':'lover';
+  const roleLabel=G.gender==='male'?'妾室':'面首';
+  const cost=200;
+  confirmSpend(cost,`将 ${npc.name} 纳为${roleLabel}（将入住${spareEstate.name}）`,()=>{
+    G.money-=cost;
+    if(!G.concubines) G.concubines=[];
+    const c={name:npc.name,gender:npc.gender,emoji:npc.emoji,age:npc.age,favor:npc.favor,role,estateId:spareEstate.eid||spareEstate.id};
+    G.concubines.push(c);
+    if(!spareEstate.residents) spareEstate.residents=[];
+    spareEstate.residents.push(npc.name);
+    G.npcs=G.npcs.filter(n=>n.id!==npc.id);
+    addLog(`🏮 将 ${npc.name} 纳为${roleLabel}，入住${spareEstate.name}。`,'event');
+    save(); render();
+    showToast(`${npc.name} 已成为你的${roleLabel}。`);
+  });
+}
+
+// ── 遣散妾室 ──
+function dismissConcubine(idx){
+  const c=G.concubines&&G.concubines[idx];
+  if(!c) return;
+  if(!confirm(`确定遣散 ${c.name} 吗？`)) return;
+  G.estates.forEach(e=>{ if(e.residents) e.residents=e.residents.filter(n=>n!==c.name); });
+  G.concubines.splice(idx,1);
+  addLog(`📜 遣散了${c.role==='concubine'?'妾室':'面首'} ${c.name}。`,'info');
+  save(); render();
+}
+
+// ── 赠礼配偶 ──
+function giftSpouse(){
+  if(actionDone('giftSpouse')){ showToast('今年已经赠礼了！'); return; }
+  const cost=30+Math.floor(G.age/10)*10;
+  if(G.money<cost){ showToast(`赠礼需要 ${cost}文！`); return; }
+  confirmSpend(cost,`💝 赠礼给 ${G.spouseName}，增进感情`,()=>{
+    markAction('giftSpouse');
+    G.money-=cost;
+    const gain=5+Math.floor(Math.random()*10);
+    G.spouseFavor=clamp((G.spouseFavor||50)+gain);
+    addLog(`💝 赠礼给 ${G.spouseName}，对方喜笑颜开，好感+${gain}。`,'good');
+    save(); render();
+  });
+}
+
+// ── 和离 ──
+function divorceSpouse(){
+  if(!confirm(`确定要与 ${G.spouseName} 和离吗？`)) return;
+  addLog(`📜 与 ${G.spouseName} 和离，各奔东西。`,'bad');
+  G.mood=clamp(G.mood-20);
+  // 对方带走一半房产
+  if(G.spouseEstates&&G.spouseEstates.length>0){
+    G.spouseEstates.forEach(se=>{ G.estates=G.estates.filter(e=>e.id!==se.id); });
+    addLog(`🏠 ${G.spouseName} 带走了随嫁地产。`,'bad');
+  }
+  G.married=false; G.spouseName=null; G.spouseEmoji=null;
+  G.spouseGender=null; G.spouseFavor=50; G.spouseEstates=[];
+  save(); render();
+}
+
+// ── 疏远NPC ──
+function removeNPC(idx){
+  if(!confirm('确定要疏远此人吗？')) return;
+  G.npcs.splice(idx,1);
+  save(); render();
+}
+
+function marry(e){ showToast('请前往「社交」页面结识人脉，通过好感度提亲成婚！'); }
+
 
 function haveChild(e){
   const btn=e&&e.currentTarget;
   if(actionDone('haveChild')){ showToast('今年已经尝试过了！'); return; }
+  // 同性婚姻不能生子
+  if(G.sameGenderMarriage){ showToast('同性结合，无法孕育子嗣。'); return; }
+  // 需要有足够容量的主屋（排除有妾室居住的房产）
+  const mainEstate=G.estates&&G.estates.find(e=>{
+    const concubineNames=(G.concubines||[]).map(c=>c.name);
+    const hasConcubine=(e.residents||[]).some(r=>concubineNames.includes(r));
+    return !hasConcubine&&(e.residents||[]).length<e.capacity;
+  });
+  if(G.estates&&G.estates.length>0&&!mainEstate){
+    showToast('名下房产已住满或均有妾室居住，无法生子！'); return;
+  }
   markAction('haveChild');
-  const rate=0.4+(G.health/100)*0.4;
+  // 成功率较低，与健康和年龄挂钩
+  const agePenalty=G.age>40?0.2:G.age>35?0.1:0;
+  const rate=clamp(0.25+(G.health/100)*0.3-agePenalty,0.05,0.6);
   const success=roll(rate);
   if(success){
     const isMale=Math.random()>0.5;
     const childName=G.surname+(isMale?MALE_NAMES:FEMALE_NAMES)[Math.floor(Math.random()*MALE_NAMES.length)];
     const childEmoji=(isMale?MALE_EMOJI:FEMALE_EMOJI)[Math.floor(Math.random()*3)];
     const child={name:childName,gender:isMale?'male':'female',emoji:childEmoji,age:0};
-    G.children.push(child); G.mood=clamp(G.mood+15);
+    G.children.push(child);
+    // 孩子入住主屋
+    if(mainEstate){ if(!mainEstate.residents) mainEstate.residents=[]; mainEstate.residents.push(childName); }
+    G.mood=clamp(G.mood+15);
+    if(G.spouseFavor) G.spouseFavor=clamp(G.spouseFavor+5);
     addLog(`🎉 ${isMale?'子':'女'} ${childName} 呱呱坠地，家中添丁！`,'good');
     showResult(btn,'添丁！','good');
+    showModal('🎊 喜得子嗣！',
+      `${childEmoji} <b>${childName}</b> 降生，${isMale?'男孩':'女孩'}。
+
+${G.spouseName?G.spouseName+'与你同喜！配偶好感+5。
+
+':''}母子（女）平安。`,
+      [{label:'🎉 大吉大利！',sub:'',cost:'',id:'ok'}],
+      ()=>closeModal()
+    );
   } else {
     addLog(`👶 今年未能添丁，来年再盼。`,'info');
     showResult(btn,'未能添丁','info');
@@ -1354,6 +1807,71 @@ function nextYear(){
   // Age children
   G.children.forEach(c=>c.age+=1);
 
+  // 地产收入
+  if(G.estates&&G.estates.length>0){
+    let estateIncome=0;
+    G.estates.forEach(e=>{ if(e.incomePerYear>0){ estateIncome+=e.incomePerYear+(Math.floor(Math.random()*10)-5); } });
+    if(estateIncome>0){ G.money+=estateIncome; G.totalMoney+=estateIncome; addLog(`🏠 名下地产收入 +${estateIncome}文。`,'good'); }
+  }
+
+  // 妾室要求扶正（概率事件）
+  if(G.concubines&&G.concubines.length>0&&G.married){
+    G.concubines.forEach((c,i)=>{
+      if(c.favor>=80&&Math.random()<0.12){
+        addLog(`🏮 妾室 ${c.name} 在你面前哭诉，要求扶正为正室……`,'event');
+        setTimeout(()=>{
+          showModal(`🏮 ${c.name} 要求扶正`,
+            `${c.emoji} ${c.name}（好感${c.favor}）哭诉多年情深，求你扶正她为正室。
+
+若答应：${G.spouseName}好感-30，${c.name}好感+20
+若拒绝：${c.name}好感-20，可能离去`,
+            [{label:'✅ 扶正为妻',sub:'配偶好感-30',cost:'',id:'yes'},
+             {label:'❌ 婉言安抚',sub:`${c.name}好感-20`,cost:'',id:'no'}],
+            (id)=>{
+              closeModal();
+              if(id==='yes'){
+                G.spouseFavor=clamp((G.spouseFavor||50)-30);
+                c.favor=clamp(c.favor+20);
+                addLog(`📜 扶正 ${c.name} 为正室，${G.spouseName} 心寒意冷。`,'event');
+              } else {
+                c.favor=clamp(c.favor-20);
+                if(c.favor<30){ G.concubines.splice(i,1); addLog(`💔 ${c.name} 心灰意冷，悄然离去。`,'bad'); }
+                else { addLog(`😞 婉言安抚 ${c.name}，她暂时平息，但心结难解。`,'info'); }
+              }
+              save(); render();
+            }
+          );
+        },400);
+      }
+    });
+  }
+
+  // 配偶发现妾室/面首（概率事件）
+  if(G.married&&G.concubines&&G.concubines.length>0){
+    if(Math.random()<0.15){
+      const c=G.concubines[0];
+      G.spouseFavor=clamp((G.spouseFavor||50)-15);
+      addLog(`😡 ${G.spouseName} 察觉到了 ${c.name} 的存在，心中大为不满，好感-15。`,'bad');
+      // 若好感过低，有概率离家出走/离婚
+      if((G.spouseFavor||50)<25&&Math.random()<0.4){
+        addLog(`💔 ${G.spouseName} 无法忍受，收拾行囊，提出和离！`,'bad');
+        G.married=false; G.spouseName=null; G.spouseEmoji=null; G.spouseFavor=50;
+        G.mood=clamp(G.mood-25);
+      }
+    }
+  }
+
+  // NPC好感自然衰减（若长期不互动）
+  if(G.npcs){
+    G.npcs.forEach(npc=>{
+      if(!actionDone('interact_'+npc.id)&&Math.random()<0.3){
+        npc.favor=Math.max(0,npc.favor-3);
+      }
+    });
+    // 移除好感归零者
+    G.npcs=G.npcs.filter(n=>n.favor>0);
+  }
+
   // Parents may pass away
   if(G.parents){
     G.parents.forEach(p=>{
@@ -1367,15 +1885,36 @@ function nextYear(){
   }
 
   // Natural attribute decay each year (random)
-  const healthDecay=1+Math.floor(Math.random()*3)+(G.age>50?2:0)+(G.age>70?3:0);
-  const moodDecay=1+Math.floor(Math.random()*4);
-  const charmDecay=G.age>40?1+Math.floor(Math.random()*2):Math.random()<0.3?1:0;
-  const intelDecay=Math.random()<0.5?1:0; // 每年50%概率智识-1，老年必衰
-  const intelDecayOld=G.age>60?1+Math.floor(Math.random()*2):0;
-  G.health=clamp(G.health-healthDecay);
-  G.mood=clamp(G.mood-moodDecay);
-  G.charm=clamp(G.charm-charmDecay);
-  G.intel=clamp(G.intel-intelDecay-intelDecayOld);
+  // ── 属性年度衰减（年轻衰减慢，中年后加速）────────
+  // 健康
+  const healthDecay = 1 + Math.floor(Math.random()*2)
+    + (G.age>=40 ? 1 : 0)
+    + (G.age>=55 ? 2 : 0)
+    + (G.age>=70 ? 3 : 0);
+
+  // 心情：小幅随机，不受年龄影响太多
+  const moodDecay = Math.floor(Math.random()*3); // 0~2
+
+  // 魅力：青少年几乎不降，中年后明显下滑，老年快速衰退
+  let charmDecay = 0;
+  if(G.age < 20)       charmDecay = Math.random()<0.15 ? 1 : 0;       // 15%概率-1
+  else if(G.age < 35)  charmDecay = Math.random()<0.30 ? 1 : 0;       // 30%概率-1
+  else if(G.age < 50)  charmDecay = 1 + (Math.random()<0.4 ? 1 : 0);  // 1~2
+  else if(G.age < 65)  charmDecay = 1 + Math.floor(Math.random()*2);  // 1~2
+  else                 charmDecay = 2 + Math.floor(Math.random()*2);  // 2~3
+
+  // 智识：年轻时几乎不降，中年后渐渐遗忘，老年衰退
+  let intelDecay = 0;
+  if(G.age < 25)       intelDecay = Math.random()<0.10 ? 1 : 0;       // 10%概率-1
+  else if(G.age < 40)  intelDecay = Math.random()<0.25 ? 1 : 0;       // 25%概率-1
+  else if(G.age < 55)  intelDecay = Math.random()<0.50 ? 1 : 0;       // 50%概率-1
+  else if(G.age < 70)  intelDecay = 1 + (Math.random()<0.35 ? 1 : 0); // 1~2
+  else                 intelDecay = 2 + Math.floor(Math.random()*2);  // 2~3
+
+  G.health = clamp(G.health - healthDecay);
+  G.mood   = clamp(G.mood   - moodDecay);
+  G.charm  = clamp(G.charm  - charmDecay);
+  G.intel  = clamp(G.intel  - intelDecay);
 
   // School
   if(G.inSchool){
@@ -1387,7 +1926,7 @@ function nextYear(){
       G.money-=20;
       G.schoolYears++;
       const ev=SCHOOL_EVENTS[Math.floor(Math.random()*SCHOOL_EVENTS.length)];
-      G.intel=clamp(G.intel+8+(ev.intel||0));
+      G.intel=clamp(G.intel+4+(ev.intel||0));
       G.mood=clamp(G.mood+(ev.mood||0));
       addLog(`📖 ${ev.text}`,'info');
     } else if(!isFree&&G.money<20){
@@ -1396,7 +1935,7 @@ function nextYear(){
     } else {
       G.schoolYears++;
       const ev=SCHOOL_EVENTS[Math.floor(Math.random()*SCHOOL_EVENTS.length)];
-      G.intel=clamp(G.intel+8+(ev.intel||0));
+      G.intel=clamp(G.intel+4+(ev.intel||0));
       G.mood=clamp(G.mood+(ev.mood||0));
       addLog(`📖 ${ev.text}`,'info');
     }
@@ -1461,10 +2000,17 @@ function switchTab(id){
   document.getElementById('panel-'+id).classList.add('on');
   event.target.classList.add('on');
 }
+function switchTabDirect(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  const panel=document.getElementById('panel-'+id);
+  if(panel) panel.classList.add('on');
+  document.querySelectorAll('.tab').forEach(t=>{ if(t.textContent.includes(id==='social'?'社交':id==='estate'?'地产':id)) t.classList.add('on'); });
+}
 
 function showModal(title,sub,opts,onSelect){
   document.getElementById('modal-title').textContent=title;
-  document.getElementById('modal-sub').textContent=sub;
+  document.getElementById('modal-sub').innerHTML=sub.replace(/\n/g,'<br>');
   const optsEl=document.getElementById('modal-opts');
   optsEl.innerHTML='';
   opts.forEach(opt=>{
@@ -1518,7 +2064,7 @@ else render();
   "name": "古代人生模拟",
   "entries": [
     { "v": "2.0", "date": "2026-03-27", "items": [
-      "修复bug",
+      "加入反馈",
     ]}
   ]
 }
