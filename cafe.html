@@ -745,6 +745,38 @@ function resetGame(){
   localStorage.removeItem('cafe');
   location.reload();
 }
+
+/* ── 公告栏接入：更新版本号和内容后，返回首页会自动弹出公告 ── */
+(function(){
+  var cl = JSON.parse(localStorage.getItem('moyu-changelog')||'{}');
+  cl.cafe = {
+    version: '2.1',       // ← 每次更新时，修改这里的版本号
+    icon: '☕',
+    name: '咖啡门店经营',
+    entries: [
+      /* 最新版本放最前面 */
+      { v:'2.1', date:'2025-03-27', items:[
+          '配方研发系统正式上线',
+          '新增VIP客户专属互动事件',
+          '差评危机处理机制优化'
+        ]
+      }
+      /* 历史版本示例（可继续追加）：
+      { v:'2.0', date:'2025-03-10', items:['手冲制作系统重构','新增限时活动框架'] }
+      */
+    ]
+  };
+  localStorage.setItem('moyu-changelog', JSON.stringify(cl));
+})();
 </script>
-</body>
+<!-- CHANGELOG
+{
+  "version": "2.1",
+  "icon": "☕",
+  "name": "咖啡门店经营",
+  "entries": [
+    { "v": "2.1", "date": "2025-03-27", "items": ["配方研发系统正式上线", "新增VIP客户专属互动事件", "差评危机处理机制优化"] }
+  ]
+}
+CHANGELOG -->
 </html>

@@ -562,6 +562,39 @@ addLog('clog','🏢 公司运营系统启动','linfo');
 
 function st(t){localStorage.setItem('moyu-theme',t);document.documentElement.setAttribute('data-theme',t);}
 function resetGame(){if(!confirm('确定要从头开始吗？所有进度将清空！'))return;localStorage.removeItem('corp');location.reload();}
+
+/* ── 公告栏接入：更新版本号和内容后，返回首页会自动弹出公告 ── */
+(function(){
+  var cl = JSON.parse(localStorage.getItem('moyu-changelog')||'{}');
+  cl.corp = {
+    version: '3.2',       // ← 每次更新时，修改这里的版本号
+    icon: '🏢',
+    name: '公司运营模拟',
+    entries: [
+      /* 最新版本放最前面 */
+      { v:'3.2', date:'2025-03-27', items:[
+          'AI竞争对手行为逻辑全面升级',
+          '新增跨国并购事件链',
+          '股票市场波动算法优化'
+        ]
+      }
+      /* 历史版本示例（可继续追加）：
+      { v:'3.1', date:'2025-03-10', items:['部门建设系统重构','新增HR福利体系'] }
+      */
+    ]
+  };
+  localStorage.setItem('moyu-changelog', JSON.stringify(cl));
+})();
 </script>
 </body>
+<!-- CHANGELOG
+{
+  "version": "3.2",
+  "icon": "🏢",
+  "name": "公司运营模拟",
+  "entries": [
+    { "v": "3.2", "date": "2025-03-27", "items": ["AI竞争对手行为逻辑全面升级", "新增跨国并购事件链", "股票市场波动算法优化"] }
+  ]
+}
+CHANGELOG -->
 </html>

@@ -778,6 +778,36 @@ function resetGame(){
   localStorage.removeItem('doom');
   location.reload();
 }
+
+/* ── 公告栏接入：更新版本号和内容后，返回首页会自动弹出公告 ── */
+(function(){
+  var cl = JSON.parse(localStorage.getItem('moyu-changelog')||'{}');
+  cl.doom = {
+    version: '1.0',       // ← 每次更新时，修改这里的版本号
+    icon: '🚐',
+    name: '末日房车囤货',
+    entries: [
+      /* 最新版本放最前面 */
+      { v:'1.0', date:'2025-03-27', items:[
+          '末日房车模块正式上线！',
+          '地图探索与废墟搜刮系统',
+          '幸存者招募与车辆升级玩法'
+        ]
+      }
+    ]
+  };
+  localStorage.setItem('moyu-changelog', JSON.stringify(cl));
+})();
 </script>
 </body>
+<!-- CHANGELOG
+{
+  "version": "1.0",
+  "icon": "🚐",
+  "name": "末日房车囤货",
+  "entries": [
+    { "v": "1.0", "date": "2025-03-27", "items": ["末日房车模块正式上线！", "地图探索与废墟搜刮系统", "幸存者招募与车辆升级玩法"] }
+  ]
+}
+CHANGELOG -->
 </html>

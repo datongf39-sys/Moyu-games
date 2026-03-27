@@ -242,6 +242,136 @@ body::after{
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .game-card{animation:fadeUp .4s ease both}
+
+/* ── CARD NEW DOT ── */
+.card-new-dot{
+  position:absolute;top:14px;right:14px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--red);
+  box-shadow:0 0 0 2px var(--card);
+  display:none;
+}
+.card-new-dot.on{display:block;animation:newpulse 1.8s ease-in-out infinite}
+@keyframes newpulse{0%,100%{box-shadow:0 0 0 2px var(--card),0 0 0 4px transparent}50%{box-shadow:0 0 0 2px var(--card),0 0 0 5px rgba(220,38,38,.25)}}
+
+/* ── CHANGELOG MODAL OVERLAY ── */
+.cl-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  z-index:1000;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .22s ease;
+}
+.cl-overlay.show{opacity:1;pointer-events:all}
+
+/* ── MODAL CARD ── */
+.cl-modal{
+  background:var(--surface);
+  border:1px solid var(--border-l);
+  border-radius:14px;
+  width:min(520px,92vw);
+  max-height:80vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 24px 60px rgba(0,0,0,.18),0 8px 20px rgba(0,0,0,.1);
+  transform:translateY(16px) scale(.97);
+  transition:transform .25s cubic-bezier(.34,1.3,.64,1);
+  overflow:hidden;
+}
+.cl-overlay.show .cl-modal{transform:translateY(0) scale(1)}
+
+.cl-modal-head{
+  padding:20px 22px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  flex-shrink:0;
+}
+.cl-head-left{}
+.cl-head-eyebrow{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:5px}
+.cl-head-title{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--text);line-height:1.1}
+.cl-head-sub{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:.03em}
+.cl-close{
+  width:28px;height:28px;border-radius:6px;border:1px solid var(--border);
+  background:var(--bg);color:var(--muted);
+  font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:2px;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.cl-close:hover{background:var(--border);color:var(--text);border-color:var(--border-l)}
+
+.cl-modal-body{
+  overflow-y:auto;padding:6px 0 4px;
+  flex:1;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.cl-modal-body::-webkit-scrollbar{width:4px}
+.cl-modal-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── GROUP: one per module ── */
+.cl-group{padding:14px 22px 10px;border-bottom:1px solid var(--border)}
+.cl-group:last-child{border-bottom:none}
+.cl-group-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.cl-group-icon{font-size:16px;line-height:1}
+.cl-group-name{font-size:11px;font-weight:600;color:var(--text);letter-spacing:.03em}
+.cl-group-ver{font-size:9px;color:var(--faint);letter-spacing:.06em}
+.cl-new-tag{
+  font-size:8px;letter-spacing:.1em;padding:1px 6px;border-radius:3px;
+  background:var(--red);color:#fff;text-transform:uppercase;
+  animation:newpulse2 2s infinite;
+}
+@keyframes newpulse2{0%,100%{opacity:1}50%{opacity:.7}}
+
+.cl-items{display:flex;flex-direction:column;gap:5px}
+.cl-item{
+  display:flex;align-items:baseline;gap:8px;
+  font-size:10px;color:var(--muted);line-height:1.5;
+}
+.cl-item::before{
+  content:'·';color:var(--faint);flex-shrink:0;
+  font-size:14px;line-height:1;margin-top:-1px;
+}
+.cl-item b{color:var(--text);font-weight:500}
+.cl-item.is-new{color:var(--text)}
+.cl-item.is-new::before{color:var(--green)}
+
+/* ── FOOTER ── */
+.cl-modal-foot{
+  padding:14px 22px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  flex-shrink:0;background:var(--bg);
+}
+.cl-foot-tip{font-size:9px;color:var(--faint);letter-spacing:.05em}
+.cl-foot-btn{
+  padding:7px 18px;border-radius:7px;
+  background:var(--text);color:var(--bg);
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+  border:none;cursor:pointer;
+  transition:opacity .15s;
+}
+.cl-foot-btn:hover{opacity:.82}
+
+/* ── ANNOUNCE BELL (corner trigger) ── */
+.cl-bell{
+  position:fixed;bottom:20px;right:20px;
+  width:40px;height:40px;border-radius:10px;
+  background:var(--surface);border:1px solid var(--border-l);
+  box-shadow:var(--shadow);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:16px;
+  transition:transform .15s,box-shadow .15s;
+  z-index:500;
+}
+.cl-bell:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.cl-bell-dot{
+  position:absolute;top:6px;right:7px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--red);border:1.5px solid var(--surface);
+  display:none;animation:newpulse 1.8s ease-in-out infinite;
+}
+.cl-bell-dot.on{display:block}
 .game-card:nth-child(1){animation-delay:.05s}
 .game-card:nth-child(2){animation-delay:.1s}
 .game-card:nth-child(3){animation-delay:.15s}
@@ -325,6 +455,7 @@ body::after{
 
 <div class="main">
   <div class="game-card corp" onclick="location.href='corp.html'">
+    <div class="card-new-dot" id="dot-corp"></div>
     <div class="card-top">
       <div class="card-icon">🏢</div>
       <div class="card-badge badge-blue">MODULE 01</div>
@@ -348,6 +479,7 @@ body::after{
   </div>
 
   <div class="game-card cafe" onclick="location.href='cafe.html'">
+    <div class="card-new-dot" id="dot-cafe"></div>
     <div class="card-top">
       <div class="card-icon">☕</div>
       <div class="card-badge badge-amber">MODULE 02</div>
@@ -371,6 +503,7 @@ body::after{
   </div>
 
   <div class="game-card farm" onclick="location.href='farm.html'">
+    <div class="card-new-dot" id="dot-farm"></div>
     <div class="card-top">
       <div class="card-icon">🌱</div>
       <div class="card-badge badge-green">MODULE 03</div>
@@ -394,6 +527,7 @@ body::after{
   </div>
 
   <div class="game-card doom" onclick="location.href='doom.html'">
+    <div class="card-new-dot" id="dot-doom"></div>
     <div class="card-top">
       <div class="card-icon">🚐</div>
       <div class="card-badge badge-red">MODULE 04</div>
@@ -425,28 +559,52 @@ body::after{
   <div class="ver">BUILD 4.0.1 · 摸鱼专用版 · 请勿在老板身后打开</div>
 </div>
 
-<script>
-const THEME_NAMES={white:'纸白简约',dark:'暗黑终端',mint:'薄荷绿',sakura:'樱花粉',sky:'天空蓝',warm:'暖橙米'};
+<!-- ═══ CHANGELOG MODAL ═══ -->
+<div class="cl-overlay" id="cl-overlay" onclick="clOverlayClick(event)">
+  <div class="cl-modal" id="cl-modal">
+    <div class="cl-modal-head">
+      <div class="cl-head-left">
+        <div class="cl-head-eyebrow">// UPDATE LOG</div>
+        <div class="cl-head-title">更新公告</div>
+        <div class="cl-head-sub" id="cl-head-sub">正在加载...</div>
+      </div>
+      <button class="cl-close" onclick="clClose()">✕</button>
+    </div>
+    <div class="cl-modal-body" id="cl-modal-body">
+      <!-- Groups injected here -->
+    </div>
+    <div class="cl-modal-foot">
+      <span class="cl-foot-tip" id="cl-foot-tip">· 仅显示未读更新</span>
+      <button class="cl-foot-btn" onclick="clClose()">知道了 →</button>
+    </div>
+  </div>
+</div>
 
+<!-- Bell trigger (bottom-right) -->
+<div class="cl-bell" id="cl-bell" onclick="clOpen(true)" title="查看更新公告">
+  🔔
+  <div class="cl-bell-dot" id="cl-bell-dot"></div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────
+   THEME
+───────────────────────────────────────── */
+const THEME_NAMES={white:'纸白简约',dark:'暗黑终端',mint:'薄荷绿',sakura:'樱花粉',sky:'天空蓝',warm:'暖橙米'};
 function setTheme(t){
   localStorage.setItem('moyu-theme',t);
   document.documentElement.setAttribute('data-theme',t);
-  document.querySelectorAll('.theme-btn').forEach(b=>{
-    b.classList.toggle('active',b.dataset.t===t);
-  });
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.t===t));
   document.getElementById('theme-name').textContent=THEME_NAMES[t]||t;
 }
+(function(){setTheme(localStorage.getItem('moyu-theme')||'white')})();
 
-// Init
-(function(){
-  const t=localStorage.getItem('moyu-theme')||'white';
-  setTheme(t);
-})();
-
+/* ─────────────────────────────────────────
+   CLOCK + GAME STATS
+───────────────────────────────────────── */
 function tick(){
   const n=new Date();
-  const el=document.getElementById('hub-time');
-  const ed=document.getElementById('hub-date');
+  const el=document.getElementById('hub-time'),ed=document.getElementById('hub-date');
   if(el)el.textContent=n.toTimeString().slice(0,8);
   if(ed)ed.textContent=n.toLocaleDateString('zh-CN');
   try{
@@ -482,6 +640,172 @@ function tick(){
   }catch(e){}
 }
 setInterval(tick,1000);tick();
+
+/* ─────────────────────────────────────────
+   CHANGELOG SYSTEM (fetch版)
+   ─────────────────────────────────────────
+   index 启动时直接 fetch 读取各子模块文件，
+   解析里面的 CHANGELOG 数据块，与已读版本对比，
+   有新版本自动弹窗。
+
+   【你更新游戏时只需要改子模块里的这段数据】：
+   在每个子模块 HTML 的任意位置维护一个这样的注释块：
+
+   <!-- CHANGELOG
+   {
+     "version": "2.2",
+     "icon": "☕",
+     "name": "咖啡门店经营",
+     "entries": [
+       { "v": "2.2", "date": "2025-03-27", "items": ["新增季节限定菜单", "修复VIP客户bug"] },
+       { "v": "2.1", "date": "2025-03-20", "items": ["配方研发上线"] }
+     ]
+   }
+   CHANGELOG -->
+
+   改完重新部署，玩家刷新 index 就自动弹出公告。
+   ───────────────────────────────────────── */
+
+const MODULES = [
+  { key:'corp', file:'corp.html' },
+  { key:'cafe', file:'cafe.html' },
+  { key:'farm', file:'farm.html' },
+  { key:'doom', file:'doom.html' },
+];
+
+const MODULE_DOTS = { corp:'dot-corp', cafe:'dot-cafe', farm:'dot-farm', doom:'dot-doom' };
+
+function clGetRead(){
+  try{return JSON.parse(localStorage.getItem('moyu-cl-read')||'{}')}catch(e){return{}}
+}
+function clSetRead(rv){ localStorage.setItem('moyu-cl-read',JSON.stringify(rv)) }
+
+// 从 HTML 文本中解析 <!-- CHANGELOG ... CHANGELOG --> 块
+function parseChangelog(html){
+  const m = html.match(/<!--\s*CHANGELOG\s*([\s\S]*?)\s*CHANGELOG\s*-->/);
+  if(!m) return null;
+  try{ return JSON.parse(m[1].trim()); }catch(e){ return null; }
+}
+
+// fetch 所有模块，返回解析好的数据数组
+async function fetchAllModules(){
+  const results = [];
+  await Promise.all(MODULES.map(async ({key, file})=>{
+    try{
+      const res = await fetch(file + '?_=' + Date.now()); // 加时间戳防缓存
+      const html = await res.text();
+      const data = parseChangelog(html);
+      if(data) results.push({ key, data });
+    }catch(e){}
+  }));
+  return results;
+}
+
+function clRenderModal(groups){
+  const body = document.getElementById('cl-modal-body');
+  const sub  = document.getElementById('cl-head-sub');
+  const tip  = document.getElementById('cl-foot-tip');
+  body.innerHTML = '';
+
+  if(!groups.length){
+    body.innerHTML = '<div style="text-align:center;padding:32px 20px;font-size:10px;color:var(--faint);letter-spacing:.06em">// 所有模块均已是最新版本</div>';
+    sub.textContent = '无待读更新';
+    tip.textContent = '· 所有模块已是最新';
+    return;
+  }
+
+  const newCount = groups.filter(g=>g.isNew).length;
+  sub.textContent = newCount > 0 ? `${newCount} 个模块有新内容` : '查看历史记录';
+  tip.textContent = newCount > 0 ? `· 共 ${newCount} 个模块更新` : '· 全部已读';
+
+  groups.forEach((g, gi)=>{
+    const {key, data, isNew} = g;
+    const grp = document.createElement('div');
+    grp.className = 'cl-group';
+    grp.style.animationDelay = (gi*0.05)+'s';
+
+    const showEntries = isNew ? [data.entries[0]] : data.entries.slice(0,2);
+    let itemsHTML = '';
+    showEntries.forEach(entry=>{
+      const entryIsNew = isNew && entry.v === data.version;
+      (entry.items||[]).forEach(item=>{
+        itemsHTML += `<div class="cl-item${entryIsNew?' is-new':''}">${item}</div>`;
+      });
+    });
+
+    grp.innerHTML =
+      `<div class="cl-group-head">
+        <span class="cl-group-icon">${data.icon||'📦'}</span>
+        <span class="cl-group-name">${data.name||key}</span>
+        <span class="cl-group-ver">v${data.version}</span>
+        ${isNew?'<span class="cl-new-tag">NEW</span>':''}
+      </div>
+      <div class="cl-items">${itemsHTML}</div>`;
+    body.appendChild(grp);
+  });
+}
+
+function clUpdateDots(groups){
+  let anyNew = false;
+  // 先全清
+  Object.values(MODULE_DOTS).forEach(id=>{
+    const d = document.getElementById(id);
+    if(d) d.classList.remove('on');
+  });
+  groups.forEach(({key, isNew})=>{
+    if(isNew){
+      anyNew = true;
+      const dotId = MODULE_DOTS[key];
+      const dot = document.getElementById(dotId);
+      if(dot) dot.classList.add('on');
+    }
+  });
+  const bellDot = document.getElementById('cl-bell-dot');
+  if(bellDot) bellDot.classList.toggle('on', anyNew);
+  return anyNew;
+}
+
+let _allGroups = []; // 缓存供铃铛按钮用
+
+function clOpen(showAll){
+  const groups = showAll ? _allGroups : _allGroups.filter(g=>g.isNew);
+  clRenderModal(groups);
+  document.getElementById('cl-overlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function clClose(){
+  document.getElementById('cl-overlay').classList.remove('show');
+  document.body.style.overflow = '';
+  // 标记全部已读
+  const rv = clGetRead();
+  _allGroups.forEach(({key, data})=>{ rv[key] = data.version; });
+  clSetRead(rv);
+  clUpdateDots(_allGroups);
+}
+
+function clOverlayClick(e){
+  if(e.target===document.getElementById('cl-overlay')) clClose();
+}
+
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') clClose(); });
+
+// 启动：fetch 所有模块 → 检测新版本 → 自动弹窗
+(async function(){
+  const modules = await fetchAllModules();
+  const read = clGetRead();
+  _allGroups = modules.map(({key, data})=>({
+    key, data,
+    isNew: (read[key]||'') !== data.version
+  }));
+  // 排序：新的在前
+  _allGroups.sort((a,b)=> a.isNew===b.isNew ? 0 : a.isNew?-1:1);
+
+  const anyNew = clUpdateDots(_allGroups);
+  if(anyNew){
+    setTimeout(()=>clOpen(false), 420);
+  }
+})();
 </script>
 </body>
 </html>
