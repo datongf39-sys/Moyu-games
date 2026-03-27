@@ -314,6 +314,56 @@ const SHOP_ITEMS = [
   { id:'book_soldier', name:'兵法三十六计',icon:'📜',price:45, effect:{jobProf:15}, jobReq:'soldier',  desc:'士兵专用·职业熟练度+15',   stackable:true },
 ];
 
+/* ══════════════════════════════════════════
+   地产 & 社交 & NPC 数据
+══════════════════════════════════════════ */
+const ESTATES = [
+  { id:'shack',   name:'茅草屋', icon:'🏚️', price:80,   capacity:2, desc:'简陋草屋，勉强遮风挡雨',   incomePerYear:0  },
+  { id:'cottage', name:'小院',   icon:'🏠', price:200,  capacity:4, desc:'带院子的小房，温馨宜居',   incomePerYear:5  },
+  { id:'house',   name:'宅院',   icon:'🏡', price:500,  capacity:6, desc:'宽敞宅院，颇具体面',        incomePerYear:15 },
+  { id:'mansion', name:'大宅',   icon:'🏛️', price:1500, capacity:10,desc:'豪门大宅，富贵气象',        incomePerYear:40 },
+  { id:'farm',    name:'田庄',   icon:'🌾', price:300,  capacity:4, desc:'附带农田，每年有额外收入', incomePerYear:30 },
+  { id:'shop',    name:'商铺',   icon:'🏪', price:400,  capacity:2, desc:'坐商铺子，每年稳定收入',   incomePerYear:50 },
+];
+
+const SOCIAL_VENUES = [
+  { id:'tavern', name:'酒楼', icon:'🍶', minAge:14, desc:'三教九流汇聚，江湖消息灵通' },
+  { id:'poetry', name:'诗会', icon:'📜', minAge:12, desc:'文人雅集，吟诗作对' },
+  { id:'market', name:'集市', icon:'🛍️', minAge:8,  desc:'人声鼎沸，形形色色' },
+  { id:'temple', name:'庙会', icon:'⛩️', minAge:6,  desc:'香火旺盛，祈福纳祥' },
+  { id:'garden', name:'园林', icon:'🌸', minAge:14, desc:'达官显贵游乐之所' },
+];
+
+const NPC_JOBS = ['农户','商人','书生','画师','药师','歌舞伎','铁匠','僧侣','士兵','官员','绣娘','厨子'];
+const NPC_BG   = ['贫寒','寻常','殷实','富庶'];
+const NPC_BG_MONEY = { '贫寒':[0,80], '寻常':[30,200], '殷实':[150,500], '富庶':[400,2000] };
+const NPC_TRAITS = ['温柔体贴','才华横溢','豪爽仗义','沉稳内敛','活泼开朗','严肃认真','风趣幽默','温文尔雅'];
+
+function genNPC(playerGender){
+  const isMale = Math.random()>0.5;
+  const surname = SURNAMES[Math.floor(Math.random()*SURNAMES.length)];
+  const given = (isMale?MALE_NAMES:FEMALE_NAMES)[Math.floor(Math.random()*MALE_NAMES.length)];
+  const bg = NPC_BG[Math.floor(Math.random()*NPC_BG.length)];
+  const [mlo,mhi] = NPC_BG_MONEY[bg];
+  const money = mlo + Math.floor(Math.random()*(mhi-mlo));
+  const job = NPC_JOBS[Math.floor(Math.random()*NPC_JOBS.length)];
+  const trait = NPC_TRAITS[Math.floor(Math.random()*NPC_TRAITS.length)];
+  const emoji = (isMale?MALE_EMOJI:FEMALE_EMOJI)[Math.floor(Math.random()*3)];
+  let estates = [];
+  if(money>=300&&Math.random()<0.5){
+    const e=ESTATES[1+Math.floor(Math.random()*3)];
+    estates=[{...e,eid:'nse_'+Date.now()+Math.floor(Math.random()*9999),residents:[]}];
+  } else if(money>=80&&Math.random()<0.3){
+    estates=[{...ESTATES[0],eid:'nse_'+Date.now()+Math.floor(Math.random()*9999),residents:[]}];
+  }
+  return {
+    id:'npc_'+Date.now()+'_'+Math.floor(Math.random()*9999),
+    name:surname+given, gender:isMale?'male':'female', emoji,
+    age:14+Math.floor(Math.random()*30),
+    job, bg, money, trait, estates, favor:0, role:'friend', venue:'',
+  };
+}
+
 const RANDOM_EVENTS = [
   { w:8,  age:[0,100],  text:'今年风调雨顺，五谷丰登，偶得横财。',     type:'good', money:20 },
   { w:6,  age:[10,100], text:'偶遇贵人，得到指点，增长见识。',          type:'good', intel:5 },
