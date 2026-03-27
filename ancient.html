@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style id="theme-vars">
+[data-theme="white"]{--bg:#f8f8f6;--surface:#ffffff;--card:#ffffff;--border:#e4e4e0;--border-l:#d0d0cc;--text:#1a1a18;--muted:#6b6b66;--faint:#b0b0aa;--green:#16a34a;--green-l:rgba(22,163,74,.08);--amber:#d97706;--amber-l:rgba(217,119,6,.08);--blue:#2563eb;--blue-l:rgba(37,99,235,.08);--red:#dc2626;--red-l:rgba(220,38,38,.08);--purple:#7c3aed;--scanline:none}
+[data-theme="dark"]{--bg:#0e0f0e;--surface:#141514;--card:#191a19;--border:#2a2b2a;--border-l:#363736;--text:#e8e8e4;--muted:#8a8a84;--faint:#4a4a46;--green:#4ade80;--green-l:rgba(74,222,128,.1);--amber:#fbbf24;--amber-l:rgba(251,191,36,.1);--blue:#60a5fa;--blue-l:rgba(96,165,250,.1);--red:#f87171;--red-l:rgba(248,113,113,.1);--purple:#c084fc;--scanline:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px)}
+[data-theme="mint"]{--bg:#f0f7f4;--surface:#ffffff;--card:#ffffff;--border:#c8e6da;--border-l:#a8d5c2;--text:#1a2e26;--muted:#5a7a6e;--faint:#a0bfb4;--green:#0d9063;--green-l:rgba(13,144,99,.08);--amber:#d97706;--amber-l:rgba(217,119,6,.08);--blue:#0369a1;--blue-l:rgba(3,105,161,.08);--red:#dc2626;--red-l:rgba(220,38,38,.08);--purple:#6d28d9;--scanline:none}
+[data-theme="sakura"]{--bg:#fdf4f7;--surface:#ffffff;--card:#ffffff;--border:#f0d0dc;--border-l:#e0b0c0;--text:#2a1a20;--muted:#7a5060;--faint:#c4a0b0;--green:#16a34a;--green-l:rgba(22,163,74,.08);--amber:#d97706;--amber-l:rgba(217,119,6,.08);--blue:#7c3aed;--blue-l:rgba(124,58,237,.08);--red:#e11d48;--red-l:rgba(225,29,72,.08);--purple:#db2777;--scanline:none}
+[data-theme="sky"]{--bg:#f0f6ff;--surface:#ffffff;--card:#ffffff;--border:#c8dcf8;--border-l:#a8c4f0;--text:#1a2040;--muted:#5060a0;--faint:#a0b0d8;--green:#0d9488;--green-l:rgba(13,148,136,.08);--amber:#d97706;--amber-l:rgba(217,119,6,.08);--blue:#2563eb;--blue-l:rgba(37,99,235,.08);--red:#dc2626;--red-l:rgba(220,38,38,.08);--purple:#7c3aed;--scanline:none}
+[data-theme="warm"]{--bg:#fdf8f0;--surface:#ffffff;--card:#ffffff;--border:#ede0c8;--border-l:#d8c8a8;--text:#2a2018;--muted:#7a6040;--faint:#c0a878;--green:#16a34a;--green-l:rgba(22,163,74,.08);--amber:#d97706;--amber-l:rgba(217,119,6,.08);--blue:#2563eb;--blue-l:rgba(37,99,235,.08);--red:#dc2626;--red-l:rgba(220,38,38,.08);--purple:#7c3aed;--scanline:none}
+body{transition:background .2s,color .2s}
+body::after{background:var(--scanline,none)!important}
+@media(max-width:640px){.main-grid{grid-template-columns:1fr!important}.topbar{padding:0 10px!important}.action-grid{grid-template-columns:1fr 1fr!important}}
+</style>
+<script>(function(){var t=localStorage.getItem("moyu-theme")||"white";document.documentElement.setAttribute("data-theme",t);})();</script>
+<title>古代人生 · 摸鱼工作台</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600;700&display=swap');
+:root{--mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:12px;min-height:100vh}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.02) 2px,rgba(0,0,0,.02) 4px);pointer-events:none;z-index:9999}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
+.back{font-size:11px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:var(--mono)}.back:hover{color:var(--text)}
+.topbar-title{font-family:var(--serif);font-size:15px;font-weight:700}
+.topbar-r{display:flex;align-items:center;gap:8px}
+.topbar-ver{font-size:9px;color:var(--faint);letter-spacing:.08em}
+
+/* MAIN */
+.main{padding:12px 14px 32px;max-width:960px;margin:0 auto}
+.main-grid{display:grid;grid-template-columns:300px 1fr;gap:12px;align-items:start}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:10px}
+.card:last-child{margin-bottom:0}
+.ct{font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+
+/* AVATAR CARD */
+.avatar-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:16px;margin-bottom:10px;text-align:center}
+.avatar-emoji{font-size:48px;line-height:1;margin-bottom:8px}
+.avatar-name{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text)}
+.avatar-meta{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.6}
+.avatar-tag{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;margin:2px;letter-spacing:.04em}
+.tag-age{background:var(--blue-l);color:var(--blue);border:1px solid rgba(37,99,235,.2)}
+.tag-job{background:var(--amber-l);color:var(--amber);border:1px solid rgba(217,119,6,.2)}
+.tag-alive{background:var(--green-l);color:var(--green);border:1px solid rgba(22,163,74,.2)}
+.tag-dead{background:var(--red-l);color:var(--red);border:1px solid rgba(220,38,38,.2)}
+.tag-married{background:rgba(124,58,237,.08);color:var(--purple);border:1px solid rgba(124,58,237,.2)}
+
+/* STATS */
+.stat-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border-bottom:none}
+.stat-icon{font-size:13px;width:18px;text-align:center;flex-shrink:0}
+.stat-label{font-size:10px;color:var(--muted);flex:1}
+.stat-bar{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;max-width:80px}
+.stat-fill{height:100%;border-radius:3px;transition:width .4s}
+.stat-val{font-size:10px;font-weight:500;width:28px;text-align:right}
+
+/* MONEY */
+.money-display{text-align:center;padding:10px 0}
+.money-val{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--amber)}
+.money-label{font-size:9px;color:var(--faint);margin-top:2px;letter-spacing:.08em}
+
+/* AGE TIMELINE */
+.age-bar-wrap{margin:8px 0}
+.age-label{display:flex;justify-content:space-between;font-size:9px;color:var(--faint);margin-bottom:4px}
+.age-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.age-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--amber));transition:width .5s}
+
+/* ACTIONS */
+.action-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:8px}
+.action-btn{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:9px 6px;text-align:center;cursor:pointer;transition:all .15s;font-family:var(--mono)}
+.action-btn:hover:not(:disabled){border-color:var(--border-l);background:var(--surface);transform:translateY(-1px)}
+.action-btn:disabled{opacity:.3;cursor:not-allowed}
+.action-btn .ab-icon{font-size:18px;margin-bottom:3px}
+.action-btn .ab-name{font-size:9px;color:var(--muted);letter-spacing:.03em;line-height:1.3}
+.action-btn .ab-cost{font-size:8px;color:var(--faint);margin-top:2px}
+.action-btn.ab-amber{border-color:rgba(217,119,6,.3);background:var(--amber-l)}.action-btn.ab-amber:hover:not(:disabled){background:rgba(217,119,6,.15)}
+.action-btn.ab-green{border-color:rgba(22,163,74,.3);background:var(--green-l)}.action-btn.ab-green:hover:not(:disabled){background:rgba(22,163,74,.15)}
+.action-btn.ab-red{border-color:rgba(220,38,38,.3);background:var(--red-l)}.action-btn.ab-red:hover:not(:disabled){background:rgba(220,38,38,.15)}
+.action-btn.ab-blue{border-color:rgba(37,99,235,.3);background:var(--blue-l)}.action-btn.ab-blue:hover:not(:disabled){background:rgba(37,99,235,.15)}
+.action-btn.ab-purple{border-color:rgba(124,58,237,.3);background:rgba(124,58,237,.08)}.action-btn.ab-purple:hover:not(:disabled){background:rgba(124,58,237,.15)}
+
+/* EVENT LOG */
+.log-wrap{background:var(--bg);border:1px solid var(--border);border-radius:4px;height:220px;overflow-y:auto;padding:8px 10px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.log-wrap::-webkit-scrollbar{width:3px}.log-wrap::-webkit-scrollbar-thumb{background:var(--border)}
+.log-entry{padding:3px 0;border-bottom:1px solid var(--border);font-size:10px;line-height:1.5}
+.log-entry:last-child{border-bottom:none}
+.log-age{color:var(--faint);margin-right:6px;font-size:9px}
+.log-text{}
+.log-good{color:var(--green)}.log-bad{color:var(--red)}.log-event{color:var(--amber)}.log-info{color:var(--muted)}
+
+/* FAMILY */
+.family-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.family-item:last-child{border-bottom:none}
+.fi-icon{font-size:18px;flex-shrink:0}
+.fi-info{flex:1}
+.fi-name{font-size:11px;font-weight:500}
+.fi-rel{font-size:9px;color:var(--faint);margin-top:1px}
+.fi-btn{font-size:9px;padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-family:var(--mono);color:var(--muted)}
+.fi-btn:hover{color:var(--text);border-color:var(--border-l)}
+.fi-btn:disabled{opacity:.3;cursor:not-allowed}
+
+/* OBITUARY / GAME OVER */
+.obituary{text-align:center;padding:24px 16px}
+.obit-icon{font-size:52px;margin-bottom:12px}
+.obit-title{font-family:var(--serif);font-size:22px;font-weight:700;margin-bottom:6px}
+.obit-sub{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:20px}
+.obit-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.os{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:10px}
+.os-val{font-size:18px;font-weight:600;color:var(--amber)}
+.os-lbl{font-size:9px;color:var(--faint);margin-top:2px;letter-spacing:.06em}
+.inherit-list{margin-bottom:16px}
+.inherit-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:4px;margin-bottom:6px;cursor:pointer;transition:all .15s}
+.inherit-item:hover{border-color:var(--amber)}
+.ii-left{display:flex;align-items:center;gap:8px}
+.ii-icon{font-size:20px}
+.ii-name{font-size:11px;font-weight:500}
+.ii-rel{font-size:9px;color:var(--faint)}
+.ii-age{font-size:10px;color:var(--amber)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal-box{background:var(--surface);border:1px solid var(--border-l);border-radius:10px;width:min(400px,90vw);padding:20px;transform:translateY(12px) scale(.97);transition:transform .22s cubic-bezier(.34,1.3,.64,1);box-shadow:0 20px 50px rgba(0,0,0,.15)}
+.modal-overlay.show .modal-box{transform:none}
+.modal-title{font-family:var(--serif);font-size:16px;font-weight:700;margin-bottom:6px}
+.modal-sub{font-size:10px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.modal-opts{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.modal-opt{padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:5px;cursor:pointer;font-size:11px;font-family:var(--mono);transition:all .12s;display:flex;justify-content:space-between;align-items:center}
+.modal-opt:hover{border-color:var(--amber);background:var(--amber-l)}
+.modal-opt-cost{font-size:9px;color:var(--faint)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.mclose{padding:6px 16px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:var(--mono);font-size:11px}
+.mclose:hover{color:var(--text)}
+.mconfirm{padding:6px 16px;border-radius:4px;border:none;background:var(--text);color:var(--bg);cursor:pointer;font-family:var(--mono);font-size:11px}
+.mconfirm:hover{opacity:.85}
+
+/* NEXT YEAR BTN */
+.next-btn{width:100%;padding:12px;background:var(--text);color:var(--bg);border:none;border-radius:6px;font-family:var(--serif);font-size:14px;font-weight:600;cursor:pointer;letter-spacing:.04em;transition:opacity .15s;margin-top:4px}
+.next-btn:hover{opacity:.85}
+.next-btn:disabled{opacity:.3;cursor:not-allowed}
+
+/* TABS */
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;margin-bottom:0}
+.tab{padding:7px 12px;font-size:10px;color:var(--muted);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:var(--mono);white-space:nowrap;transition:all .12s}
+.tab:hover{color:var(--text)}.tab.on{color:var(--amber);border-bottom-color:var(--amber)}
+.panel{display:none}.panel.on{display:block}
+
+/* SECTION HEAD */
+.sec-head{font-size:9px;color:var(--faint);letter-spacing:.1em;text-transform:uppercase;margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+
+/* BTN */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:5px 12px;border-radius:3px;font-size:11px;font-family:var(--mono);cursor:pointer;transition:all .12s;border:1px solid transparent}
+.ba{background:var(--amber-l);color:var(--amber);border-color:rgba(217,119,6,.3)}.ba:hover:not(:disabled){background:rgba(217,119,6,.2)}
+.bg{background:var(--green-l);color:var(--green);border-color:rgba(22,163,74,.3)}.bg:hover:not(:disabled){background:rgba(22,163,74,.2)}
+.br{background:var(--red-l);color:var(--red);border-color:rgba(220,38,38,.3)}.br:hover:not(:disabled){background:rgba(220,38,38,.2)}
+.bc{background:var(--blue-l);color:var(--blue);border-color:rgba(37,99,235,.3)}.bc:hover:not(:disabled){background:rgba(37,99,235,.2)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fadeup{animation:fadeUp .3s ease}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back" onclick="location.href='index.html'">← 返回工作台</button>
+  <span class="topbar-title">古代人生</span>
+  <span class="topbar-ver">ANCIENT · v1.0</span>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="app-main">
+  <!-- Rendered by JS -->
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="modalBgClick(event)">
+  <div class="modal-box" id="modal-box">
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div class="modal-opts" id="modal-opts"></div>
+    <div class="modal-actions" id="modal-actions"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   DATA DEFINITIONS
+══════════════════════════════════════════ */
+const SURNAMES = ['李','王','张','刘','陈','杨','赵','黄','周','吴','徐','孙','马','朱','胡','郭','何','林','高','梁','郑','罗','宋','谢','唐','韩','曹','许','邓','萧'];
+const MALE_NAMES = ['文远','子昂','明德','怀仁','伯阳','仲谦','志远','承恩','若水','清风','景明','玉衡','鸿飞','世杰','元博','正阳','思源','光宗','宏图','廷玉'];
+const FEMALE_NAMES = ['婉儿','如月','清荷','玉珠','素梅','芳菲','雪莲','翠竹','兰芝','锦绣','沁雪','凤鸣','映红','妙音','含烟','素心','柔嘉','碧玉','晴空','幽兰'];
+const MALE_EMOJI = ['👨','🧑','👦'];
+const FEMALE_EMOJI = ['👩','🧒','👧'];
+
+const JOBS = [
+  { id:'none',    name:'无业',     icon:'🏠', minAge:0,  maxAge:100, salaryPerYear:0,   desc:'闲散度日' },
+  { id:'farmer',  name:'农夫',     icon:'🌾', minAge:16, maxAge:60,  salaryPerYear:30,  desc:'耕作田地，收成看天' },
+  { id:'smith',   name:'铁匠',     icon:'🔨', minAge:16, maxAge:55,  salaryPerYear:50,  desc:'锻造器具，收入稳定' },
+  { id:'merchant',name:'行商',     icon:'🛒', minAge:18, maxAge:65,  salaryPerYear:80,  desc:'走南闯北，财运不定' },
+  { id:'doctor',  name:'药师',     icon:'⚕️', minAge:20, maxAge:70,  salaryPerYear:70,  desc:'悬壶济世，口碑为先' },
+  { id:'dancer',  name:'歌舞伎',   icon:'💃', minAge:14, maxAge:30,  salaryPerYear:60,  desc:'歌舞升平，名动一方' },
+  { id:'scholar', name:'书生',     icon:'📖', minAge:16, maxAge:40,  salaryPerYear:20,  desc:'寒窗苦读，以待科举' },
+  { id:'officer', name:'官员',     icon:'🎖️', minAge:20, maxAge:65,  salaryPerYear:150, desc:'入朝为官，高俸厚禄', reqIntel:70 },
+  { id:'monk',    name:'僧侣',     icon:'🧘', minAge:16, maxAge:100, salaryPerYear:10,  desc:'青灯古佛，清心寡欲' },
+  { id:'painter', name:'画师',     icon:'🖌️', minAge:16, maxAge:70,  salaryPerYear:45,  desc:'丹青妙手，笔墨留情' },
+  { id:'soldier', name:'士兵',     icon:'⚔️', minAge:18, maxAge:45,  salaryPerYear:55,  desc:'保家卫国，沙场征战', dangerRisk:true },
+];
+
+const RANDOM_EVENTS = [
+  // Good
+  { w:8, age:[0,100], text:'今年风调雨顺，五谷丰登。', type:'good', money:20 },
+  { w:6, age:[10,100], text:'偶遇贵人，得到指点，增长见识。', type:'good', intel:5 },
+  { w:5, age:[16,100], text:'习得一门手艺，技艺有所精进。', type:'good', intel:3, money:10 },
+  { w:4, age:[18,100], text:'经营有道，意外获得一笔财富。', type:'good', money:50 },
+  { w:3, age:[20,60], text:'在集市上做成一笔大买卖。', type:'good', money:80 },
+  { w:5, age:[0,100], text:'身体倍棒，吃嘛嘛香，健康+5。', type:'good', health:5 },
+  { w:4, age:[10,100], text:'结交了一位好友，心情舒畅。', type:'good', mood:10 },
+  { w:3, age:[20,100], text:'声名远播，乡邻交口称赞。', type:'good', mood:8, money:15 },
+  { w:2, age:[20,50], text:'科举考试意外上榜，光耀门楣！', type:'good', money:100, intel:5, reqIntel:60 },
+  // Neutral
+  { w:10, age:[0,100], text:'平淡无奇地度过了这一年。', type:'info' },
+  { w:8, age:[0,100], text:'四季更迭，岁月如梭。', type:'info' },
+  { w:6, age:[20,100], text:'在茶馆听说了一些奇闻异事。', type:'info' },
+  // Bad
+  { w:7, age:[0,100], text:'今年收成不好，日子有些拮据。', type:'bad', money:-20 },
+  { w:5, age:[0,100], text:'染了风寒，大病一场，健康-10。', type:'bad', health:-10, money:-15 },
+  { w:4, age:[30,100], text:'遭遇盗贼，损失了一些钱财。', type:'bad', money:-30 },
+  { w:3, age:[0,100], text:'与人发生口角，心情低落。', type:'bad', mood:-8 },
+  { w:3, age:[40,100], text:'年岁渐长，身体大不如前，健康-8。', type:'bad', health:-8 },
+  { w:2, age:[50,100], text:'旧伤复发，卧病在床数月。', type:'bad', health:-15, money:-20 },
+  { w:2, age:[0,100], text:'家中遭遇火灾，损失惨重！', type:'bad', money:-60, mood:-15 },
+  // Soldier risk
+  { w:5, age:[18,45], text:'沙场征战，身负轻伤。', type:'bad', health:-20, job:'soldier' },
+];
+
+const SCHOOL_EVENTS = [
+  '先生今日讲授《论语》，受益匪浅。',
+  '在学堂与同窗切磋文章，大有所获。',
+  '先生布置了繁重功课，挑灯夜读。',
+  '学堂考试，名列前茅，先生大加赞赏！',
+  '逃课去河边玩耍，被先生罚抄《孟子》三遍。',
+];
+
+/* ══════════════════════════════════════════
+   GAME STATE
+══════════════════════════════════════════ */
+let G = {};
+
+function initGame(inheritFrom) {
+  const isMale = Math.random() > 0.5;
+  const surname = SURNAMES[Math.floor(Math.random() * SURNAMES.length)];
+  const givenNames = isMale ? MALE_NAMES : FEMALE_NAMES;
+  const given = givenNames[Math.floor(Math.random() * givenNames.length)];
+  const startAge = Math.floor(Math.random() * 20); // 0~19岁随机开始
+
+  G = {
+    name: surname + given,
+    surname,
+    given,
+    gender: isMale ? 'male' : 'female',
+    emoji: (isMale ? MALE_EMOJI : FEMALE_EMOJI)[Math.floor(Math.random() * 3)],
+    age: startAge,
+    maxAge: 60 + Math.floor(Math.random() * 41), // 60~100
+    health: 80 + Math.floor(Math.random() * 20),
+    mood: 70 + Math.floor(Math.random() * 20),
+    intel: 20 + Math.floor(Math.random() * 30),
+    money: inheritFrom ? Math.floor(inheritFrom.money * 0.4) : 50 + Math.floor(Math.random() * 50),
+    job: 'none',
+    inSchool: false,
+    married: false,
+    spouseName: null,
+    spouseEmoji: null,
+    children: [],  // [{name, gender, emoji, age}]
+    parents: inheritFrom ? [] : [
+      { name: SURNAMES[Math.floor(Math.random()*SURNAMES.length)] + MALE_NAMES[Math.floor(Math.random()*MALE_NAMES.length)], rel:'父亲', emoji:'👨', alive: true },
+      { name: SURNAMES[Math.floor(Math.random()*SURNAMES.length)] + FEMALE_NAMES[Math.floor(Math.random()*FEMALE_NAMES.length)], rel:'母亲', emoji:'👩', alive: true },
+    ],
+    ancestors: inheritFrom ? [{ name: inheritFrom.name, emoji: inheritFrom.emoji, age: inheritFrom.age, rel: '先祖' }] : [],
+    log: [],
+    yearsLived: 0,
+    totalMoney: 0,
+    dead: false,
+    deathCause: '',
+    // track school years
+    schoolYears: 0,
+  };
+
+  if (inheritFrom) {
+    addLog(`🌅 承继先祖 ${inheritFrom.name} 的遗志，开始新的人生。`, 'event');
+  } else {
+    addLog(`🎋 ${G.name} 降生于世，${G.gender==='male'?'男':'女'}，随机开始于 ${startAge} 岁。`, 'event');
+  }
+  save();
+  render();
+}
+
+/* ══════════════════════════════════════════
+   SAVE / LOAD
+══════════════════════════════════════════ */
+function save(){ localStorage.setItem('ancient', JSON.stringify(G)); }
+function load(){
+  try{ const d = JSON.parse(localStorage.getItem('ancient')||'null'); if(d) G=d; return !!d; }
+  catch(e){ return false; }
+}
+
+/* ══════════════════════════════════════════
+   LOG
+══════════════════════════════════════════ */
+function addLog(text, type='info'){
+  G.log.unshift({ age: G.age, text, type });
+  if(G.log.length > 120) G.log.pop();
+}
+
+/* ══════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════ */
+function render(){
+  if(G.dead){ renderObituary(); return; }
+  renderMain();
+}
+
+function renderMain(){
+  const app = document.getElementById('app-main');
+  const job = JOBS.find(j=>j.id===G.job);
+  const agePhase = G.age < 7 ? '幼年' : G.age < 15 ? '少年' : G.age < 30 ? '青年' : G.age < 50 ? '壮年' : G.age < 70 ? '中老年' : '暮年';
+
+  app.innerHTML = `
+  <div class="main">
+    <div class="main-grid">
+      <!-- LEFT COLUMN -->
+      <div>
+        <!-- Avatar -->
+        <div class="avatar-card fadeup">
+          <div class="avatar-emoji">${G.emoji}</div>
+          <div class="avatar-name">${G.name}</div>
+          <div class="avatar-meta">${G.gender==='male'?'男':'女'} · ${agePhase} · ${G.age}岁</div>
+          <div style="margin-top:6px">
+            <span class="avatar-tag tag-age">年龄 ${G.age}</span>
+            <span class="avatar-tag tag-job">${job.icon} ${job.name}</span>
+            ${G.married ? `<span class="avatar-tag tag-married">💑 已婚</span>` : ''}
+            ${G.inSchool ? `<span class="avatar-tag tag-alive">📖 就读中</span>` : ''}
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="card fadeup">
+          <div class="ct">人物属性</div>
+          ${statRow('❤️','健康',G.health,'#ef4444')}
+          ${statRow('😊','心情',G.mood,'#f59e0b')}
+          ${statRow('🧠','智识',G.intel,'#3b82f6')}
+          <div class="stat-row">
+            <span class="stat-icon">⏳</span>
+            <span class="stat-label">寿命进度</span>
+            <div style="flex:1;max-width:80px;height:5px;background:var(--border);border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${Math.min(100,(G.age/G.maxAge)*100)}%;background:linear-gradient(90deg,var(--green),var(--amber));border-radius:3px;transition:width .4s"></div>
+            </div>
+            <span class="stat-val" style="color:var(--faint)">${G.age}/${G.maxAge}</span>
+          </div>
+        </div>
+
+        <!-- Money -->
+        <div class="card fadeup">
+          <div class="ct">钱财</div>
+          <div class="money-display">
+            <div class="money-val">🪙 ${G.money} 文</div>
+            <div class="money-label">身上余钱</div>
+          </div>
+        </div>
+
+        <!-- Family -->
+        <div class="card fadeup">
+          <div class="ct">家庭</div>
+          ${renderFamilyList()}
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div>
+        <div class="tabs" id="tabs">
+          <button class="tab on" onclick="switchTab('actions')">行动</button>
+          <button class="tab" onclick="switchTab('log')">人生日志</button>
+          <button class="tab" onclick="switchTab('family')">家族</button>
+        </div>
+
+        <!-- ACTIONS PANEL -->
+        <div class="panel on card" id="panel-actions" style="border-top:none;border-radius:0 0 6px 6px">
+          ${renderActions()}
+          <button class="next-btn" onclick="nextYear()">岁月流逝 · 度过一年 →</button>
+        </div>
+
+        <!-- LOG PANEL -->
+        <div class="panel card" id="panel-log" style="border-top:none;border-radius:0 0 6px 6px">
+          <div class="ct">人生记录</div>
+          <div class="log-wrap">
+            ${G.log.map(l=>`<div class="log-entry"><span class="log-age">[${l.age}岁]</span><span class="log-${l.type}">${l.text}</span></div>`).join('')}
+            ${G.log.length===0 ? '<div style="color:var(--faint);font-size:10px;text-align:center;padding:20px">人生才刚开始...</div>' : ''}
+          </div>
+        </div>
+
+        <!-- FAMILY PANEL -->
+        <div class="panel card" id="panel-family" style="border-top:none;border-radius:0 0 6px 6px">
+          <div class="ct">家族成员</div>
+          ${renderFamilyFull()}
+          ${G.ancestors.length > 0 ? `<div class="sec-head">先祖</div>${G.ancestors.map(a=>`<div class="family-item"><span class="fi-icon">${a.emoji}</span><div class="fi-info"><div class="fi-name">${a.name}</div><div class="fi-rel">${a.rel} · 享年${a.age}岁</div></div></div>`).join('')}` : ''}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function statRow(icon, label, val, color){
+  const pct = Math.min(100, Math.max(0, val));
+  return `<div class="stat-row">
+    <span class="stat-icon">${icon}</span>
+    <span class="stat-label">${label}</span>
+    <div class="stat-bar"><div class="stat-fill" style="width:${pct}%;background:${color}"></div></div>
+    <span class="stat-val">${Math.round(val)}</span>
+  </div>`;
+}
+
+function renderFamilyList(){
+  let html = '';
+  const all = [...(G.parents||[]), ...(G.spouse ? [{name:G.spouseName, rel:'配偶', emoji:G.spouseEmoji, alive:true}] : [])];
+  if(all.length === 0) return '<div style="color:var(--faint);font-size:10px;text-align:center;padding:10px">孑然一身</div>';
+  all.forEach(m => {
+    html += `<div class="family-item"><span class="fi-icon">${m.emoji}</span><div class="fi-info"><div class="fi-name">${m.name}</div><div class="fi-rel">${m.rel}${m.alive===false?' · 已故':''}</div></div></div>`;
+  });
+  if(G.children.length > 0) html += `<div style="font-size:9px;color:var(--faint);margin-top:4px">子嗣 ${G.children.length} 人</div>`;
+  return html;
+}
+
+function renderFamilyFull(){
+  let html = '';
+  const all = [...(G.parents||[])];
+  if(G.married && G.spouseName) all.push({name:G.spouseName, rel:'配偶', emoji:G.spouseEmoji, alive:true});
+  if(all.length > 0){
+    html += `<div class="sec-head">直系</div>`;
+    all.forEach(m=>{
+      html += `<div class="family-item"><span class="fi-icon">${m.emoji}</span><div class="fi-info"><div class="fi-name">${m.name}</div><div class="fi-rel">${m.rel}${m.alive===false?' · 已故':''}</div></div></div>`;
+    });
+  }
+  if(G.children.length > 0){
+    html += `<div class="sec-head">子嗣</div>`;
+    G.children.forEach((c,i)=>{
+      html += `<div class="family-item"><span class="fi-icon">${c.emoji}</span><div class="fi-info"><div class="fi-name">${c.name}</div><div class="fi-rel">${c.gender==='male'?'子':'女'} · ${c.age}岁</div></div>${!G.dead?`<button class="fi-btn" onclick="inheritChild(${i})" ${c.age<18?'disabled title="未成年"':''}>继承人生</button>`:''}</div>`;
+    });
+  }
+  if(all.length===0 && G.children.length===0) return '<div style="color:var(--faint);font-size:10px;text-align:center;padding:16px">暂无家族成员</div>';
+  return html;
+}
+
+function renderActions(){
+  const a = G.age;
+  let html = '';
+
+  // WORK / JOB
+  html += `<div class="sec-head">职业与生计</div><div class="action-grid">`;
+  html += actionBtn('💼','转换职业','选择工作','ab-amber', 'openJobModal()');
+
+  const job = JOBS.find(j=>j.id===G.job);
+  const canWork = G.job !== 'none' && a >= job.minAge && a <= job.maxAge;
+  const salary = canWork ? job.salaryPerYear : 0;
+  html += actionBtn('🪙','领取薪俸', canWork ? `+${salary}文` : '无业', canWork ? 'ab-green' : '', canWork ? 'collectSalary()' : '', !canWork);
+
+  // Beg parents for money
+  const hasParents = G.parents && G.parents.some(p=>p.alive);
+  html += actionBtn('🙏','向父母要钱','仅限未成年', hasParents && a < 18 ? 'ab-blue' : '', hasParents && a < 18 ? 'askParents()' : '', !(hasParents && a < 18));
+
+  html += `</div>`;
+
+  // EDUCATION
+  html += `<div class="sec-head">求学</div><div class="action-grid">`;
+  const canSchool = a >= 6 && a <= 18;
+  html += actionBtn('📖','入读学堂', canSchool ? (G.inSchool ? '就读中' : '费:20文/年') : '年龄限制', G.inSchool ? 'ab-green' : (canSchool ? 'ab-blue' : ''), canSchool ? 'toggleSchool()' : '', !canSchool);
+  html += actionBtn('📜','自学苦读','智识+3, 花费精力', 'ab-blue', 'selfStudy()');
+  html += actionBtn('🏛️','参加科举','需智识≥60', a>=20 && G.intel>=60 ? 'ab-amber' : '', a>=20 && G.intel>=60 ? 'takeExam()' : '', !(a>=20 && G.intel>=60));
+  html += `</div>`;
+
+  // SOCIAL
+  html += `<div class="sec-head">社交与婚姻</div><div class="action-grid">`;
+  const canMarry = a >= 14 && !G.married;
+  html += actionBtn('💑','寻觅良缘', canMarry ? '费:100文' : (G.married ? '已婚' : '年龄限制'), canMarry ? 'ab-purple' : '', canMarry ? 'marry()' : '', !canMarry);
+  const canChild = G.married && G.age >= 16 && G.age <= 50;
+  html += actionBtn('👶','生儿育女', canChild ? '需已婚' : '需已婚且适龄', canChild ? 'ab-green' : '', canChild ? 'haveChild()' : '', !canChild);
+  html += actionBtn('🍵','拜访邻里','心情+8', 'ab-blue', 'visitNeighbor()');
+  html += `</div>`;
+
+  // HEALTH
+  html += `<div class="sec-head">养生与修炼</div><div class="action-grid">`;
+  html += actionBtn('🏃','强身健体','健康+8, 费:5文', 'ab-green', 'exercise()');
+  html += actionBtn('🌿','求医问药','健康+20, 费:40文', 'ab-green', 'healSelf()');
+  html += actionBtn('🧘','修身养性','心情+12, 智识+2', 'ab-blue', 'meditate()');
+  html += `</div>`;
+
+  return html;
+}
+
+function actionBtn(icon, name, desc, cls, onclick, disabled=false){
+  return `<button class="action-btn ${cls}" onclick="${onclick}" ${disabled?'disabled':''}>
+    <div class="ab-icon">${icon}</div>
+    <div class="ab-name">${name}</div>
+    <div class="ab-cost">${desc}</div>
+  </button>`;
+}
+
+function renderObituary(){
+  const app = document.getElementById('app-main');
+  const inheritables = G.children.filter(c => c.age >= 18);
+
+  app.innerHTML = `
+  <div class="main">
+    <div class="card fadeup" style="max-width:520px;margin:20px auto">
+      <div class="obituary">
+        <div class="obit-icon">${G.emoji}</div>
+        <div class="obit-title">${G.name} 已离世</div>
+        <div class="obit-sub">
+          ${G.deathCause}<br>
+          享年 ${G.age} 岁 · ${G.gender==='male'?'男':'女'} · ${JOBS.find(j=>j.id===G.job).name}
+          ${G.married ? `<br>配偶：${G.spouseName}` : ''}
+          ${G.children.length > 0 ? `<br>子嗣 ${G.children.length} 人` : ''}
+        </div>
+        <div class="obit-stats">
+          <div class="os"><div class="os-val">${G.age}</div><div class="os-lbl">享年</div></div>
+          <div class="os"><div class="os-val">${G.totalMoney}</div><div class="os-lbl">一生积财(文)</div></div>
+          <div class="os"><div class="os-val">${G.children.length}</div><div class="os-lbl">子嗣数</div></div>
+        </div>
+
+        ${inheritables.length > 0 ? `
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;text-align:left">选择继承人，延续家族血脉：</div>
+        <div class="inherit-list">
+          ${inheritables.map((c,i)=>`
+          <div class="inherit-item" onclick="inheritChild(${G.children.indexOf(c)})">
+            <div class="ii-left">
+              <span class="ii-icon">${c.emoji}</span>
+              <div><div class="ii-name">${c.name}</div><div class="ii-rel">${c.gender==='male'?'子':'女'}</div></div>
+            </div>
+            <span class="ii-age">${c.age}岁 →</span>
+          </div>`).join('')}
+        </div>` : `<div style="font-size:10px;color:var(--faint);margin-bottom:16px">无成年子嗣可继承，家族就此断绝。</div>`}
+
+        <div style="display:flex;gap:8px;justify-content:center">
+          <button class="btn ba" onclick="viewLog()">查看人生日志</button>
+          <button class="btn bc" onclick="newGame()">轮回重生</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   ACTIONS
+══════════════════════════════════════════ */
+function collectSalary(){
+  const job = JOBS.find(j=>j.id===G.job);
+  const bonus = Math.floor((Math.random()-0.3)*20);
+  const earned = job.salaryPerYear + bonus;
+  G.money += earned;
+  G.totalMoney += earned;
+  addLog(`💰 ${job.name}薪俸到手 +${earned}文。`, 'good');
+  save(); render();
+}
+
+function askParents(){
+  const amt = 10 + Math.floor(Math.random()*20);
+  if(Math.random() > 0.3){
+    G.money += amt;
+    addLog(`🙏 向父母撒娇，得到了 ${amt}文 零花钱。`, 'good');
+  } else {
+    addLog(`😔 父母说家里最近钱紧，要等等。`, 'info');
+  }
+  save(); render();
+}
+
+function toggleSchool(){
+  if(G.inSchool){
+    G.inSchool = false;
+    addLog(`📚 退出了学堂，不再上学。`, 'info');
+  } else {
+    if(G.money < 20){ showToast('没有足够的钱交学费！'); return; }
+    G.money -= 20;
+    G.inSchool = true;
+    addLog(`📖 交了束脩，入读学堂，开始求学之路。`, 'event');
+  }
+  save(); render();
+}
+
+function selfStudy(){
+  if(G.mood < 20){ showToast('心情太差，无法集中精神学习。'); return; }
+  G.intel = Math.min(100, G.intel + 3);
+  G.mood = Math.max(0, G.mood - 5);
+  addLog(`📜 挑灯夜读，智识略有精进。`, 'good');
+  save(); render();
+}
+
+function takeExam(){
+  const chance = (G.intel - 60) / 40;
+  if(Math.random() < chance * 0.6){
+    const reward = 200 + Math.floor(Math.random()*200);
+    G.money += reward;
+    G.totalMoney += reward;
+    G.mood = Math.min(100, G.mood + 20);
+    addLog(`🎉 科举高中！朝廷赐银 ${reward}文，名动乡里！`, 'good');
+    // Auto-assign officer job
+    G.job = 'officer';
+    addLog(`🎖️ 入朝为官，从此衣食无忧。`, 'event');
+  } else {
+    G.mood = Math.max(0, G.mood - 15);
+    addLog(`😞 科举落榜，心灰意冷，来年再战。`, 'bad');
+  }
+  save(); render();
+}
+
+function exercise(){
+  if(G.money < 5){ showToast('没有钱买补品练功！'); return; }
+  G.money -= 5;
+  G.health = Math.min(100, G.health + 8);
+  addLog(`🏃 强身健体，身体好多了。`, 'good');
+  save(); render();
+}
+
+function healSelf(){
+  if(G.money < 40){ showToast('没有足够的钱看大夫！'); return; }
+  G.money -= 40;
+  G.health = Math.min(100, G.health + 20);
+  addLog(`⚕️ 找药师看诊，身体好转了不少。`, 'good');
+  save(); render();
+}
+
+function meditate(){
+  G.mood = Math.min(100, G.mood + 12);
+  G.intel = Math.min(100, G.intel + 2);
+  addLog(`🧘 静心打坐，心旷神怡。`, 'good');
+  save(); render();
+}
+
+function visitNeighbor(){
+  G.mood = Math.min(100, G.mood + 8);
+  addLog(`🍵 与邻里闲话家常，心情不错。`, 'good');
+  save(); render();
+}
+
+/* ══════════════════════════════════════════
+   JOB MODAL
+══════════════════════════════════════════ */
+function openJobModal(){
+  const available = JOBS.filter(j => {
+    if(j.minAge > G.age || j.maxAge < G.age) return false;
+    if(j.reqIntel && G.intel < j.reqIntel) return false;
+    return true;
+  });
+  showModal(
+    '选择职业',
+    '选择一份适合的工作，每年可领取薪俸。',
+    available.map(j=>({ label: `${j.icon} ${j.name}`, sub: j.desc, cost: `${j.salaryPerYear}文/年`, id: j.id })),
+    (id) => {
+      G.job = id;
+      const j = JOBS.find(x=>x.id===id);
+      addLog(`💼 开始从事 ${j.icon}${j.name} 一职。`, 'event');
+      save(); closeModal(); render();
+    }
+  );
+}
+
+/* ══════════════════════════════════════════
+   MARRIAGE & CHILDREN
+══════════════════════════════════════════ */
+function marry(){
+  if(G.money < 100){ showToast('没有足够的钱办婚事！需要100文。'); return; }
+  G.money -= 100;
+  const isMaleSpouse = G.gender === 'female';
+  const spouseSurname = SURNAMES[Math.floor(Math.random()*SURNAMES.length)];
+  const spouseNames = isMaleSpouse ? MALE_NAMES : FEMALE_NAMES;
+  const spouseName = spouseSurname + spouseNames[Math.floor(Math.random()*spouseNames.length)];
+  const spouseEmoji = (isMaleSpouse ? MALE_EMOJI : FEMALE_EMOJI)[Math.floor(Math.random()*3)];
+  G.married = true;
+  G.spouseName = spouseName;
+  G.spouseEmoji = spouseEmoji;
+  G.mood = Math.min(100, G.mood + 20);
+  addLog(`💑 与 ${spouseName} 喜结连理，成双入对！`, 'event');
+  save(); render();
+}
+
+function haveChild(){
+  if(Math.random() > 0.65){ addLog(`👶 今年未能添丁，来年再盼。`, 'info'); save(); render(); return; }
+  const isMale = Math.random() > 0.5;
+  const childSurname = G.surname;
+  const childNames = isMale ? MALE_NAMES : FEMALE_NAMES;
+  const childName = childSurname + childNames[Math.floor(Math.random()*childNames.length)];
+  const childEmoji = (isMale ? MALE_EMOJI : FEMALE_EMOJI)[Math.floor(Math.random()*3)];
+  const child = { name: childName, gender: isMale?'male':'female', emoji: childEmoji, age: 0 };
+  G.children.push(child);
+  G.mood = Math.min(100, G.mood + 15);
+  addLog(`🎉 ${isMale?'子':'女'} ${childName} 呱呱坠地，家中添丁！`, 'good');
+  save(); render();
+}
+
+/* ══════════════════════════════════════════
+   INHERIT
+══════════════════════════════════════════ */
+function inheritChild(idx){
+  const child = G.children[idx];
+  if(!child || child.age < 18){ showToast('子嗣尚未成年！'); return; }
+  const prev = { name: G.name, emoji: G.emoji, age: G.age, money: G.money };
+  const newAncestors = [...G.ancestors, { name: G.name, emoji: G.emoji, age: G.age, rel: '先祖' }];
+  const inheritMoney = Math.floor(G.money * 0.4);
+  initGame(prev);
+  G.name = child.name;
+  G.given = child.name.slice(1);
+  G.surname = child.name[0];
+  G.gender = child.gender;
+  G.emoji = child.emoji;
+  G.age = child.age;
+  G.money = inheritMoney + 50;
+  G.ancestors = newAncestors;
+  G.log = [];
+  addLog(`🌅 承继 ${newAncestors[newAncestors.length-1].name} 之遗志，${child.name} 开始书写自己的人生。`, 'event');
+  save(); render();
+}
+
+/* ══════════════════════════════════════════
+   NEXT YEAR
+══════════════════════════════════════════ */
+function nextYear(){
+  G.age += 1;
+  G.yearsLived += 1;
+
+  // Age children
+  G.children.forEach(c => c.age += 1);
+
+  // Parents may pass away
+  if(G.parents){
+    G.parents.forEach(p=>{
+      if(p.alive && Math.random() < 0.04 + (G.age * 0.003)){
+        p.alive = false;
+        addLog(`💔 ${p.rel} ${p.name} 已离世，往事如烟。`, 'bad');
+        G.mood = Math.max(0, G.mood - 15);
+      }
+    });
+  }
+
+  // School
+  if(G.inSchool){
+    if(G.age > 18){ G.inSchool = false; addLog(`📚 年岁渐长，离开了学堂。`, 'info'); }
+    else {
+      G.money -= 20;
+      G.intel = Math.min(100, G.intel + 8);
+      G.schoolYears++;
+      const ev = SCHOOL_EVENTS[Math.floor(Math.random()*SCHOOL_EVENTS.length)];
+      addLog(`📖 ${ev}`, 'info');
+    }
+  }
+
+  // Job salary (auto, partial)
+  const job = JOBS.find(j=>j.id===G.job);
+  if(job && G.job !== 'none' && G.age >= job.minAge && G.age <= job.maxAge){
+    // Soldier risk
+    if(job.dangerRisk && Math.random() < 0.12){
+      G.health -= 25;
+      addLog(`⚔️ 在战场上受了重伤，死里逃生！健康大减。`, 'bad');
+    }
+  } else if(G.job !== 'none' && G.age > job.maxAge){
+    addLog(`👴 年岁太大，不得不从 ${job.name} 一职退休。`, 'info');
+    G.job = 'none';
+  }
+
+  // Random events
+  const eligible = RANDOM_EVENTS.filter(e=>{
+    if(G.age < e.age[0] || G.age > e.age[1]) return false;
+    if(e.job && e.job !== G.job) return false;
+    if(e.reqIntel && G.intel < e.reqIntel) return false;
+    return true;
+  });
+  const weights = eligible.map(e=>e.w);
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random()*total, ev;
+  for(let i=0;i<eligible.length;i++){ r-=eligible[i].w; if(r<=0){ev=eligible[i];break;} }
+  if(!ev) ev = eligible[0];
+  if(ev){
+    if(ev.money){ G.money += ev.money; if(ev.money>0) G.totalMoney += ev.money; }
+    if(ev.health) G.health = Math.max(0, Math.min(100, G.health + ev.health));
+    if(ev.mood) G.mood = Math.max(0, Math.min(100, G.mood + ev.mood));
+    if(ev.intel) G.intel = Math.max(0, Math.min(100, G.intel + ev.intel));
+    addLog(ev.text, ev.type==='good'?'good':ev.type==='bad'?'bad':'info');
+  }
+
+  // Natural aging
+  if(G.age > 50) G.health = Math.max(0, G.health - 2);
+  if(G.age > 70) G.health = Math.max(0, G.health - 3);
+
+  // Death check
+  let dead = false, cause = '';
+  if(G.age >= G.maxAge){ dead=true; cause=`寿终正寝，${G.age}岁无病而终，乃是喜丧。`; }
+  else if(G.health <= 0){ dead=true; cause=`因病体虚，油尽灯枯，${G.age}岁与世长辞。`; }
+  else if(G.money < -200){ dead=true; cause=`家贫如洗，饥寒交迫，${G.age}岁含冤离世。`; }
+
+  if(dead){
+    G.dead = true;
+    G.deathCause = cause;
+    addLog(`☠️ ${cause}`, 'bad');
+    save(); renderObituary(); return;
+  }
+
+  save(); render();
+  // scroll log into view
+  setTimeout(()=>{ const lw=document.querySelector('.log-wrap'); if(lw) lw.scrollTop=0; }, 100);
+}
+
+/* ══════════════════════════════════════════
+   VIEW LOG (after death)
+══════════════════════════════════════════ */
+function viewLog(){
+  const app = document.getElementById('app-main');
+  app.innerHTML = `
+  <div class="main">
+    <div class="card fadeup" style="max-width:600px;margin:20px auto">
+      <div class="ct">${G.name} · 人生回忆</div>
+      <div class="log-wrap" style="height:400px">
+        ${G.log.map(l=>`<div class="log-entry"><span class="log-age">[${l.age}岁]</span><span class="log-${l.type}">${l.text}</span></div>`).join('')}
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn ba" onclick="render()">返回墓志铭</button>
+        <button class="btn bc" onclick="newGame()">轮回重生</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function newGame(){ if(confirm('确定要开启新的轮回吗？')) { localStorage.removeItem('ancient'); initGame(null); } }
+
+/* ══════════════════════════════════════════
+   TABS
+══════════════════════════════════════════ */
+function switchTab(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('panel-'+id).classList.add('on');
+  event.target.classList.add('on');
+}
+
+/* ══════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════ */
+function showModal(title, sub, opts, onSelect){
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-sub').textContent = sub;
+  const optsEl = document.getElementById('modal-opts');
+  optsEl.innerHTML = '';
+  opts.forEach(opt=>{
+    const el = document.createElement('div');
+    el.className = 'modal-opt';
+    el.innerHTML = `<span>${opt.label}<br><span style="font-size:9px;color:var(--faint)">${opt.sub||''}</span></span><span class="modal-opt-cost">${opt.cost||''}</span>`;
+    el.onclick = ()=>onSelect(opt.id);
+    optsEl.appendChild(el);
+  });
+  document.getElementById('modal-actions').innerHTML = `<button class="mclose" onclick="closeModal()">取消</button>`;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal(){ document.getElementById('modal').classList.remove('show'); }
+function modalBgClick(e){ if(e.target===document.getElementById('modal')) closeModal(); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+function showToast(msg){
+  let t = document.getElementById('toast');
+  if(!t){ t=document.createElement('div'); t.id='toast'; t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 18px;border-radius:6px;font-size:11px;font-family:var(--mono);z-index:9999;transition:opacity .3s'; document.body.appendChild(t); }
+  t.textContent = msg; t.style.opacity='1';
+  clearTimeout(t._t); t._t=setTimeout(()=>t.style.opacity='0', 2200);
+}
+
+function st(t){localStorage.setItem('moyu-theme',t);document.documentElement.setAttribute('data-theme',t);}
+function resetGame(){ if(!confirm('确定要从头开始吗？所有进度将清空！'))return; localStorage.removeItem('ancient'); location.reload(); }
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+if(!load()) initGame(null);
+else render();
+</script>
+</body>
+<!-- CHANGELOG
+{
+  "version": "1.0",
+  "icon": "🏯",
+  "name": "古代人生模拟",
+  "entries": [
+    { "v": "1.0", "date": "2025-03-27", "items": ["古代人生模拟正式上线！", "支持随机出生、职业选择、婚育子嗣", "死后可继承子嗣人生继续游玩"] }
+  ]
+}
+CHANGELOG -->
+</html>

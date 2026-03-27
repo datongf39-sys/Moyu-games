@@ -549,11 +549,35 @@ body::after{
       <div class="enter-hint">DOOM_VAN · v1.0 · NEW</div>
     </div>
   </div>
+
+  <div class="game-card" style="--card-accent:var(--purple)" onclick="location.href='ancient.html'">
+    <div class="card-new-dot" id="dot-ancient"></div>
+    <div class="card-top">
+      <div class="card-icon">🏯</div>
+      <div class="card-badge" style="background:rgba(124,58,237,.08);color:var(--purple);border:1px solid rgba(124,58,237,.2)">MODULE 05</div>
+    </div>
+    <div class="card-name">古代人生模拟</div>
+    <div class="card-desc">随机降生，从0岁活到百岁。入仕为官、行商铸铁、歌舞风流。<br>娶妻生子，死后继承子嗣，延续家族血脉。</div>
+    <div class="card-stats">
+      <div class="cs"><div class="cs-lbl">当前年龄</div><div class="cs-val" id="h-anc-age">--</div></div>
+      <div class="cs"><div class="cs-lbl">职业</div><div class="cs-val" id="h-anc-job">--</div></div>
+      <div class="cs"><div class="cs-lbl">余钱</div><div class="cs-val" id="h-anc-money">--</div></div>
+    </div>
+    <div class="card-features">
+      <span class="feat">👨‍👩‍👧 婚育传承</span><span class="feat">🎖️ 入朝为官</span><span class="feat">📖 学堂求学</span>
+      <span class="feat">💃 古代职业</span><span class="feat">🎲 随机事件</span><span class="feat">🌅 子嗣继承</span>
+    </div>
+    <div class="mini-bar"><div class="mini-fill" id="h-anc-bar" style="width:5%;background:var(--purple)"></div></div>
+    <div class="card-enter">
+      <div class="enter-btn">进入模块 <span class="enter-arrow">→</span></div>
+      <div class="enter-hint">ANCIENT · v1.0 · NEW</div>
+    </div>
+  </div>
 </div>
 
 <div class="bottom">
   <div class="sys-info">
-    <span class="pdot pdot-g"></span>SYS.PORTAL RUNNING · 4 MODULES ACTIVE<br>
+    <span class="pdot pdot-g"></span>SYS.PORTAL RUNNING · 5 MODULES ACTIVE<br>
     <span style="margin-left:10px">数据本地存储 · 关闭标签页后进度保留</span>
   </div>
   <div class="ver">BUILD 4.0.1 · 摸鱼专用版 · 请勿在老板身后打开</div>
@@ -637,6 +661,16 @@ function tick(){
     const vhp=dm.vanHp||100;
     document.getElementById('h-doom-van').textContent=vhp>=80?'良好':vhp>=50?'受损':vhp>=25?'危险':'报废';
     document.getElementById('h-doom-bar').style.width=Math.min(95,((dm.day||0)/100)*100)+'%';
+
+    const an=JSON.parse(localStorage.getItem('ancient')||'{}');
+    if(an.name){
+      const ancJobs={'none':'无业','farmer':'农夫','smith':'铁匠','merchant':'行商','doctor':'药师','dancer':'歌舞伎','scholar':'书生','officer':'官员','monk':'僧侣','painter':'画师','soldier':'士兵'};
+      document.getElementById('h-anc-age').textContent=(an.dead?'已故 ':'')+(an.age||0)+'岁';
+      document.getElementById('h-anc-job').textContent=ancJobs[an.job||'none']||'无业';
+      const am=an.money||0;
+      document.getElementById('h-anc-money').textContent=am+'文';
+      document.getElementById('h-anc-bar').style.width=Math.min(95,((an.age||0)/100)*100)+'%';
+    }
   }catch(e){}
 }
 setInterval(tick,1000);tick();
@@ -667,13 +701,14 @@ setInterval(tick,1000);tick();
    ───────────────────────────────────────── */
 
 const MODULES = [
-  { key:'corp', file:'corp.html' },
-  { key:'cafe', file:'cafe.html' },
-  { key:'farm', file:'farm.html' },
-  { key:'doom', file:'doom.html' },
+  { key:'corp',    file:'corp.html' },
+  { key:'cafe',    file:'cafe.html' },
+  { key:'farm',    file:'farm.html' },
+  { key:'doom',    file:'doom.html' },
+  { key:'ancient', file:'ancient.html' },
 ];
 
-const MODULE_DOTS = { corp:'dot-corp', cafe:'dot-cafe', farm:'dot-farm', doom:'dot-doom' };
+const MODULE_DOTS = { corp:'dot-corp', cafe:'dot-cafe', farm:'dot-farm', doom:'dot-doom', ancient:'dot-ancient' };
 
 function clGetRead(){
   try{return JSON.parse(localStorage.getItem('moyu-cl-read')||'{}')}catch(e){return{}}
