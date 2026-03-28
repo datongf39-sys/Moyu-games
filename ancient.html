@@ -319,9 +319,9 @@ const SHOP_ITEMS = [
 ══════════════════════════════════════════ */
 const ESTATES = [
   { id:'shack',   name:'茅草屋', icon:'🏚️', price:80,   capacity:2, desc:'简陋草屋，勉强遮风挡雨',   incomePerYear:0  },
-  { id:'cottage', name:'小院',   icon:'🏠', price:200,  capacity:4, desc:'带院子的小房，温馨宜居',   incomePerYear:5  },
-  { id:'house',   name:'宅院',   icon:'🏡', price:500,  capacity:6, desc:'宽敞宅院，颇具体面',        incomePerYear:15 },
-  { id:'mansion', name:'大宅',   icon:'🏛️', price:1500, capacity:10,desc:'豪门大宅，富贵气象',        incomePerYear:40 },
+  { id:'cottage', name:'小院',   icon:'🏠', price:200,  capacity:4, desc:'带院子的小房，温馨宜居',   incomePerYear:0  },
+  { id:'house',   name:'宅院',   icon:'🏡', price:500,  capacity:6, desc:'宽敞宅院，颇具体面',        incomePerYear:0  },
+  { id:'mansion', name:'大宅',   icon:'🏛️', price:1500, capacity:10,desc:'豪门大宅，富贵气象',        incomePerYear:0  },
   { id:'farm',    name:'田庄',   icon:'🌾', price:300,  capacity:4, desc:'附带农田，每年有额外收入', incomePerYear:30 },
   { id:'shop',    name:'商铺',   icon:'🏪', price:400,  capacity:2, desc:'坐商铺子，每年稳定收入',   incomePerYear:50 },
 ];
@@ -438,9 +438,7 @@ function initGame(inheritFrom){
   const bgKeys   = ['poor','normal','normal','rich']; // weighted
   const bgKey    = inheritFrom ? 'normal' : bgKeys[Math.floor(Math.random()*bgKeys.length)];
   const bg       = FAMILY_BG[bgKey];
-  const startMoney = inheritFrom
-    ? Math.floor(inheritFrom.money * 0.4)
-    : bg.startMoney[0] + Math.floor(Math.random()*(bg.startMoney[1]-bg.startMoney[0]));
+  const startMoney = inheritFrom ? Math.floor(inheritFrom.money * 0.4) : 0;
 
   G = {
     name: surname+given, surname, given,
@@ -572,19 +570,19 @@ function renderMain(){
             <div class="favor-bar"><div class="favor-fill" style="width:${Math.min(100,G.parentFavor)}%"></div></div>
             <span class="stat-val" style="color:var(--purple)">${G.parentFavor}</span>
           </div>
-        </div>
-
-        <div class="card fadeup">
-          <div class="ct">钱财</div>
-          <div class="money-display">
-            <div class="money-val">🪙 ${G.money} 文</div>
-            <div class="money-label">身上余钱</div>
+          <div class="stat-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px">
+            <span class="stat-icon">🪙</span>
+            <span class="stat-label">余钱</span>
+            <span style="font-size:13px;font-weight:700;color:var(--amber);font-family:var(--serif)">${G.money} 文</span>
           </div>
         </div>
 
-        <div class="card fadeup">
-          <div class="ct">家庭</div>
-          ${renderFamilyList()}
+        <div class="card fadeup" style="max-height:200px;overflow-y:auto">
+          <div class="ct">人生日志</div>
+          <div style="font-size:10px;line-height:1.7">
+            ${G.log.slice(0,8).map(l=>`<div style="padding:2px 0;border-bottom:1px solid var(--border)"><span style="color:var(--faint);font-size:9px">[${l.age}岁]</span> <span class="log-${l.type}">${l.text}</span></div>`).join('')}
+            ${G.log.length===0?'<div style="color:var(--faint);text-align:center;padding:8px">人生才刚开始...</div>':''}
+          </div>
         </div>
       </div>
 
@@ -728,8 +726,8 @@ function renderActions(){
   // Social
   html+=`<div class="sec-head">社交与婚姻</div><div class="action-grid">`;
   const canMarry=a>=14&&!G.married;
-  const marryDone=actionDone('marry');
-  html+=actionBtn('💑','相亲寻缘',(!canMarry&&G.married)?'已婚':(!canMarry)?'年龄限制':marryDone?'今年已相亲':'魅力影响成功率',canMarry&&!marryDone?'ab-purple':'',canMarry&&!marryDone?'marry(event)':'',!canMarry||marryDone,marryDone?'今年已相':'');
+  const marryDone=actionDone('blindDate');
+  html+=actionBtn('💑','相亲寻缘',(!canMarry&&G.married)?'已婚':(!canMarry)?'年龄不够':marryDone?'今年已相亲':'媒人随机匹配',canMarry&&!marryDone?'ab-purple':'',canMarry&&!marryDone?'blindDate(event)':'',!canMarry||marryDone,marryDone?'今年已':'');
   const canChild=G.married&&G.age>=16&&G.age<=50;
   const childDone=actionDone('haveChild');
   html+=actionBtn('👶','生儿育女',!canChild?'需已婚且适龄':childDone?'今年已尝试':'健康影响成功率',canChild&&!childDone?'ab-green':'',canChild&&!childDone?'haveChild(event)':'',!canChild||childDone,childDone?'今年已做':'');
@@ -854,9 +852,7 @@ function renderShop(){
   const jobItems=SHOP_ITEMS.filter(i=>i.jobReq&&i.jobReq===G.job);
   const displayItems=[...generalItems,...jobItems];
 
-  if(jobItems.length>0){
-    html+=`<div style="font-size:9px;color:var(--amber);letter-spacing:.08em;margin-bottom:6px">▸ 当前职业专属书籍已显示在下方</div>`;
-  }
+
 
   displayItems.forEach(item=>{
     const tooFull=G.inventory.length>=G.bagLimit;
@@ -1010,12 +1006,16 @@ function collectSalary(e){
     G.salaryCollectedThisYear=true;
     addLog(`💰 【${rankLabel}】薪俸到手 +${earned}文（本级区间 ${lo}~${hi}文）。`,'good');
     showResult(btn,`+${earned}文`,'good');
+    showModal('💰 薪俸到手',`【${rankLabel}】本年薪俸已结清。<br><br>入账 +${earned} 文<br>当前余钱：${G.money} 文`,
+      [{label:'收好了',sub:'',cost:'',id:'ok'}],()=>closeModal());
   } else {
     const deducted=Math.floor((lo+hi)/4);
     G.money=Math.max(0,G.money-deducted);
     G.salaryCollectedThisYear=true;
     addLog(`😤 今年业绩不佳，被扣除 ${deducted}文 作为罚款，郁闷。`,'bad');
     showResult(btn,`-${deducted}文`,'bad');
+    showModal('😤 业绩扣款',`今年差事办得不够妥当，被扣去 ${deducted} 文作为罚款。<br><br>心情不佳，来年再努力。`,
+      [{label:'郁闷',sub:'',cost:'',id:'ok'}],()=>closeModal());
   }
   save(); render();
 }
@@ -1043,10 +1043,14 @@ function askParents(e){
     G.money+=final;
     addLog(`🙏 向父母撒娇，得到了 ${final}文 零花钱，父母笑着递来。`,'good');
     showResult(btn,`+${final}文`,'good');
+    showModal('🙏 父母慷慨',`撒娇几句，父母笑着塞来了一些零花钱。<br><br>获得 +${final} 文`,
+      [{label:'谢谢爹娘',sub:'',cost:'',id:'ok'}],()=>closeModal());
   } else {
     G.parentFavor=clamp(G.parentFavor-5);
     addLog(`😔 父母说家里最近钱紧，脸色也有些不好看，好感度-5。`,'info');
     showResult(btn,'没要到','bad');
+    showModal('😔 未能如愿',`父母摆摆手，说近来手头紧，脸色也不太好看。<br><br>父母好感 -5`,
+      [{label:'知道了',sub:'',cost:'',id:'ok'}],()=>closeModal());
   }
   save(); render();
 }
@@ -1063,6 +1067,8 @@ function giftParents(e){
     G.parentFavor=clamp(G.parentFavor+favorGain);
     addLog(`🎁 花费 ${cost}文 孝敬父母，父母眉开眼笑，好感度+${favorGain}。`,'good');
     showResult(btn,`好感+${favorGain}`,'good');
+    showModal('🎁 父母欢颜',`父母见你孝顺，笑逐颜开，连连称赞。<br><br>父母好感 +${favorGain}`,
+      [{label:'尽孝应当',sub:'',cost:'',id:'ok'}],()=>closeModal());
     save(); render();
   });
 }
@@ -1266,9 +1272,13 @@ function exercise(e){
     G.health=clamp(G.health+gain);
     addLog(`🏃 强身健体，精气神足，健康+${gain}。`,'good');
     showResult(btn,`健康+${gain}`,'good');
+    showModal('🏃 锻炼有成',`挥汗如雨，气血通畅。<br><br>健康 +${gain}`,
+      [{label:'甚好',sub:'',cost:'',id:'ok'}],()=>closeModal());
   } else {
     addLog(`😓 练功途中扭伤了腰，白费了功夫。`,'bad');
     showResult(btn,'受伤了','bad');
+    showModal('😓 锻炼受伤',`练功途中不慎扭伤，白费了功夫。<br><br>花费 5文，健康未有增益。`,
+      [{label:'唉',sub:'',cost:'',id:'ok'}],()=>closeModal());
   }
   save(); render();
   }); // confirmSpend
@@ -1288,9 +1298,13 @@ function healSelf(e){
     G.health=clamp(G.health+gain);
     addLog(`⚕️ 找药师看诊，身体好转了不少，健康+${gain}。`,'good');
     showResult(btn,`健康+${gain}`,'good');
+    showModal('⚕️ 药到病除',`药师妙手回春，身体好转不少。<br><br>健康 +${gain}`,
+      [{label:'多谢大夫',sub:'',cost:'',id:'ok'}],()=>closeModal());
   } else {
     addLog(`😤 药师开的药方效果平平，钱花了没什么用。`,'bad');
     showResult(btn,'效果一般','bad');
+    showModal('😤 药效平平',`药师开的方子效果不佳，花了40文却收效甚微。`,
+      [{label:'罢了',sub:'',cost:'',id:'ok'}],()=>closeModal());
   }
   save(); render();
   }); // confirmSpend
@@ -1365,14 +1379,30 @@ function checkPromotion(){
   const job=JOBS.find(j=>j.id===G.job);
   if(!job||job.profPerRank===0) return;
   const maxRank=job.ranks.length-1;
+  let promoted=false, lastRank='', lastBonus=0;
   while(G.jobProf>=job.profPerRank&&G.jobRank<maxRank){
     G.jobProf-=job.profPerRank;
     G.jobRank++;
-    const newRank=job.ranks[G.jobRank];
-    const bonus=50+G.jobRank*30;
-    G.money+=bonus; G.totalMoney+=bonus;
+    lastRank=job.ranks[G.jobRank];
+    lastBonus=50+G.jobRank*30;
+    G.money+=lastBonus; G.totalMoney+=lastBonus;
     G.mood=clamp(G.mood+20);
-    addLog(`🎊 恭喜晋升！职位升为【${newRank}】，薪资随之提升，获得奖赏 ${bonus}文！`,'event');
+    addLog(`🎊 恭喜晋升！职位升为【${lastRank}】，薪资随之提升，获得奖赏 ${lastBonus}文！`,'event');
+    promoted=true;
+  }
+  if(promoted){
+    const newSalaryLo=Math.round(job.salaryRange[0]*(1+G.jobRank*0.3));
+    const newSalaryHi=Math.round(job.salaryRange[1]*(1+G.jobRank*0.3));
+    setTimeout(()=>{
+      showModal('🎊 职位晋升！',
+        `恭喜荣升 <b>【${lastRank}】</b>！<br><br>` +
+        `🪙 晋升奖赏：+${lastBonus} 文<br>` +
+        `📈 新薪资区间：${newSalaryLo}～${newSalaryHi} 文/年<br>` +
+        `😊 心情 +20`,
+        [{label:'🎉 多谢提携！',sub:'',cost:'',id:'ok'}],
+        ()=>closeModal()
+      );
+    }, 200);
   }
 }
 
@@ -1504,14 +1534,25 @@ function goVenue(venueId, e){
     npc.venue=venueId;
     npc.favor=5+Math.floor(Math.random()*15);
     if(!G.npcs) G.npcs=[];
-    if(G.npcs.length>=10) G.npcs.shift(); // 最多保留10人
+    if(G.npcs.length>=10) G.npcs.shift();
     G.npcs.push(npc);
     addLog(`${venue.icon} 在${venue.name}结识了 ${npc.name}（${npc.age}岁·${npc.job}·${npc.trait}），初始好感+${npc.favor}。`,'event');
     showResult(btn,`遇见${npc.name}`,'good');
+    showModal(`${venue.icon} 结识新友`,
+      `在<b>${venue.name}</b>偶遇了：<br><br>` +
+      `${npc.emoji} <b>${npc.name}</b>（${npc.age}岁 · ${npc.gender==='male'?'男':'女'}）<br>` +
+      `职业：${npc.job} &nbsp; 家境：${npc.bg}<br>` +
+      `性格：${npc.trait}<br><br>` +
+      `初始好感度：${npc.favor}/100<br>` +
+      `前往「社交」页面与其互动增进感情。`,
+      [{label:'幸会幸会',sub:'',cost:'',id:'ok'}],()=>{ closeModal(); save(); render(); });
   } else {
     G.mood=clamp(G.mood+3);
     addLog(`${venue.icon} 在${venue.name}四处走走，心情舒畅，未有特别结识。`,'info');
     showResult(btn,'心情+3','info');
+    showModal(`${venue.icon} 出行归来`,
+      `在<b>${venue.name}</b>四处游逛，虽未结识新朋友，倒也心情舒畅。<br><br>心情 +3`,
+      [{label:'不错',sub:'',cost:'',id:'ok'}],()=>{ closeModal(); save(); render(); });
   }
 
   // 也有小概率对方主动追求（好感已≥70者）
@@ -1556,11 +1597,17 @@ function interactNPC(idx, e){
     G.mood=clamp(G.mood+3);
     addLog(`🍵 与 ${npc.name} 相谈甚欢，对方好感+${gain}（现为${npc.favor}）。`,'good');
     showResult(btn,`好感+${gain}`,'good');
+    showModal(`🍵 相谈甚欢`,
+      `与 <b>${npc.name}</b> 促膝而谈，相见甚欢。<br><br>好感度 +${gain}（现为 ${npc.favor}/100）<br>${npc.favor>=80?'💡 好感已达80，可在此处提亲！':''}`,
+      [{label:'甚好',sub:'',cost:'',id:'ok'}],()=>closeModal());
   } else {
     const loss=2+Math.floor(Math.random()*4);
     npc.favor=Math.max(0,npc.favor-loss);
     addLog(`😅 与 ${npc.name} 交谈不甚投机，好感-${loss}。`,'bad');
     showResult(btn,`好感-${loss}`,'bad');
+    showModal(`😅 话不投机`,
+      `与 <b>${npc.name}</b> 交谈不甚投机，气氛略显尴尬。<br><br>好感度 -${loss}（现为 ${npc.favor}/100）`,
+      [{label:'有些尴尬',sub:'',cost:'',id:'ok'}],()=>closeModal());
   }
   save(); render();
 }
@@ -1719,7 +1766,75 @@ function removeNPC(idx){
   save(); render();
 }
 
-function marry(e){ showToast('请前往「社交」页面结识人脉，通过好感度提亲成婚！'); }
+/* ══════════════════════════════════════════
+   相亲系统（独立路径：媒人随机匹配）
+══════════════════════════════════════════ */
+function blindDate(e){
+  const btn=e&&e.currentTarget;
+  if(actionDone('blindDate')){ showToast('今年已经相亲过了！'); return; }
+  markAction('blindDate');
+  // 生成一个陌生NPC展示给玩家
+  const candidate = genNPC(G.gender);
+  // 玩家决定是否接受
+  showModal('💑 媒人来访',
+    `媒人为你引荐了一位：<br><br>` +
+    `${candidate.emoji} <b>${candidate.name}</b>（${candidate.age}岁 · ${candidate.gender==='male'?'男':'女'}）<br>` +
+    `职业：${candidate.job} &nbsp; 家境：${candidate.bg}<br>` +
+    `性格：${candidate.trait}<br>` +
+    `身家：约 ${candidate.money} 文<br>` +
+    `${candidate.estates&&candidate.estates.length>0?'名下地产：'+candidate.estates.map(x=>x.icon+x.name).join('、'):'暂无名下房产'}<br><br>` +
+    `你是否愿意接受这门婚事？`,
+    [{label:'✅ 点头应允', sub:'尝试缔结良缘', cost:'', id:'yes'},
+     {label:'❌ 婉言谢绝', sub:'错过此人', cost:'', id:'no'}],
+    (id)=>{
+      closeModal();
+      if(id==='no'){
+        G.mood=clamp(G.mood-3);
+        addLog(`💔 相亲不成，媒人自叹无缘。`,'info');
+        showResult(btn,'婉拒','info');
+        save(); render(); return;
+      }
+      // 对方是否同意：魅力影响，有随机性
+      const sameGender=candidate.gender===G.gender;
+      const rate=clamp(0.15+(G.charm/100)*0.55, 0.05, 0.7);
+      const agreed=roll(rate);
+      if(agreed){
+        // 结婚
+        G.married=true;
+        G.spouseName=candidate.name;
+        G.spouseEmoji=candidate.emoji;
+        G.spouseGender=candidate.gender;
+        G.spouseBg=candidate.bg;
+        G.spouseMoney=candidate.money;
+        G.spouseEstates=candidate.estates||[];
+        G.spouseFavor=70;
+        G.sameGenderMarriage=sameGender;
+        if(candidate.estates) candidate.estates.forEach(est=>G.estates.push({...est,eid:'se_'+Date.now()+Math.random(),residents:[]}));
+        G.mood=clamp(G.mood+15);
+        addLog(`🎊 与 ${candidate.name} 相亲顺利，喜结连理！`,'event');
+        showResult(btn,'成婚！','good');
+        showModal('🎊 相亲成功！',
+          `${candidate.emoji} <b>${candidate.name}</b> 对你颇有好感，二人一见钟情，喜结连理！<br><br>` +
+          `${sameGender?'✨ 同性结合，相伴一生，但无法孕育子嗣。<br><br>':''}` +
+          `${candidate.estates&&candidate.estates.length>0?'💰 随嫁地产：'+candidate.estates.map(x=>x.icon+x.name).join('、')+'<br><br>':''}` +
+          `配偶好感度：${G.spouseFavor}/100`,
+          [{label:'🎉 大喜大吉！',sub:'',cost:'',id:'ok'}],
+          ()=>{ closeModal(); save(); render(); }
+        );
+      } else {
+        G.mood=clamp(G.mood-8);
+        addLog(`😢 相亲未能成功，对方无意，心中失落。`,'bad');
+        showResult(btn,'未能成婚','bad');
+        showModal('💔 相亲结果',
+          `${candidate.emoji} ${candidate.name} 考量再三，婉言表示无意，此番相亲无缘而终。<br><br>心情受损，来年再觅良缘。`,
+          [{label:'↩ 黯然离去',sub:'',cost:'',id:'ok'}],
+          ()=>{ closeModal(); save(); render(); }
+        );
+      }
+    }
+  );
+}
+function marry(e){ blindDate(e); }
 
 
 function haveChild(e){
