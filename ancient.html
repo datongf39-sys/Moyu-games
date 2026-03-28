@@ -180,7 +180,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   </div>
   <div style="display:flex;align-items:center;gap:10px">
     <button onclick="confirmRestart()" style="font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--red-l);color:var(--red);cursor:pointer;font-family:var(--mono)">⟳ 重开此生</button>
-    <span style="font-size:9px;color:var(--faint);letter-spacing:.08em">ANCIENT · v3.0</span>
+    <span style="font-size:9px;color:var(--faint);letter-spacing:.08em">ANCIENT · v3.1</span>
   </div>
 </div>
 <div id="app-main"></div>
@@ -211,114 +211,157 @@ const FAMILY_BG = {
 };
 
 // Job definitions with rank system
+// profPerRank: array[5] — threshold to reach each next rank (cumulative from 0)
+// tasks: diff 1~5, minRank = diff-1 (unlocked after reaching that rank)
+// Each task: prof = gain on success; failProf = loss on failure (≥70% of gain)
 const JOBS = [
   { id:'none',    name:'无业',   icon:'🏠', minAge:0,  maxAge:100, salaryRange:[0,0],      desc:'闲散度日',
-    ranks:['无'], profPerRank:0, tasks:[] },
+    ranks:['无'], profPerRank:[0,0,0,0,0], tasks:[] },
   { id:'farmer',  name:'农夫',   icon:'🌾', minAge:16, maxAge:60,  salaryRange:[20,50],    desc:'耕作田地，收成看天',
-    ranks:['农户','老农','庄头','田官'], profPerRank:30,
+    ranks:['农户','老农','庄头','田官','农官'], profPerRank:[25,50,100,200,400],
     tasks:[
-      {name:'除草松土',diff:1,prof:3,text:'今日除草松土，辛苦劳作。'},
-      {name:'春耕播种',diff:2,prof:5,text:'春耕播种，望老天眷顾。'},
-      {name:'水利修渠',diff:3,prof:8,text:'参与修渠引水，获得乡邻赞赏。'},
-      {name:'丰收售粮',diff:4,prof:12,text:'丰收之年售粮，收益颇丰！'},
+      {name:'除草松土',diff:1,minRank:0,prof:5,failProf:4,text:'今日除草松土，辛苦劳作。'},
+      {name:'春耕播种',diff:2,minRank:1,prof:10,failProf:7,text:'春耕播种，望老天眷顾。'},
+      {name:'水利修渠',diff:3,minRank:2,prof:20,failProf:15,text:'参与修渠引水，获得乡邻赞赏。'},
+      {name:'丰收售粮',diff:4,minRank:3,prof:35,failProf:25,text:'丰收之年售粮，收益颇丰！'},
+      {name:'献策朝廷',diff:5,minRank:4,prof:60,failProf:45,text:'就农事献策朝廷，得到嘉许！'},
     ]},
   { id:'smith',   name:'铁匠',   icon:'🔨', minAge:16, maxAge:55,  salaryRange:[40,70],    desc:'锻造器具，收入稳定',
-    ranks:['学徒','工匠','技匠','宗师'], profPerRank:35,
+    ranks:['学徒','工匠','技匠','宗匠','宗师'], profPerRank:[25,50,100,200,400],
     tasks:[
-      {name:'打制农具',diff:1,prof:3,text:'打制农具，完工交货。'},
-      {name:'锻造兵器',diff:2,prof:6,text:'为军营锻造兵器，质量上乘。'},
-      {name:'精铸宝刀',diff:3,prof:9,text:'耗时三日精铸宝刀，买家大喜。'},
-      {name:'仿古器皿',diff:4,prof:14,text:'仿制古器皿，被贵人高价收购！'},
+      {name:'打制农具',diff:1,minRank:0,prof:5,failProf:4,text:'打制农具，完工交货。'},
+      {name:'锻造兵器',diff:2,minRank:1,prof:10,failProf:7,text:'为军营锻造兵器，质量上乘。'},
+      {name:'精铸宝刀',diff:3,minRank:2,prof:20,failProf:15,text:'耗时三日精铸宝刀，买家大喜。'},
+      {name:'仿古器皿',diff:4,minRank:3,prof:35,failProf:25,text:'仿制古器皿，被贵人高价收购！'},
+      {name:'铸神兵利器',diff:5,minRank:4,prof:60,failProf:45,text:'历时旬月铸成神兵，天下闻名！'},
     ]},
   { id:'merchant',name:'行商',   icon:'🛒', minAge:18, maxAge:65,  salaryRange:[50,150],   desc:'走南闯北，财运不定',
-    ranks:['小贩','商人','富商','大贾'], profPerRank:40,
+    ranks:['小贩','商人','富商','大贾','商圣'], profPerRank:[25,50,100,200,400],
     tasks:[
-      {name:'摆摊叫卖',diff:1,prof:3,text:'街头摆摊，薄利多销。'},
-      {name:'丝绸贸易',diff:2,prof:6,text:'贩卖丝绸，获利不少。'},
-      {name:'远行贸易',diff:3,prof:10,text:'跋山涉水远行贸易，利润丰厚。'},
-      {name:'囤货倒卖',diff:4,prof:15,text:'精准囤货，时机成熟大赚一笔！'},
+      {name:'摆摊叫卖',diff:1,minRank:0,prof:5,failProf:4,text:'街头摆摊，薄利多销。'},
+      {name:'丝绸贸易',diff:2,minRank:1,prof:10,failProf:7,text:'贩卖丝绸，获利不少。'},
+      {name:'远行贸易',diff:3,minRank:2,prof:20,failProf:15,text:'跋山涉水远行贸易，利润丰厚。'},
+      {name:'囤货倒卖',diff:4,minRank:3,prof:35,failProf:25,text:'精准囤货，时机成熟大赚一笔！'},
+      {name:'垄断市价',diff:5,minRank:4,prof:60,failProf:45,text:'把控一地市价，富可敌国！'},
     ]},
   { id:'doctor',  name:'药师',   icon:'⚕️', minAge:20, maxAge:70,  salaryRange:[50,100],   desc:'悬壶济世，口碑为先',
-    ranks:['学医','坐堂','名医','圣手'], profPerRank:45,
+    ranks:['学医','坐堂','名医','大医','圣手'], profPerRank:[25,50,100,200,400],
     tasks:[
-      {name:'抓药配方',diff:1,prof:3,text:'日常抓药配方，无甚差错。'},
-      {name:'巡诊问脉',diff:2,prof:6,text:'出诊巡访乡邻，声誉渐好。'},
-      {name:'救治重症',diff:3,prof:10,text:'救治一名重症患者，活人无数之誉渐起。'},
-      {name:'研制奇药',diff:4,prof:16,text:'研制出新奇药方，四方求购！'},
+      {name:'抓药配方',diff:1,minRank:0,prof:5,failProf:4,text:'日常抓药配方，无甚差错。'},
+      {name:'巡诊问脉',diff:2,minRank:1,prof:10,failProf:7,text:'出诊巡访乡邻，声誉渐好。'},
+      {name:'救治重症',diff:3,minRank:2,prof:20,failProf:15,text:'救治一名重症患者，活人无数之誉渐起。'},
+      {name:'研制奇药',diff:4,minRank:3,prof:35,failProf:25,text:'研制出新奇药方，四方求购！'},
+      {name:'著医典传世',diff:5,minRank:4,prof:60,failProf:45,text:'著成医学经典，名垂青史！'},
     ]},
   { id:'dancer',  name:'歌舞伎', icon:'💃', minAge:14, maxAge:30,  salaryRange:[40,90],    desc:'歌舞升平，名动一方',
-    ranks:['学徒','伎人','名伶','花魁'], profPerRank:25,
+    ranks:['学徒','伎人','名伶','花魁','国色'], profPerRank:[25,50,100,200,400],
     tasks:[
-      {name:'练功学艺',diff:1,prof:3,text:'每日练功，基本功日渐扎实。'},
-      {name:'小楼献艺',diff:2,prof:5,text:'在小楼献艺，博得满堂喝彩。'},
-      {name:'大宴表演',diff:3,prof:9,text:'受邀在贵人宴席上表演，赏钱丰厚。'},
-      {name:'名震四方',diff:4,prof:14,text:'名声大噪，慕名而来的客人络绎不绝！'},
+      {name:'练功学艺',diff:1,minRank:0,prof:5,failProf:4,text:'每日练功，基本功日渐扎实。'},
+      {name:'小楼献艺',diff:2,minRank:1,prof:10,failProf:7,text:'在小楼献艺，博得满堂喝彩。'},
+      {name:'大宴表演',diff:3,minRank:2,prof:20,failProf:15,text:'受邀在贵人宴席上表演，赏钱丰厚。'},
+      {name:'名震四方',diff:4,minRank:3,prof:35,failProf:25,text:'名声大噪，慕名而来的客人络绎不绝！'},
+      {name:'御前献舞',diff:5,minRank:4,prof:60,failProf:45,text:'受召入宫御前献舞，获帝王亲赐金牌！'},
     ]},
   { id:'scholar', name:'书生',   icon:'📖', minAge:16, maxAge:40,  salaryRange:[10,35],    desc:'寒窗苦读，以待科举',
-    ranks:['童生','秀才','举人','进士'], profPerRank:50,
+    ranks:['童生','秀才','举人','进士','翰林'], profPerRank:[25,50,100,200,400],
     tasks:[
-      {name:'抄书誊录',diff:1,prof:3,text:'为书坊抄书誊录，换取微薄束脩。'},
-      {name:'私塾讲学',diff:2,prof:6,text:'在私塾讲学，得束脩若干。'},
-      {name:'参加科考',diff:3,prof:10,text:'参加地方科考，颇有斩获。'},
-      {name:'撰写经义',diff:4,prof:16,text:'撰写经义文章，被大儒推介！'},
+      {name:'抄书誊录',diff:1,minRank:0,prof:5,failProf:4,text:'为书坊抄书誊录，换取微薄束脩。'},
+      {name:'私塾讲学',diff:2,minRank:1,prof:10,failProf:7,text:'在私塾讲学，得束脩若干。'},
+      {name:'参加科考',diff:3,minRank:2,prof:20,failProf:15,text:'参加地方科考，颇有斩获。'},
+      {name:'撰写经义',diff:4,minRank:3,prof:35,failProf:25,text:'撰写经义文章，被大儒推介！'},
+      {name:'著书立说',diff:5,minRank:4,prof:60,failProf:45,text:'著书立说，成一代大儒，桃李满天下！'},
     ]},
   { id:'officer', name:'官员',   icon:'🎖️', minAge:20, maxAge:65,  salaryRange:[120,220],  desc:'入朝为官，高俸厚禄（仅科举高中可解锁）', examOnly:true,
-    ranks:['从九品','正七品','从五品','正三品'], profPerRank:60,
+    ranks:['从九品','正七品','从五品','正三品','一品大员'], profPerRank:[25,50,100,200,400],
     tasks:[
-      {name:'批阅公文',diff:1,prof:3,text:'批阅一摞公文，事务繁琐。'},
-      {name:'断案审狱',diff:2,prof:7,text:'断理一桩案件，百姓称颂。'},
-      {name:'治理水患',diff:3,prof:11,text:'主持治理水患，政绩斐然。'},
-      {name:'出使邦交',diff:4,prof:18,text:'代表朝廷出使，不辱使命，龙颜大悦！'},
+      {name:'批阅公文',diff:1,minRank:0,prof:5,failProf:4,text:'批阅一摞公文，事务繁琐。'},
+      {name:'断案审狱',diff:2,minRank:1,prof:10,failProf:7,text:'断理一桩案件，百姓称颂。'},
+      {name:'治理水患',diff:3,minRank:2,prof:20,failProf:15,text:'主持治理水患，政绩斐然。'},
+      {name:'出使邦交',diff:4,minRank:3,prof:35,failProf:25,text:'代表朝廷出使，不辱使命，龙颜大悦！'},
+      {name:'辅佐圣君',diff:5,minRank:4,prof:60,failProf:45,text:'辅佐天子治国，名留青史，位极人臣！'},
     ]},
   { id:'monk',    name:'僧侣',   icon:'🧘', minAge:16, maxAge:100, salaryRange:[5,20],     desc:'青灯古佛，清心寡欲',
-    ranks:['沙弥','比丘','法师','住持'], profPerRank:40,
+    ranks:['沙弥','比丘','法师','住持','方丈'], profPerRank:[25,50,100,200,400],
     tasks:[
-      {name:'早课诵经',diff:1,prof:3,text:'黎明早课，心得清宁。'},
-      {name:'化缘布施',diff:2,prof:5,text:'外出化缘，得香客布施。'},
-      {name:'讲经说法',diff:3,prof:9,text:'讲经说法，信众云集。'},
-      {name:'斩妖除魔',diff:4,prof:14,text:'降服一方妖邪，美名远扬！'},
+      {name:'早课诵经',diff:1,minRank:0,prof:5,failProf:4,text:'黎明早课，心得清宁。'},
+      {name:'化缘布施',diff:2,minRank:1,prof:10,failProf:7,text:'外出化缘，得香客布施。'},
+      {name:'讲经说法',diff:3,minRank:2,prof:20,failProf:15,text:'讲经说法，信众云集。'},
+      {name:'斩妖除魔',diff:4,minRank:3,prof:35,failProf:25,text:'降服一方妖邪，美名远扬！'},
+      {name:'开坛传法',diff:5,minRank:4,prof:60,failProf:45,text:'开坛讲法，四方信众云集，佛法大兴！'},
     ]},
   { id:'painter', name:'画师',   icon:'🖌️', minAge:16, maxAge:70,  salaryRange:[30,70],    desc:'丹青妙手，笔墨留情',
-    ranks:['学徒','画工','画师','画圣'], profPerRank:35,
+    ranks:['学徒','画工','画师','大家','画圣'], profPerRank:[25,50,100,200,400],
     tasks:[
-      {name:'临摹描绘',diff:1,prof:3,text:'临摹名家作品，技艺有所精进。'},
-      {name:'为人作像',diff:2,prof:6,text:'为乡绅作画像，得润笔费。'},
-      {name:'山水长卷',diff:3,prof:10,text:'创作山水长卷，被书画馆收藏。'},
-      {name:'御前献画',diff:4,prof:16,text:'受召入宫献画，得皇上御赐！'},
+      {name:'临摹描绘',diff:1,minRank:0,prof:5,failProf:4,text:'临摹名家作品，技艺有所精进。'},
+      {name:'为人作像',diff:2,minRank:1,prof:10,failProf:7,text:'为乡绅作画像，得润笔费。'},
+      {name:'山水长卷',diff:3,minRank:2,prof:20,failProf:15,text:'创作山水长卷，被书画馆收藏。'},
+      {name:'御前献画',diff:4,minRank:3,prof:35,failProf:25,text:'受召入宫献画，得皇上御赐！'},
+      {name:'传世巨作',diff:5,minRank:4,prof:60,failProf:45,text:'历尽心血完成传世巨作，千古流芳！'},
     ]},
   { id:'soldier', name:'士兵',   icon:'⚔️', minAge:18, maxAge:45,  salaryRange:[40,75],    desc:'保家卫国，沙场征战', dangerRisk:true,
-    ranks:['新兵','伍长','百户','将军'], profPerRank:30,
+    ranks:['新兵','伍长','百户','千户','将军'], profPerRank:[25,50,100,200,400],
     tasks:[
-      {name:'操练阵法',diff:1,prof:4,text:'日常操练阵法，体力充沛。'},
-      {name:'守城戍边',diff:2,prof:6,text:'奉命守城，驱散来犯小股敌军。'},
-      {name:'出征作战',diff:3,prof:10,text:'出征交战，斩敌立功，获嘉奖。'},
-      {name:'奇袭敌营',diff:4,prof:16,text:'率部奇袭敌营，大获全胜，晋升有望！'},
+      {name:'操练阵法',diff:1,minRank:0,prof:5,failProf:4,text:'日常操练阵法，体力充沛。'},
+      {name:'守城戍边',diff:2,minRank:1,prof:10,failProf:7,text:'奉命守城，驱散来犯小股敌军。'},
+      {name:'出征作战',diff:3,minRank:2,prof:20,failProf:15,text:'出征交战，斩敌立功，获嘉奖。'},
+      {name:'奇袭敌营',diff:4,minRank:3,prof:35,failProf:25,text:'率部奇袭敌营，大获全胜，晋升有望！'},
+      {name:'统帅三军',diff:5,minRank:4,prof:60,failProf:45,text:'统帅三军出征，封侯拜将，威震四方！'},
     ]},
 ];
 
-// Shop items
-const SHOP_ITEMS = [
+// Shop items — all items go into the random pool; 6 are picked each year
+// jobReq removed from books (anyone can buy); gifts designed per NPC trait
+const SHOP_ITEMS_POOL = [
   // 通用物品
-  { id:'herbal',   name:'草药包',    icon:'🌿', price:15,  effect:{health:15},           desc:'服用后恢复健康+15',         stackable:true  },
-  { id:'book',     name:'经典文集',  icon:'📚', price:30,  effect:{intel:10},             desc:'研读后智识+10',             stackable:true  },
-  { id:'rouge',    name:'胭脂水粉',  icon:'💄', price:25,  effect:{charm:12},             desc:'使用后魅力+12',             stackable:true  },
-  { id:'wine',     name:'美酒一坛',  icon:'🍶', price:20,  effect:{mood:15},              desc:'饮后心情+15',               stackable:true  },
-  { id:'tonic',    name:'大补丸',    icon:'💊', price:60,  effect:{health:30},            desc:'服用后恢复健康+30',         stackable:true  },
-  { id:'jade',     name:'翡翠玉佩',  icon:'💚', price:80,  effect:{charm:20,mood:10},     desc:'佩戴后魅力+20 心情+10',     stackable:false },
-  { id:'sword',    name:'宝剑一柄',  icon:'⚔️', price:100, effect:{health:10,mood:10},    desc:'强身健体，健康+10 心情+10', stackable:false },
-  { id:'bigbag',   name:'大布袋',    icon:'🎒', price:50,  effect:{bagExpand:5},          desc:'背包容量+5（最大20）',      stackable:false },
-  // 职业专属书籍（提升对应职业熟练度）
-  { id:'book_farmer',  name:'农耕要术',  icon:'📗', price:40,  effect:{jobProf:15}, jobReq:'farmer',   desc:'农夫专用·职业熟练度+15',   stackable:true },
-  { id:'book_smith',   name:'锻造秘典',  icon:'📘', price:45,  effect:{jobProf:15}, jobReq:'smith',    desc:'铁匠专用·职业熟练度+15',   stackable:true },
-  { id:'book_merchant',name:'商道经',    icon:'📙', price:50,  effect:{jobProf:15}, jobReq:'merchant', desc:'行商专用·职业熟练度+15',   stackable:true },
-  { id:'book_doctor',  name:'医典精要',  icon:'📕', price:55,  effect:{jobProf:15}, jobReq:'doctor',   desc:'药师专用·职业熟练度+15',   stackable:true },
-  { id:'book_dancer',  name:'乐府舞谱',  icon:'📓', price:40,  effect:{jobProf:15}, jobReq:'dancer',   desc:'歌舞伎专用·职业熟练度+15', stackable:true },
-  { id:'book_scholar', name:'科举指要',  icon:'📒', price:45,  effect:{jobProf:15}, jobReq:'scholar',  desc:'书生专用·职业熟练度+15',   stackable:true },
-  { id:'book_officer', name:'为官之道',  icon:'📔', price:60,  effect:{jobProf:20}, jobReq:'officer',  desc:'官员专用·职业熟练度+20',   stackable:true },
-  { id:'book_monk',    name:'禅宗心法',  icon:'📃', price:40,  effect:{jobProf:15}, jobReq:'monk',     desc:'僧侣专用·职业熟练度+15',   stackable:true },
-  { id:'book_painter', name:'画论全集',  icon:'🗒️', price:45,  effect:{jobProf:15}, jobReq:'painter',  desc:'画师专用·职业熟练度+15',   stackable:true },
-  { id:'book_soldier', name:'兵法三十六计',icon:'📜',price:45, effect:{jobProf:15}, jobReq:'soldier',  desc:'士兵专用·职业熟练度+15',   stackable:true },
+  { id:'herbal',      name:'草药包',      icon:'🌿', price:15,  effect:{health:15},          desc:'服用后恢复健康+15',          stackable:true,  tags:['general'] },
+  { id:'book',        name:'经典文集',    icon:'📚', price:30,  effect:{intel:10},            desc:'研读后智识+10',              stackable:true,  tags:['general'] },
+  { id:'rouge',       name:'胭脂水粉',    icon:'💄', price:25,  effect:{charm:12},            desc:'使用后魅力+12',              stackable:true,  tags:['general'] },
+  { id:'wine',        name:'美酒一坛',    icon:'🍶', price:20,  effect:{mood:15},             desc:'饮后心情+15',                stackable:true,  tags:['general'] },
+  { id:'tonic',       name:'大补丸',      icon:'💊', price:60,  effect:{health:30},           desc:'服用后恢复健康+30',          stackable:true,  tags:['general'] },
+  { id:'jade',        name:'翡翠玉佩',    icon:'💚', price:80,  effect:{charm:20,mood:10},    desc:'佩戴后魅力+20 心情+10',      stackable:false, tags:['general'] },
+  { id:'sword',       name:'宝剑一柄',    icon:'⚔️', price:100, effect:{health:10,mood:10},   desc:'强身健体，健康+10 心情+10',  stackable:false, tags:['general'] },
+  { id:'bigbag',      name:'大布袋',      icon:'🎒', price:50,  effect:{bagExpand:5},         desc:'背包容量+5（最大20）',       stackable:false, tags:['general'] },
+  // 职业书籍（无职业限制，年龄>10即可出现，熟练度+10）
+  { id:'book_farmer',   name:'农耕要术',      icon:'📗', price:70, effect:{jobProf:10}, isJobBook:true, jobId:'farmer',   desc:'职业书·通用·职业熟练度+10', stackable:true, tags:['jobbook'] },
+  { id:'book_smith',    name:'锻造秘典',      icon:'📘', price:70, effect:{jobProf:10}, isJobBook:true, jobId:'smith',    desc:'职业书·通用·职业熟练度+10', stackable:true, tags:['jobbook'] },
+  { id:'book_merchant', name:'商道经',        icon:'📙', price:70, effect:{jobProf:10}, isJobBook:true, jobId:'merchant', desc:'职业书·通用·职业熟练度+10', stackable:true, tags:['jobbook'] },
+  { id:'book_doctor',   name:'医典精要',      icon:'📕', price:70, effect:{jobProf:10}, isJobBook:true, jobId:'doctor',   desc:'职业书·通用·职业熟练度+10', stackable:true, tags:['jobbook'] },
+  { id:'book_dancer',   name:'乐府舞谱',      icon:'📓', price:70, effect:{jobProf:10}, isJobBook:true, jobId:'dancer',   desc:'职业书·通用·职业熟练度+10', stackable:true, tags:['jobbook'] },
+  { id:'book_scholar',  name:'科举指要',      icon:'📒', price:70, effect:{jobProf:10}, isJobBook:true, jobId:'scholar',  desc:'职业书·通用·职业熟练度+10', stackable:true, tags:['jobbook'] },
+  { id:'book_officer',  name:'为官之道',      icon:'📔', price:70, effect:{jobProf:10}, isJobBook:true, jobId:'officer',  desc:'职业书·通用·职业熟练度+10', stackable:true, tags:['jobbook'] },
+  { id:'book_monk',     name:'禅宗心法',      icon:'📃', price:70, effect:{jobProf:10}, isJobBook:true, jobId:'monk',     desc:'职业书·通用·职业熟练度+10', stackable:true, tags:['jobbook'] },
+  { id:'book_painter',  name:'画论全集',      icon:'🗒️', price:70, effect:{jobProf:10}, isJobBook:true, jobId:'painter',  desc:'职业书·通用·职业熟练度+10', stackable:true, tags:['jobbook'] },
+  { id:'book_soldier',  name:'兵法三十六计',  icon:'📜', price:70, effect:{jobProf:10}, isJobBook:true, jobId:'soldier',  desc:'职业书·通用·职业熟练度+10', stackable:true, tags:['jobbook'] },
+  // 礼物（针对不同NPC性格）
+  { id:'gift_poem',   name:'精装诗集',    icon:'📝', price:30,  effect:{}, isGift:true, giftTrait:['才华横溢','温文尔雅'], favorBonus:15, desc:'赠给有才情的人，好感+15',  stackable:true, tags:['gift'] },
+  { id:'gift_wine2',  name:'陈年佳酿',    icon:'🍷', price:35,  effect:{}, isGift:true, giftTrait:['豪爽仗义','风趣幽默'], favorBonus:15, desc:'赠给豪爽之人，好感+15',   stackable:true, tags:['gift'] },
+  { id:'gift_flower', name:'鲜花一束',    icon:'💐', price:20,  effect:{}, isGift:true, giftTrait:['温柔体贴','活泼开朗'], favorBonus:15, desc:'赠给温柔之人，好感+15',   stackable:true, tags:['gift'] },
+  { id:'gift_chess',  name:'象棋一副',    icon:'♟️', price:40,  effect:{}, isGift:true, giftTrait:['沉稳内敛','严肃认真'], favorBonus:15, desc:'赠给沉稳之人，好感+15',   stackable:true, tags:['gift'] },
+  { id:'gift_incense',name:'名贵熏香',    icon:'🕯️', price:45,  effect:{}, isGift:true, giftTrait:['温柔体贴','温文尔雅','沉稳内敛'], favorBonus:18, desc:'赠给雅致之人，好感+18', stackable:true, tags:['gift'] },
+  { id:'gift_general',name:'精美首饰',    icon:'💍', price:55,  effect:{}, isGift:true, giftTrait:[], favorBonus:10, desc:'通用礼物，赠任何人好感+10', stackable:true, tags:['gift'] },
 ];
+
+// 每年随机生成6种商店商品（保证职业书只在年龄>10时出现）
+function genYearShop(){
+  if(!G._shopSeed||G._shopYear!==G.age){
+    G._shopYear=G.age;
+    // 分类抽取：一定有通用品，可能有职业书/礼物
+    const general=SHOP_ITEMS_POOL.filter(i=>i.tags.includes('general'));
+    const jobbooks=G.age>10?SHOP_ITEMS_POOL.filter(i=>i.tags.includes('jobbook')):[];
+    const gifts=SHOP_ITEMS_POOL.filter(i=>i.tags.includes('gift'));
+    // 随机抽：3-4件通用，1-2件礼物，0-1件职业书
+    const shuffle=arr=>[...arr].sort(()=>Math.random()-0.5);
+    const picked=[];
+    shuffle(general).slice(0,3+Math.floor(Math.random()*2)).forEach(i=>picked.push(i));
+    if(gifts.length) shuffle(gifts).slice(0,1+Math.floor(Math.random()*2)).forEach(i=>picked.push(i));
+    if(jobbooks.length&&Math.random()<0.6) picked.push(shuffle(jobbooks)[0]);
+    // 去重并取6件
+    const unique=[...new Map(picked.map(i=>[i.id,i])).values()];
+    G._shopPool=unique.slice(0,6).map(i=>i.id);
+    G._shopSeed=true;
+  }
+  return SHOP_ITEMS_POOL.filter(i=>G._shopPool.includes(i.id));
+}
 
 /* ══════════════════════════════════════════
    地产 & 社交 & NPC 数据
@@ -365,6 +408,32 @@ function genNPC(playerGender){
   return {
     id:'npc_'+Date.now()+'_'+Math.floor(Math.random()*9999),
     name:surname+given, gender:isMale?'male':'female', emoji,
+    age:14+Math.floor(Math.random()*30),
+    job, bg, money, trait, estates, favor:0, role:'friend', venue:'',
+  };
+}
+
+// 生成指定性别的NPC
+function genNPCGender(forcedGender){
+  const isMale = forcedGender==='male';
+  const surname = SURNAMES[Math.floor(Math.random()*SURNAMES.length)];
+  const given = (isMale?MALE_NAMES:FEMALE_NAMES)[Math.floor(Math.random()*MALE_NAMES.length)];
+  const bg = NPC_BG[Math.floor(Math.random()*NPC_BG.length)];
+  const [mlo,mhi] = NPC_BG_MONEY[bg];
+  const money = mlo + Math.floor(Math.random()*(mhi-mlo));
+  const job = NPC_JOBS[Math.floor(Math.random()*NPC_JOBS.length)];
+  const trait = NPC_TRAITS[Math.floor(Math.random()*NPC_TRAITS.length)];
+  const emoji = (isMale?MALE_EMOJI:FEMALE_EMOJI)[Math.floor(Math.random()*3)];
+  let estates = [];
+  if(money>=300&&Math.random()<0.5){
+    const e=ESTATES[1+Math.floor(Math.random()*3)];
+    estates=[{...e,eid:'nse_'+Date.now()+Math.floor(Math.random()*9999),residents:[]}];
+  } else if(money>=80&&Math.random()<0.3){
+    estates=[{...ESTATES[0],eid:'nse_'+Date.now()+Math.floor(Math.random()*9999),residents:[]}];
+  }
+  return {
+    id:'npc_'+Date.now()+'_'+Math.floor(Math.random()*9999),
+    name:surname+given, gender:forcedGender, emoji,
     age:14+Math.floor(Math.random()*30),
     job, bg, money, trait, estates, favor:0, role:'friend', venue:'',
   };
@@ -456,7 +525,7 @@ function initGame(inheritFrom){
     mood:    clamp(60 + Math.floor(Math.random()*30)),
     intel:   clamp(15 + Math.floor(Math.random()*35)),
     charm:   clamp(20 + Math.floor(Math.random()*40)),
-    parentFavor: bgKey==='rich' ? 70 : bgKey==='normal' ? 50 : 30,
+    parentFavor: bgKey==='rich' ? 70 : bgKey==='normal' ? 50 : 30, // legacy compat
     money: startMoney,
     job: 'none',
     jobRank: 0,
@@ -470,8 +539,8 @@ function initGame(inheritFrom){
     spouseName: null, spouseEmoji: null,
     children: [],
     parents: inheritFrom ? [] : [
-      { name:surname+MALE_NAMES[Math.floor(Math.random()*MALE_NAMES.length)], rel:'父亲', emoji:'👨', alive:true },
-      { name:SURNAMES[Math.floor(Math.random()*SURNAMES.length)]+FEMALE_NAMES[Math.floor(Math.random()*FEMALE_NAMES.length)], rel:'母亲', emoji:'👩', alive:true },
+      { name:surname+MALE_NAMES[Math.floor(Math.random()*MALE_NAMES.length)], rel:'父亲', emoji:'👨', alive:true, favor: bgKey==='rich'?70:bgKey==='normal'?50:30 },
+      { name:SURNAMES[Math.floor(Math.random()*SURNAMES.length)]+FEMALE_NAMES[Math.floor(Math.random()*FEMALE_NAMES.length)], rel:'母亲', emoji:'👩', alive:true, favor: bgKey==='rich'?70:bgKey==='normal'?50:30 },
     ],
     ancestors: inheritFrom ? [{name:inheritFrom.name,emoji:inheritFrom.emoji,age:inheritFrom.age,rel:'先祖'}] : [],
     familyBg: bgKey,
@@ -539,8 +608,8 @@ function renderMain(){
   const agePhase = G.age<7?'幼年':G.age<15?'少年':G.age<30?'青年':G.age<50?'壮年':G.age<70?'中老年':'暮年';
   const bgInfo = FAMILY_BG[G.familyBg]||FAMILY_BG.normal;
   const rankLabel = job ? job.ranks[Math.min(G.jobRank, job.ranks.length-1)] : '';
-  const profNeeded = job ? job.profPerRank : 0;
-  const profPct = profNeeded>0 ? Math.min(100,(G.jobProf/profNeeded)*100) : 0;
+  const profNeeded = job && Array.isArray(job.profPerRank) ? (job.profPerRank[Math.min(G.jobRank, job.profPerRank.length-1)]||0) : 0;
+  const profPct = profNeeded>0 ? Math.min(100,(G.jobProf/profNeeded)*100) : (G.jobRank>=(job&&job.ranks?job.ranks.length-1:0)?100:0);
 
   app.innerHTML = `
   <div class="main">
@@ -559,9 +628,9 @@ function renderMain(){
           </div>
           ${job && job.id!=='none' && profNeeded>0 ? `
           <div class="xp-bar-wrap" title="职业熟练度 ${G.jobProf}/${profNeeded}">
-            <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--faint);margin-bottom:2px"><span>职业熟练度</span><span>${G.jobProf}/${profNeeded}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--faint);margin-bottom:2px"><span>熟练度 · ${rankLabel}</span><span>${G.jobProf}/${profNeeded}</span></div>
             <div class="xp-bar"><div class="xp-fill" style="width:${profPct}%"></div></div>
-          </div>` : ''}
+          </div>` : (job&&job.id!=='none'&&G.jobRank>=(job.ranks.length-1)?`<div style="font-size:8px;color:var(--amber);text-align:center;margin-top:4px">🏆 已达最高职级【${rankLabel}】</div>`:'')}
         </div>
 
         <div class="card fadeup">
@@ -570,12 +639,6 @@ function renderMain(){
           ${statRow('😊','心情',G.mood,'#f59e0b')}
           ${statRow('🧠','智识',G.intel,'#3b82f6')}
           ${statRow('✨','魅力',G.charm,'#a855f7')}
-          <div class="stat-row">
-            <span class="stat-icon">💕</span>
-            <span class="stat-label">父母好感</span>
-            <div class="favor-bar"><div class="favor-fill" style="width:${Math.min(100,G.parentFavor)}%"></div></div>
-            <span class="stat-val" style="color:var(--purple)">${G.parentFavor}</span>
-          </div>
           <div class="stat-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px">
             <span class="stat-icon">🪙</span>
             <span class="stat-label">余钱</span>
@@ -663,17 +726,42 @@ function renderFamilyList(){
 
 function renderFamilyFull(){
   let html='';
-  const all=[...(G.parents||[])];
-  if(G.married&&G.spouseName) all.push({name:G.spouseName,rel:'配偶',emoji:G.spouseEmoji,alive:true});
-  if(all.length>0){
-    html+=`<div class="sec-head">直系</div>`;
-    all.forEach(m=>{ html+=`<div class="family-item"><span class="fi-icon">${m.emoji}</span><div class="fi-info"><div class="fi-name">${m.name}</div><div class="fi-rel">${m.rel}${m.alive===false?' · 已故':''}</div></div></div>`; });
+  const parents=G.parents||[];
+  if(parents.length>0){
+    html+=`<div class="sec-head">父母</div>`;
+    parents.forEach((m,i)=>{
+      const fav=m.favor!=null?m.favor:(G.parentFavor||50);
+      const favPct=Math.min(100,fav);
+      if(!m.alive){
+        html+=`<div class="family-item"><span class="fi-icon">${m.emoji}</span><div class="fi-info"><div class="fi-name">${m.name}</div><div class="fi-rel">${m.rel} · 已故</div></div></div>`;
+      } else {
+        html+=`<div class="family-item">
+          <span class="fi-icon">${m.emoji}</span>
+          <div class="fi-info">
+            <div class="fi-name">${m.name}</div>
+            <div class="fi-rel">${m.rel}</div>
+            <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
+              <span style="font-size:9px;color:var(--faint)">好感</span>
+              <div style="width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+                <div style="width:${favPct}%;height:100%;background:var(--purple);border-radius:2px;transition:width .3s"></div>
+              </div>
+              <span style="font-size:9px;color:var(--purple)">${fav}</span>
+            </div>
+          </div>
+          <button class="fi-btn" onclick="interactParent(${i})">互动</button>
+        </div>`;
+      }
+    });
+  }
+  if(G.married&&G.spouseName){
+    html+=`<div class="sec-head">配偶</div>`;
+    html+=`<div class="family-item"><span class="fi-icon">${G.spouseEmoji||'👤'}</span><div class="fi-info"><div class="fi-name">${G.spouseName}</div><div class="fi-rel">${G.spouseGender==='male'?'夫君':'夫人'}</div></div></div>`;
   }
   if(G.children.length>0){
     html+=`<div class="sec-head">子嗣</div>`;
     G.children.forEach((c,i)=>{ html+=`<div class="family-item"><span class="fi-icon">${c.emoji}</span><div class="fi-info"><div class="fi-name">${c.name}</div><div class="fi-rel">${c.gender==='male'?'子':'女'} · ${c.age}岁</div></div>${!G.dead?`<button class="fi-btn" onclick="inheritChild(${i})" ${c.age<18?'disabled title="未成年"':''}>继承人生</button>`:''}</div>`; });
   }
-  if(all.length===0&&G.children.length===0) return '<div style="color:var(--faint);font-size:10px;text-align:center;padding:16px">暂无家族成员</div>';
+  if(parents.length===0&&!G.married&&G.children.length===0) return '<div style="color:var(--faint);font-size:10px;text-align:center;padding:16px">暂无家族成员</div>';
   return html;
 }
 
@@ -689,22 +777,30 @@ function renderActions(){
   const job=JOBS.find(j=>j.id===G.job);
   const canWork=G.job!=='none'&&a>=job.minAge&&a<=job.maxAge;
   html+=actionBtn('🪙','领取薪俸',canWork?`本年薪俸`:'无业',canWork?'ab-green':'',canWork?`collectSalary(event)`:''  ,!canWork||G.salaryCollectedThisYear, G.salaryCollectedThisYear?'今年已领':'');
-  const hasParents=G.parents&&G.parents.some(p=>p.alive);
-  const canAsk=hasParents&&a>=3&&a<18&&!G.parentMoneyAskedThisYear;
-  html+=actionBtn('🙏','向父母要钱','与好感度挂钩',canAsk?'ab-blue':'',canAsk?'askParents(event)':'',!canAsk,G.parentMoneyAskedThisYear?'今年已要':'');
   html+=`</div>`;
 
-  // Work tasks
+  // Work tasks — tasks unlocked by rank; random selection of up to 3 per year; max 2 doable
   if(canWork&&job.tasks&&job.tasks.length>0){
-    html+=`<div class="sec-head">工作任务（完成获得升职点）</div><div class="action-grid">`;
-    job.tasks.forEach((t,i)=>{
-      const stars='★'.repeat(t.diff)+'☆'.repeat(4-t.diff);
-      const taskDone=(G.tasksDoneThisYear||[]).includes(i);
-      html+=actionBtn(['📋','📑','📊','🏆'][t.diff-1],t.name,
-        taskDone?'今年已做':`难度${stars} +${t.prof}熟练度`,
-        taskDone?'':'ab-amber',
-        taskDone?'':`doWorkTask(event,${i})`,
-        taskDone, taskDone?'今年已做':'');
+    // Generate year's available tasks (seeded per year/job/rank)
+    if(!G._yearTasks||G._yearTasksAge!==G.age||G._yearTasksJob!==G.job||G._yearTasksRank!==G.jobRank){
+      const unlocked=job.tasks.filter(t=>t.minRank<=G.jobRank);
+      const shuffled=[...unlocked].sort(()=>Math.random()-0.5);
+      G._yearTasks=shuffled.slice(0,Math.min(3,unlocked.length)).map(t=>job.tasks.indexOf(t));
+      G._yearTasksAge=G.age; G._yearTasksJob=G.job; G._yearTasksRank=G.jobRank;
+    }
+    const doneCount=(G.tasksDoneThisYear||[]).length;
+    html+=`<div class="sec-head">工作任务（今年可做最多2件，已做${doneCount}/2）</div><div class="action-grid">`;
+    G._yearTasks.forEach(idx=>{
+      const t=job.tasks[idx];
+      if(!t) return;
+      const stars='★'.repeat(t.diff)+'☆'.repeat(5-t.diff);
+      const taskDone=(G.tasksDoneThisYear||[]).includes(idx);
+      const maxReached=doneCount>=2&&!taskDone;
+      html+=actionBtn(['📋','📑','📊','🏆','🌟'][t.diff-1],t.name,
+        taskDone?'今年已做':maxReached?'已达上限':`难度${stars} +${t.prof}熟练`,
+        taskDone||maxReached?'':'ab-amber',
+        taskDone||maxReached?'':`doWorkTask(event,${idx})`,
+        taskDone||maxReached, taskDone?'已做':'');
     });
     html+=`</div>`;
   }
@@ -746,9 +842,6 @@ function renderActions(){
   const canVisit=a>=5;
   const visitDone=actionDone('visitNeighbor');
   html+=actionBtn('🍵','拜访邻里',!canVisit?'年龄太小':visitDone?'今年已去':'心情+，魅力+',canVisit?'ab-blue':'',canVisit&&!visitDone?'visitNeighbor(event)':'',!canVisit||visitDone,visitDone?'今年已去':'');
-  const canGift=a>=8&&hasParents;
-  const giftDone=actionDone('giftParents');
-  html+=actionBtn('🎁','孝敬父母',!canGift?(!hasParents?'无父母':'年龄太小'):giftDone?'今年已孝敬':'父母好感+',canGift&&!giftDone?'ab-purple':'',canGift&&!giftDone?'giftParents(event)':'',!canGift||giftDone,giftDone?'今年已做':'');
   html+=`</div>`;
 
   // Health
@@ -860,23 +953,21 @@ function sellEstate(idx){
    SHOP RENDER
 ══════════════════════════════════════════ */
 function renderShop(){
-  let html=`<div class="ct">商店 — 买物品放入包裹，在包裹中使用</div>`;
+  let html=`<div class="ct">商店 — 每年随机6件，礼物可赠送NPC</div>`;
   html+=`<div style="font-size:9px;color:var(--faint);margin-bottom:10px">包裹 ${G.inventory.length}/${G.bagLimit} · 余钱 🪙${G.money}文</div>`;
+  const displayItems=genYearShop();
   html+=`<div class="shop-grid">`;
-  // Split items: general + job-specific for current job
-  const generalItems=SHOP_ITEMS.filter(i=>!i.jobReq);
-  const jobItems=SHOP_ITEMS.filter(i=>i.jobReq&&i.jobReq===G.job);
-  const displayItems=[...generalItems,...jobItems];
-
-
-
   displayItems.forEach(item=>{
-    const tooFull=G.inventory.length>=G.bagLimit;
+    const tooFull=G.inventory.length>=G.bagLimit&&!item.isGift;
     const cantAfford=G.money<item.price;
     const canBuy=!tooFull&&!cantAfford;
-    const isJobBook=!!item.jobReq;
-    html+=`<div class="shop-item${canBuy?'':' sold-out'}${isJobBook?' job-book':''}" onclick="${canBuy?`buyItem('${item.id}')`:''}" title="${tooFull?'包裹已满':cantAfford?'钱不够':''}">
-      <div class="si-icon">${item.icon}${isJobBook?'<span style="font-size:8px;vertical-align:top;color:var(--amber)">职</span>':''}</div>
+    const isJobBook=!!item.isJobBook;
+    const isGift=!!item.isGift;
+    let badge='';
+    if(isJobBook) badge=`<span style="font-size:8px;vertical-align:top;color:var(--amber)">书</span>`;
+    if(isGift) badge=`<span style="font-size:8px;vertical-align:top;color:var(--purple)">礼</span>`;
+    html+=`<div class="shop-item${canBuy?'':' sold-out'}${isJobBook?' job-book':''}${isGift?' job-book':''}" onclick="${canBuy?`buyItem('${item.id}')`:''}" title="${tooFull?'包裹已满':cantAfford?'钱不够':''}">
+      <div class="si-icon">${item.icon}${badge}</div>
       <div class="si-name">${item.name}</div>
       <div class="si-desc">${item.desc}</div>
       <div class="si-price">🪙 ${item.price}文${tooFull?' · 包裹满':''}${cantAfford?' · 钱不够':''}</div>
@@ -1388,26 +1479,27 @@ function doWorkTask(e, taskIdx){
   const btn=e&&e.currentTarget;
   const job=JOBS.find(j=>j.id===G.job);
   if(!job||!job.tasks[taskIdx]) return;
+  if((G.tasksDoneThisYear||[]).length>=2){ showToast('今年已完成2项任务，不能再做了！'); return; }
   if((G.tasksDoneThisYear||[]).includes(taskIdx)){ showToast('今年这项任务已做过了！'); return; }
   if(!G.tasksDoneThisYear) G.tasksDoneThisYear=[];
   G.tasksDoneThisYear.push(taskIdx);
   const task=job.tasks[taskIdx];
-  // Success rate based on difficulty vs intel/health
-  const baseRate=0.7-(task.diff-1)*0.1;
+  const baseRate=0.7-(task.diff-1)*0.08;
   const attrBonus=(G.intel+G.health)/(200)*0.25;
   const success=roll(baseRate+attrBonus);
   if(success){
     G.jobProf+=task.prof;
     const rankNow=job.ranks[Math.min(G.jobRank,job.ranks.length-1)];
+    const profNeeded=job.profPerRank[Math.min(G.jobRank,job.profPerRank.length-1)]||0;
     addLog(`✅ [${job.name}·${rankNow}] ${task.text} 职业熟练度+${task.prof}。`,'good');
     showResult(btn,`+${task.prof}熟练`,'good');
     checkPromotion();
     save();
     showModal('✅ 任务完成',
-      `<b>${task.name}</b><br><br>${task.text}<br><br>职业熟练度 +${task.prof}<br>当前进度：${G.jobProf}／${job.profPerRank}`,
+      `<b>${task.name}</b><br><br>${task.text}<br><br>职业熟练度 +${task.prof}<br>当前进度：${G.jobProf}／${profNeeded}`,
       [{label:'好的',sub:'',cost:'',id:'ok'}],()=>{ closeModal(); render(); });
   } else {
-    const xpLoss=Math.floor(task.prof/3);
+    const xpLoss=task.failProf||Math.floor(task.prof*0.75);
     G.jobProf=Math.max(0,G.jobProf-xpLoss);
     G.mood=clamp(G.mood-4);
     addLog(`❌ [${job.name}] ${task.text.replace('。','')}，然而出了差错，职业熟练度-${xpLoss}。`,'bad');
@@ -1421,11 +1513,13 @@ function doWorkTask(e, taskIdx){
 
 function checkPromotion(){
   const job=JOBS.find(j=>j.id===G.job);
-  if(!job||job.profPerRank===0) return;
+  if(!job||!Array.isArray(job.profPerRank)) return;
   const maxRank=job.ranks.length-1;
   let promoted=false, lastRank='', lastBonus=0;
-  while(G.jobProf>=job.profPerRank&&G.jobRank<maxRank){
-    G.jobProf-=job.profPerRank;
+  while(G.jobRank<maxRank){
+    const needed=job.profPerRank[G.jobRank]||0;
+    if(needed===0||G.jobProf<needed) break;
+    G.jobProf-=needed;
     G.jobRank++;
     lastRank=job.ranks[G.jobRank];
     lastBonus=50+G.jobRank*30;
@@ -1433,6 +1527,8 @@ function checkPromotion(){
     G.mood=clamp(G.mood+20);
     addLog(`🎊 恭喜晋升！职位升为【${lastRank}】，薪资随之提升，获得奖赏 ${lastBonus}文！`,'event');
     promoted=true;
+    // reset yearly tasks on rank-up so new tasks can be unlocked
+    G._yearTasksAge=-1;
   }
   if(promoted){
     const newSalaryLo=Math.round(job.salaryRange[0]*(1+G.jobRank*0.3));
@@ -1504,9 +1600,6 @@ function renderSocial(){
     html+=`<div class="sec-head">相识之人</div>`;
     G.npcs.forEach((npc,i)=>{
       const favorPct=Math.min(100,npc.favor);
-      const canPropose=npc.favor>=80&&!G.married;
-      const canConcubine=npc.favor>=70&&G.married;
-      const sameGender=npc.gender===G.gender;
       html+=`<div class="family-item" style="flex-wrap:wrap;gap:4px">
         <span class="fi-icon">${npc.emoji}</span>
         <div class="fi-info" style="min-width:120px">
@@ -1521,11 +1614,7 @@ function renderSocial(){
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
-          <button class="fi-btn" onclick="interactNPC(${i},event)" ${actionDone('interact_'+npc.id)?'disabled title="今年已互动"':''}>互动</button>
-          ${canPropose&&!sameGender?`<button class="fi-btn" style="color:var(--purple);border-color:var(--purple)" onclick="proposeToNPC(${i})">提亲</button>`:''}
-          ${canPropose&&sameGender?`<button class="fi-btn" style="color:var(--purple);border-color:var(--purple)" onclick="proposeToNPC(${i})">求婚</button>`:''}
-          ${canConcubine?`<button class="fi-btn" style="color:var(--amber);border-color:var(--amber)" onclick="offerConcubine(${i})">纳为妾室</button>`:''}
-          <button class="fi-btn" style="color:var(--red)" onclick="removeNPC(${i})">疏远</button>
+          <button class="fi-btn" onclick="openNPCInteract(${i})">互动</button>
         </div>
       </div>`;
     });
@@ -1628,37 +1717,121 @@ function goVenue(venueId, e){
   save(); render();
 }
 
-// ── 与NPC互动 ──
-function interactNPC(idx, e){
-  const btn=e&&e.currentTarget;
+// ── 互动弹窗（单按钮入口）──
+function openNPCInteract(idx){
+  const npc=G.npcs&&G.npcs[idx];
+  if(!npc) return;
+  const alreadyInteracted=actionDone('interact_'+npc.id);
+  const canPropose=npc.favor>=80&&!G.married;
+  const canConcubine=npc.favor>=70&&G.married;
+  const sameGender=npc.gender===G.gender;
+  const gifts=G.inventory.filter(i=>i.isGift);
+
+  const opts=[];
+  opts.push({label:'💬 聊天叙旧',sub:alreadyInteracted?'今年已互动':'魅力/智识影响好感',cost:'',id:'chat'});
+  if(gifts.length>0) opts.push({label:'🎁 赠送礼物',sub:`包裹中有${gifts.length}件礼物`,cost:'',id:'gift'});
+  opts.push({label:'💰 赠送钱财',sub:'花费文钱，增加好感',cost:'',id:'money'});
+  if(canPropose&&!sameGender) opts.push({label:'💍 向对方提亲',sub:'好感已达80，可以提亲',cost:'',id:'propose'});
+  if(canPropose&&sameGender) opts.push({label:'💍 向对方求婚',sub:'好感已达80，同性求婚',cost:'',id:'propose'});
+  if(canConcubine) opts.push({label:'🏮 纳为妾室/面首',sub:'好感已达70，已婚可纳',cost:'',id:'concubine'});
+  if(npc.favor>=90&&!G.married) opts.push({label:'🤝 结为挚友',sub:'好感达90，永久好友',cost:'',id:'bestfriend'});
+  opts.push({label:'🚪 疏远此人',sub:'将从社交列表移除',cost:'',id:'remove'});
+
+  showModal(
+    `${npc.emoji} ${npc.name}`,
+    `${npc.gender==='male'?'男':'女'} · ${npc.age}岁 · ${npc.job}\n${npc.bg}家境 · ${npc.trait}\n好感度：${npc.favor}/100`,
+    opts,
+    (id)=>{
+      closeModal();
+      if(id==='chat') doNPCChat(idx);
+      else if(id==='gift') doNPCGiftFromBag(idx);
+      else if(id==='money') doNPCGiveMoney(idx);
+      else if(id==='propose') proposeToNPC(idx);
+      else if(id==='concubine') offerConcubine(idx);
+      else if(id==='bestfriend') doNPCBestFriend(idx);
+      else if(id==='remove') removeNPC(idx);
+    }
+  );
+}
+
+function doNPCChat(idx){
   const npc=G.npcs&&G.npcs[idx];
   if(!npc) return;
   const key='interact_'+npc.id;
-  if(actionDone(key)){ showToast('今年已经和此人互动过了！'); return; }
+  if(actionDone(key)){ showToast('今年已经和此人聊过了！'); return; }
   markAction(key);
-
-  // 成功率与魅力/智识挂钩
   const rate=0.3+(G.charm/100)*0.4+(G.intel/100)*0.2;
   const success=roll(rate);
   if(success){
     const gain=5+Math.floor(Math.random()*10);
     npc.favor=Math.min(100,npc.favor+gain);
     G.mood=clamp(G.mood+3);
-    addLog(`🍵 与 ${npc.name} 相谈甚欢，对方好感+${gain}（现为${npc.favor}）。`,'good');
-    showResult(btn,`好感+${gain}`,'good');
+    addLog(`🍵 与 ${npc.name} 相谈甚欢，好感+${gain}（现${npc.favor}）。`,'good');
     showModal(`🍵 相谈甚欢`,
-      `与 <b>${npc.name}</b> 促膝而谈，相见甚欢。<br><br>好感度 +${gain}（现为 ${npc.favor}/100）<br>${npc.favor>=80?'💡 好感已达80，可在此处提亲！':''}`,
-      [{label:'甚好',sub:'',cost:'',id:'ok'}],()=>closeModal());
+      `与 <b>${npc.name}</b> 促膝而谈，相见甚欢。<br><br>好感度 +${gain}（现为 ${npc.favor}/100）<br>${npc.favor>=80?'💡 好感已达80，可提亲！':''}`,
+      [{label:'甚好',sub:'',cost:'',id:'ok'}],()=>{ closeModal(); save(); render(); });
   } else {
     const loss=2+Math.floor(Math.random()*4);
     npc.favor=Math.max(0,npc.favor-loss);
-    addLog(`😅 与 ${npc.name} 交谈不甚投机，好感-${loss}。`,'bad');
-    showResult(btn,`好感-${loss}`,'bad');
+    addLog(`😅 与 ${npc.name} 交谈不投机，好感-${loss}。`,'bad');
     showModal(`😅 话不投机`,
       `与 <b>${npc.name}</b> 交谈不甚投机，气氛略显尴尬。<br><br>好感度 -${loss}（现为 ${npc.favor}/100）`,
-      [{label:'有些尴尬',sub:'',cost:'',id:'ok'}],()=>closeModal());
+      [{label:'有些尴尬',sub:'',cost:'',id:'ok'}],()=>{ closeModal(); save(); render(); });
   }
   save(); render();
+}
+
+function doNPCGiftFromBag(idx){
+  const npc=G.npcs&&G.npcs[idx];
+  if(!npc) return;
+  const gifts=G.inventory.map((item,i)=>({item,i})).filter(({item})=>item.isGift);
+  if(gifts.length===0){ showToast('包裹里没有礼物！'); return; }
+  const opts=gifts.map(({item,i})=>{
+    const matched=item.giftTrait&&item.giftTrait.length>0&&item.giftTrait.includes(npc.trait);
+    const bonus=matched?Math.round(item.favorBonus*1.5):item.favorBonus;
+    return {label:`${item.icon} ${item.name}`,sub:`好感+${bonus}${matched?' ✨投其所好':''}`,cost:'',id:String(i)};
+  });
+  showModal(`🎁 选择赠送的礼物`,`赠给 ${npc.emoji} ${npc.name}（${npc.trait}）：`,opts,(id)=>{
+    closeModal();
+    const slotIdx=parseInt(id);
+    const item=G.inventory[slotIdx];
+    if(!item) return;
+    const matched=item.giftTrait&&item.giftTrait.length>0&&item.giftTrait.includes(npc.trait);
+    const bonus=matched?Math.round(item.favorBonus*1.5):item.favorBonus;
+    npc.favor=Math.min(100,npc.favor+bonus);
+    G.inventory.splice(slotIdx,1);
+    addLog(`🎁 将【${item.name}】送给 ${npc.name}，好感+${bonus}${matched?'（投其所好）':''}。`,'good');
+    save(); render();
+    showModal('🎁 赠礼成功',`${npc.emoji} ${npc.name} ${matched?'喜笑颜开！':'礼貌收下。'}<br><br>好感度 +${bonus}（现为 ${npc.favor}/100）${matched?'<br>✨ 投其所好，效果加成！':''}`,
+      [{label:'好的',sub:'',cost:'',id:'ok'}],()=>closeModal());
+  });
+}
+
+function doNPCGiveMoney(idx){
+  const npc=G.npcs&&G.npcs[idx];
+  if(!npc) return;
+  const cost=20+Math.floor(G.age/10)*5;
+  if(G.money<cost){ showToast(`赠钱需要 ${cost}文！`); return; }
+  confirmSpend(cost,`💰 赠送 ${cost}文 给 ${npc.name}`,()=>{
+    G.money-=cost;
+    const gain=8+Math.floor(Math.random()*8);
+    npc.favor=Math.min(100,npc.favor+gain);
+    addLog(`💰 赠给 ${npc.name} ${cost}文，对方好感+${gain}。`,'good');
+    save(); render();
+    showModal('💰 慷慨解囊',`${npc.emoji} ${npc.name} 感激不已，好感大增。<br><br>好感度 +${gain}（现为 ${npc.favor}/100）`,
+      [{label:'举手之劳',sub:'',cost:'',id:'ok'}],()=>closeModal());
+  });
+}
+
+function doNPCBestFriend(idx){
+  const npc=G.npcs&&G.npcs[idx];
+  if(!npc) return;
+  if(npc.favor<90){ showToast('好感度不足90！'); return; }
+  npc.role='bestfriend';
+  addLog(`🤝 与 ${npc.name} 结为挚友，情谊深厚！`,'event');
+  save(); render();
+  showModal('🤝 结为挚友',`${npc.emoji} <b>${npc.name}</b> 与你情谊深厚，结为一生挚友！<br><br>此后好感不再自然衰减。`,
+    [{label:'一生之交！',sub:'',cost:'',id:'ok'}],()=>closeModal());
 }
 
 // ── 向NPC提亲 ──
@@ -1817,9 +1990,100 @@ function divorceSpouse(){
 
 // ── 疏远NPC ──
 function removeNPC(idx){
-  if(!confirm('确定要疏远此人吗？')) return;
+  const npc=G.npcs&&G.npcs[idx];
+  if(!npc) return;
+  if(!confirm(`确定要疏远 ${npc.name} 吗？`)) return;
   G.npcs.splice(idx,1);
   save(); render();
+}
+
+// ── 父母互动弹窗 ──
+function interactParent(idx){
+  const parent=G.parents&&G.parents[idx];
+  if(!parent||!parent.alive){ showToast('父母已不在了...'); return; }
+  const a=G.age;
+  const fav=parent.favor!=null?parent.favor:(G.parentFavor||50);
+  const bg=FAMILY_BG[G.familyBg]||FAMILY_BG.normal;
+  const canAsk=a>=3&&a<18&&!G.parentMoneyAskedThisYear&&bg.parentMoneyLimit>0;
+  const canGift=a>=8;
+  const giftDone=actionDone('giftParents_'+idx);
+
+  const opts=[];
+  opts.push({label:'💬 问候叙话',sub:'增进感情',cost:'',id:'chat'});
+  if(canGift&&!giftDone) opts.push({label:'🎁 孝敬父母',sub:`花费文钱，好感+`,cost:'',id:'gift'});
+  if(canAsk) opts.push({label:'🙏 向父母要钱',sub:'好感影响成功率',cost:'',id:'ask'});
+
+  showModal(
+    `${parent.emoji} ${parent.name}（${parent.rel}）`,
+    `好感度：${fav}/100\n${parent.rel}`,
+    opts,
+    (id)=>{
+      closeModal();
+      if(id==='chat') doParentChat(idx);
+      else if(id==='gift') doGiftParent(idx);
+      else if(id==='ask') doAskParent(idx);
+    }
+  );
+}
+
+function doParentChat(idx){
+  const parent=G.parents[idx];
+  if(!parent) return;
+  const gain=3+Math.floor(Math.random()*5);
+  if(parent.favor==null) parent.favor=G.parentFavor||50;
+  parent.favor=clamp(parent.favor+gain);
+  G.mood=clamp(G.mood+2);
+  addLog(`💬 与${parent.rel} ${parent.name} 闲话家常，好感+${gain}。`,'good');
+  save(); render();
+  showModal('💬 温馨时光',`与 ${parent.emoji} ${parent.name} 聊了许多，心情舒畅。<br><br>好感度 +${gain}（现为 ${parent.favor}/100）`,
+    [{label:'承欢膝下',sub:'',cost:'',id:'ok'}],()=>closeModal());
+}
+
+function doGiftParent(idx){
+  const parent=G.parents[idx];
+  if(!parent) return;
+  const cost=20+Math.floor(G.age/5)*5;
+  if(G.money<cost){ showToast(`孝敬${parent.rel}需要 ${cost}文！`); return; }
+  confirmSpend(cost,`🎁 孝敬${parent.rel}，增加好感度`,()=>{
+    markAction('giftParents_'+idx);
+    G.money-=cost;
+    if(parent.favor==null) parent.favor=G.parentFavor||50;
+    const gain=5+Math.floor(Math.random()*10);
+    parent.favor=clamp(parent.favor+gain);
+    // sync legacy
+    G.parentFavor=clamp(((G.parents[0]&&G.parents[0].favor||50)+(G.parents[1]&&G.parents[1].favor||50))/2);
+    addLog(`🎁 花费 ${cost}文 孝敬${parent.rel}，眉开眼笑，好感+${gain}。`,'good');
+    save(); render();
+    showModal('🎁 父母欢颜',`${parent.emoji} ${parent.name} 见你孝顺，笑逐颜开！<br><br>好感度 +${gain}（现为 ${parent.favor}/100）`,
+      [{label:'尽孝应当',sub:'',cost:'',id:'ok'}],()=>closeModal());
+  });
+}
+
+function doAskParent(idx){
+  const parent=G.parents[idx];
+  if(!parent) return;
+  if(G.parentMoneyAskedThisYear){ showToast('今年已经问过父母了！'); return; }
+  const bg=FAMILY_BG[G.familyBg]||FAMILY_BG.normal;
+  if(parent.favor==null) parent.favor=G.parentFavor||50;
+  const rate=0.1+(parent.favor/100)*0.8;
+  const success=roll(rate);
+  G.parentMoneyAskedThisYear=true;
+  if(success){
+    const [lo,hi]=bg.parentMoneyBase;
+    const amt=lo+Math.floor(Math.random()*(hi-lo+1));
+    const final=Math.min(amt,bg.parentMoneyLimit);
+    G.money+=final;
+    addLog(`🙏 向${parent.rel}撒娇，得到 ${final}文 零花钱。`,'good');
+    save(); render();
+    showModal('🙏 父母慷慨',`${parent.emoji} ${parent.name} 笑着塞来了些零花钱。<br><br>获得 +${final} 文`,
+      [{label:'谢谢',sub:'',cost:'',id:'ok'}],()=>closeModal());
+  } else {
+    parent.favor=clamp(parent.favor-5);
+    addLog(`😔 ${parent.rel}说近来手头紧，好感-5。`,'info');
+    save(); render();
+    showModal('😔 未能如愿',`${parent.emoji} ${parent.name} 摆摆手，说近来手头紧。<br><br>好感 -5`,
+      [{label:'知道了',sub:'',cost:'',id:'ok'}],()=>closeModal());
+  }
 }
 
 /* ══════════════════════════════════════════
@@ -1829,8 +2093,8 @@ function blindDate(e){
   const btn=e&&e.currentTarget;
   if(actionDone('blindDate')){ showToast('今年已经相亲过了！'); return; }
   markAction('blindDate');
-  // 生成一个陌生NPC展示给玩家
-  const candidate = genNPC(G.gender);
+  // 相亲必定出现异性
+  const candidate = genNPCGender(G.gender==='male'?'female':'male');
   // 玩家决定是否接受
   showModal('💑 媒人来访',
     `媒人为你引荐了一位：<br><br>` +
@@ -1940,13 +2204,13 @@ function haveChild(e){
    SHOP & INVENTORY
 ══════════════════════════════════════════ */
 function buyItem(itemId){
-  const item=SHOP_ITEMS.find(i=>i.id===itemId);
+  const item=SHOP_ITEMS_POOL.find(i=>i.id===itemId);
   if(!item) return;
   if(G.money<item.price){ showToast('钱不够！'); return; }
-  if(G.inventory.length>=G.bagLimit){ showToast('包裹已满！请先使用物品或购买大布袋。'); return; }
+  if(!item.isGift&&G.inventory.length>=G.bagLimit){ showToast('包裹已满！请先使用物品或购买大布袋。'); return; }
   confirmSpend(item.price, `${item.icon} 购买【${item.name}】\n${item.desc}`, ()=>{
     G.money-=item.price;
-    G.inventory.push({id:item.id,name:item.name,icon:item.icon,effect:item.effect});
+    G.inventory.push({id:item.id,name:item.name,icon:item.icon,effect:item.effect,isGift:item.isGift||false,isJobBook:item.isJobBook||false,jobId:item.jobId||null,giftTrait:item.giftTrait||[],favorBonus:item.favorBonus||0});
     addLog(`🛍️ 在商店购入【${item.name}】，花费 ${item.price}文。`,'info');
     save(); render();
     showToast(`已购入【${item.name}】，前往包裹使用！`);
@@ -1956,10 +2220,42 @@ function buyItem(itemId){
 function useItem(slotIdx){
   const item=G.inventory[slotIdx];
   if(!item) return;
-  const effectDesc=item.effect?Object.entries(item.effect).map(([k,v])=>{const names={health:'健康',mood:'心情',intel:'智识',charm:'魅力',bagExpand:'包裹'};return `${names[k]||k}+${v}`;}).join('  '):'';
+
+  // Gift: show NPC selection
+  if(item.isGift){
+    const npcs=G.npcs||[];
+    if(npcs.length===0){ showToast('没有可以赠送的人！先去社交结识一些人吧。'); return; }
+    const opts=npcs.map((npc,i)=>{
+      const matched=item.giftTrait&&item.giftTrait.length>0&&item.giftTrait.includes(npc.trait);
+      const bonus=matched?Math.round(item.favorBonus*1.5):item.favorBonus;
+      return {label:`${npc.emoji} ${npc.name}（${npc.trait}）`,sub:`好感 +${bonus}${matched?' ✨投其所好':''}`,cost:'',id:String(i)};
+    });
+    showModal(`${item.icon} 赠送【${item.name}】`,
+      `选择要赠送的对象：`,
+      opts,
+      (id)=>{
+        closeModal();
+        const idx=parseInt(id);
+        const npc=npcs[idx];
+        if(!npc) return;
+        const matched=item.giftTrait&&item.giftTrait.length>0&&item.giftTrait.includes(npc.trait);
+        const bonus=matched?Math.round(item.favorBonus*1.5):item.favorBonus;
+        npc.favor=Math.min(100,npc.favor+bonus);
+        G.inventory.splice(slotIdx,1);
+        const msg=matched?`🎁 将【${item.name}】送给 ${npc.name}，对方喜出望外！好感+${bonus}（投其所好！）`:`🎁 将【${item.name}】送给 ${npc.name}，对方礼貌收下。好感+${bonus}`;
+        addLog(msg,'good');
+        save(); render();
+        showModal('🎁 赠礼成功',`${npc.emoji} ${npc.name} ${matched?'喜笑颜开，连声道谢！':'礼貌地收下了礼物。'}<br><br>好感度 +${bonus}（现为 ${npc.favor}/100）${matched?'<br>✨ 投其所好，效果加成！':''}`,
+          [{label:'好的',sub:'',cost:'',id:'ok'}],()=>{ closeModal(); });
+      }
+    );
+    return;
+  }
+
+  const effectDesc=item.effect?Object.entries(item.effect).map(([k,v])=>{const names={health:'健康',mood:'心情',intel:'智识',charm:'魅力',bagExpand:'包裹',jobProf:'职业熟练度'};return `${names[k]||k}+${v}`;}).join('  '):'';
   showModal('📦 使用物品',`${item.icon} ${item.name}\n效果：${effectDesc||'特殊'}\n\n确认使用此物品？`,[{label:`✅ 确认使用【${item.name}】`,sub:effectDesc,cost:'',id:'yes'}],(id)=>{
     closeModal();
-  const e=item.effect;
+  const e=item.effect||{};
   let msg=`✨ 使用了【${item.name}】`;
   if(e.health){ G.health=clamp(G.health+e.health); msg+=`，健康+${e.health}`; }
   if(e.mood){ G.mood=clamp(G.mood+e.mood); msg+=`，心情+${e.mood}`; }
@@ -1982,7 +2278,7 @@ function useItem(slotIdx){
   G.inventory.splice(slotIdx,1);
   addLog(msg+'。','good');
   save(); render();
-  }); // showModal callback
+  });
 }
 
 /* ══════════════════════════════════════════
@@ -2011,6 +2307,9 @@ function nextYear(){
   G.parentMoneyAskedThisYear=false;
   G.tasksDoneThisYear=[];
   G.actionsThisYear=[];
+  // Reset yearly shop pool and task list
+  G._shopSeed=false; G._shopYear=-1;
+  G._yearTasksAge=-1;
 
   // Age children
   G.children.forEach(c=>c.age+=1);
@@ -2069,15 +2368,16 @@ function nextYear(){
     }
   }
 
-  // NPC好感自然衰减（若长期不互动）
+  // NPC好感自然衰减（若长期不互动，挚友豁免）
   if(G.npcs){
     G.npcs.forEach(npc=>{
+      if(npc.role==='bestfriend') return;
       if(!actionDone('interact_'+npc.id)&&Math.random()<0.3){
         npc.favor=Math.max(0,npc.favor-3);
       }
     });
-    // 移除好感归零者
-    G.npcs=G.npcs.filter(n=>n.favor>0);
+    // 移除好感归零者（挚友不移除）
+    G.npcs=G.npcs.filter(n=>n.favor>0||n.role==='bestfriend');
   }
 
   // Parents may pass away
@@ -2087,6 +2387,8 @@ function nextYear(){
         p.alive=false;
         addLog(`💔 ${p.rel} ${p.name} 已离世，往事如烟。`,'bad');
         G.mood=clamp(G.mood-15);
+        if(p.favor==null) p.favor=G.parentFavor||50;
+        p.favor=0;
         G.parentFavor=clamp(G.parentFavor-10);
       }
     });
@@ -2297,10 +2599,22 @@ else render();
 </body>
 <!-- CHANGELOG
 {
-  "version": "3.0",
+  "version": "3.1",
   "icon": "🏯",
   "name": "古代人生模拟",
   "entries": [
+    { "v": "3.1", "date": "2026-03-28", "items": [
+      "相亲必定出现异性",
+      "职业熟练度层层递进",
+      "每年随机最多3项任务，按职级解锁，每年至多完成2项",
+      "失败扣除熟练度≥成功加成的70%",
+      "职业体系扩展至5个层级",
+      "职业书改为通用，不限职业，加成改为10，定价70文",
+      "商店改为每年随机6件商品",
+      "新增礼物类商品（按NPC性格有加成）",
+      "NPC互动改为单按钮弹窗，含聊天/送礼/给钱/疏远/提亲/挚友",
+      "父母单独好感度，移至家族tab弹窗，孝敬父母/要钱也内置其中"
+    ]},
     { "v": "3.0", "date": "2026-03-28", "items": [
       "社交系统",
       "婚姻双路径（相亲 / 提亲）",
