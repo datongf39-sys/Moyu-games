@@ -16,115 +16,33 @@ body::after{background:var(--scanline,none)!important}
 </style>
 <script>(function(){var t=localStorage.getItem("moyu-theme")||"white";document.documentElement.setAttribute("data-theme",t);})();</script>
 <title>农业项目 · 摸鱼工作台</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@600;700&display=swap');
-:root{--mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:12px;min-height:100vh}
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.02) 2px,rgba(0,0,0,.02) 4px);pointer-events:none;z-index:9999}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
-.back{font-size:11px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:var(--mono)}.back:hover{color:var(--text)}
-.topbar-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--text)}
-.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto}
-.tab{padding:8px 14px;font-size:11px;color:var(--muted);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:var(--mono);white-space:nowrap;transition:all .15s}.tab:hover{color:var(--text)}.tab.on{color:var(--green);border-bottom-color:var(--green)}
-.main{padding:14px 16px;max-width:1200px;margin:0 auto}
-.panel{display:none}.panel.on{display:block}
-.card{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:12px}
-.ct{font-size:11px;font-weight:500;margin-bottom:8px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.col-r{display:grid;grid-template-columns:1fr 260px;gap:12px}
-.sl{font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.12em;margin-bottom:2px}
-.sv{font-size:18px;font-weight:600;line-height:1}.sv.gr{color:var(--green)}.sv.am{color:var(--amber)}.sv.bl{color:var(--blue)}.sv.rd{color:var(--red)}
-.sd{font-size:9px;color:var(--faint);margin-top:2px}
-.row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);gap:8px}.row:last-child{border-bottom:none}
-.rn{font-size:11px;font-weight:500}.rdd{font-size:9px;color:var(--faint);margin-top:1px}
-.rr{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:5px 12px;border-radius:3px;font-size:11px;font-family:var(--mono);cursor:pointer;transition:all .12s;border:1px solid transparent;white-space:nowrap}
-.bg{background:rgba(106,184,74,.15);color:var(--green);border-color:rgba(106,184,74,.3)}.bg:hover:not(:disabled){background:rgba(106,184,74,.25)}
-.ba{background:rgba(196,168,64,.15);color:var(--amber);border-color:rgba(196,168,64,.3)}.ba:hover:not(:disabled){background:rgba(196,168,64,.25)}
-.bb{background:rgba(80,144,212,.15);color:var(--blue);border-color:rgba(80,144,212,.3)}.bb:hover:not(:disabled){background:rgba(80,144,212,.25)}
-.br{background:rgba(192,80,64,.15);color:var(--red);border-color:rgba(192,80,64,.3)}.br:hover:not(:disabled){background:rgba(192,80,64,.25)}
-.bo{background:transparent;color:var(--muted);border-color:var(--border-l)}.bo:hover:not(:disabled){color:var(--text)}
-.btn:disabled{opacity:.3;cursor:not-allowed}
-.bsm{padding:3px 9px;font-size:10px}.bxs{padding:2px 7px;font-size:9px}.bfull{width:100%;display:flex}
-.bdg{display:inline-block;padding:2px 6px;border-radius:2px;font-size:9px}
-.bdg-g{background:var(--green-l);color:var(--green);border:1px solid rgba(106,184,74,.2)}
-.bdg-a{background:var(--amber-l);color:var(--amber);border:1px solid rgba(196,168,64,.2)}
-.bdg-b{background:var(--blue-l);color:var(--blue);border:1px solid rgba(80,144,212,.2)}
-.bdg-r{background:rgba(192,80,64,.1);color:var(--red);border:1px solid rgba(192,80,64,.2)}
-.pb{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
-.pbf{height:100%;border-radius:2px;transition:width .3s}
-.pbg{background:var(--green)}.pba{background:var(--amber)}.pbr{background:var(--red)}.pbb{background:var(--blue)}
-.log{height:120px;overflow-y:auto;font-size:9px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:6px 8px}
-.ll{padding:1px 0}.lts{color:var(--faint)}.lok .lm{color:var(--green)}.lbad .lm{color:var(--red)}.linfo .lm{color:var(--blue)}
-
-/* FIELD */
-.field-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
-.plot{aspect-ratio:1;border:1px solid var(--border);border-radius:4px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;font-size:20px;position:relative;padding:4px}
-.plot:hover{border-color:var(--green)}.plot.ready{border-color:rgba(106,184,74,.5);background:rgba(106,184,74,.05)}
-.plot.growing{border-color:rgba(196,168,64,.3)}
-.plot.pest{border-color:rgba(192,80,64,.5);background:rgba(192,80,64,.05)}
-.plot-label{font-size:7px;font-family:var(--mono);color:var(--faint);margin-top:2px;line-height:1;text-align:center}
-.plot-bar{position:absolute;bottom:2px;left:4px;right:4px;height:2px;background:var(--border);border-radius:1px;overflow:hidden}
-.plot-pf{height:100%;border-radius:1px;transition:width .3s;background:var(--amber)}
-
-/* ANIMAL */
-.animal-card{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:9px;margin-bottom:6px;display:flex;gap:8px;align-items:center}
-.ac-icon{font-size:26px}.ac-info{flex:1}.ac-name{font-size:11px;font-weight:500}.ac-desc{font-size:9px;color:var(--faint);margin-top:1px}
-.ac-stats{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:4px;font-size:9px;color:var(--faint)}.ac-stats span{color:var(--text)}
-
-/* MARKET */
-.market-item{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:8px;margin-bottom:5px;display:flex;align-items:center;gap:8px}
-.mi-icon{font-size:18px}.mi-info{flex:1}.mi-name{font-size:10px;font-weight:500}.mi-price{font-size:10px;color:var(--amber)}.mi-trend{font-size:9px}
-
-/* WORKER */
-.worker-card{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:8px;margin-bottom:5px;display:flex;align-items:center;gap:8px}
-.wc-icon{font-size:20px}.wc-info{flex:1}.wc-name{font-size:10px;font-weight:500}.wc-role{font-size:9px;color:var(--faint)}
-.wc-stats{font-size:9px;color:var(--faint);margin-top:2px}.wc-stats span{color:var(--text)}
-
-/* HYBRID */
-.hybrid-card{padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;margin-bottom:5px}
-
-.weather-strip{display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:4px;margin-bottom:10px;font-size:11px}
-.ws-icon{font-size:22px}.ws-name{font-weight:500}.ws-desc{font-size:10px;color:var(--faint);margin-top:1px}
-.ws-right{margin-left:auto;text-align:right;font-size:9px;color:var(--faint)}
-
-.season-strip{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.season-block{flex:1;padding:4px 6px;border:1px solid var(--border);border-radius:3px;text-align:center;font-size:10px;transition:all .2s}
-.season-block.current{border-color:var(--green);background:rgba(106,184,74,.08);color:var(--green)}
-.season-block+.season-block{margin-left:4px}
-
-.mt8{margin-top:8px}.mt10{margin-top:10px}.mb8{margin-bottom:8px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}
-.flex{display:flex;align-items:center}.fb{display:flex;align-items:center;justify-content:space-between}
-.gap6{gap:6px}.gap8{gap:8px}.faint{color:var(--faint);font-size:10px}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}.pulse{animation:pulse 2s infinite}
-@keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}.sway{animation:sway 2s ease-in-out infinite;display:inline-block}
-</style>
+<link rel="stylesheet" href="modules/farm/farm.css">
 </head>
 <body>
 <div class="topbar">
-  <button class="back" onclick="saveBack()">← 返回</button>
+  <button class="back" onclick="FarmSave.saveBack()">← 返回</button>
   <div class="topbar-title">🌱 农业项目管理</div>
   <div style="display:flex;gap:5px;align-items:center;margin-left:8px">
-  <button onclick="st('white')" title="纸白" style="width:14px;height:14px;border-radius:50%;background:#f8f8f6;border:1px solid #ccc;cursor:pointer;padding:0"></button>
-  <button onclick="st('dark')" title="暗黑" style="width:14px;height:14px;border-radius:50%;background:#191a19;border:1px solid #555;cursor:pointer;padding:0"></button>
-  <button onclick="st('mint')" title="薄荷" style="width:14px;height:14px;border-radius:50%;background:#a8d5c2;border:1px solid #8abfaa;cursor:pointer;padding:0"></button>
-  <button onclick="st('sakura')" title="樱花" style="width:14px;height:14px;border-radius:50%;background:#f0b8cc;border:1px solid #d898b0;cursor:pointer;padding:0"></button>
-  <button onclick="st('sky')" title="天空" style="width:14px;height:14px;border-radius:50%;background:#a8c4f0;border:1px solid #88a4d8;cursor:pointer;padding:0"></button>
-  <button onclick="st('warm')" title="暖橙" style="width:14px;height:14px;border-radius:50%;background:#e8c878;border:1px solid #c8a858;cursor:pointer;padding:0"></button>
-</div>
-  <div class="flex gap8" style="font-size:10px;color:var(--faint)"><span id="weatherlbl">晴天</span><span id="clk">--:--:--</span></div>
+    <button onclick="st('white')" title="纸白" style="width:14px;height:14px;border-radius:50%;background:#f8f8f6;border:1px solid #ccc;cursor:pointer;padding:0"></button>
+    <button onclick="st('dark')" title="暗黑" style="width:14px;height:14px;border-radius:50%;background:#191a19;border:1px solid #555;cursor:pointer;padding:0"></button>
+    <button onclick="st('mint')" title="薄荷" style="width:14px;height:14px;border-radius:50%;background:#a8d5c2;border:1px solid #8abfaa;cursor:pointer;padding:0"></button>
+    <button onclick="st('sakura')" title="樱花" style="width:14px;height:14px;border-radius:50%;background:#f0b8cc;border:1px solid #d898b0;cursor:pointer;padding:0"></button>
+    <button onclick="st('sky')" title="天空" style="width:14px;height:14px;border-radius:50%;background:#a8c4f0;border:1px solid #88a4d8;cursor:pointer;padding:0"></button>
+    <button onclick="st('warm')" title="暖橙" style="width:14px;height:14px;border-radius:50%;background:#e8c878;border:1px solid #c8a858;cursor:pointer;padding:0"></button>
+  </div>
+  <div class="flex gap8" style="font-size:10px;color:var(--faint)">
+    <span id="weatherlbl">晴天</span>
+    <span id="clk">--:--:--</span>
+  </div>
 </div>
 <div class="tabs">
-  <button class="tab on" onclick="sw(0)">📊 农场总览</button>
-  <button class="tab" onclick="sw(1)">🌾 农田种植</button>
-  <button class="tab" onclick="sw(2)">🐄 牲畜养殖</button>
-  <button class="tab" onclick="sw(3)">🏪 农贸市场</button>
-  <button class="tab" onclick="sw(4)">👨‍🌾 员工雇用</button>
-  <button class="tab" onclick="sw(5)">🧪 品种研发</button>
-  <button class="tab" style="margin-left:auto;color:var(--red)" onclick="resetGame()">🔄 从头开始</button>
+  <button class="tab on" onclick="FarmUtils.sw(0)">📊 农场总览</button>
+  <button class="tab" onclick="FarmUtils.sw(1)">🌾 农田种植</button>
+  <button class="tab" onclick="FarmUtils.sw(2)">🐄 牲畜养殖</button>
+  <button class="tab" onclick="FarmUtils.sw(3)">🏪 农贸市场</button>
+  <button class="tab" onclick="FarmUtils.sw(4)">👨‍🌾 员工雇用</button>
+  <button class="tab" onclick="FarmUtils.sw(5)">🧪 品种研发</button>
+  <button class="tab" style="margin-left:auto;color:var(--red)" onclick="FarmSave.resetGame()">🔄 从头开始</button>
 </div>
 <div class="main">
 
@@ -133,10 +51,10 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <div class="weather-strip" id="wstrip">
     <div class="ws-icon">☀️</div>
     <div><div class="ws-name">晴天</div><div class="ws-desc">生长速度正常</div></div>
-    <div class="ws-right"><div>下次变化: <span id="next-weather">60s</span></div></div>
-    <div class="flex gap6" style="margin-left:16px"><span class="faint" id="season-lbl">春季</span></div>
+    <div class="ws-right"><div>下次变化：<span id="next-weather">60s</span></div></div>
   </div>
   <div class="season-strip mb10" id="season-strip"></div>
+  <div class="flex gap6" style="margin-left:16px;margin-top:-8px"><span class="faint" id="season-lbl">春季</span></div>
   <div class="g4 mb10">
     <div class="card"><div class="sl">金币</div><div class="sv am" id="gold">200</div><div class="sd">农场资产</div></div>
     <div class="card"><div class="sl">已收获</div><div class="sv gr" id="harvested">0</div><div class="sd">累计产量</div></div>
@@ -145,7 +63,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   </div>
   <div class="col-r">
     <div>
-      <div class="card mb10"><div class="ct">农田概览</div><div class="field-grid" id="overview-field"></div><div class="fb"><button class="btn bg bsm" onclick="harvestAll()">🌾 全部收获</button><button class="btn ba bsm" onclick="plantAll()">🌱 批量种植</button></div></div>
+      <div class="card mb10"><div class="ct">农田概览</div><div class="field-grid" id="overview-field"></div><div class="fb"><button class="btn bg bsm" onclick="FarmActions.harvestAll()">🌾 全部收获</button><button class="btn ba bsm" onclick="FarmActions.plantAll()">🌱 批量种植</button></div></div>
       <div class="card"><div class="ct">农场日志</div><div class="log" id="flog"></div></div>
     </div>
     <div>
@@ -162,7 +80,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     <div>
       <div class="card mb10">
         <div class="fb mb8"><div class="ct" style="margin:0">农田管理 (5×5)</div>
-        <div class="flex gap6"><button class="btn bg bsm" onclick="harvestAll()">全部收获</button><button class="btn ba bsm" onclick="plantAll()">批量种植</button></div></div>
+        <div class="flex gap6"><button class="btn bg bsm" onclick="FarmActions.harvestAll()">全部收获</button><button class="btn ba bsm" onclick="FarmActions.plantAll()">批量种植</button></div></div>
         <div class="field-grid" id="main-field"></div>
       </div>
       <div class="card"><div class="ct">土地升级</div><div id="land-upgrade"></div></div>
@@ -194,7 +112,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 <div class="panel" id="p3">
   <div class="col-r">
     <div>
-      <div class="card mb10"><div class="fb mb8"><div class="ct" style="margin:0">农贸市场</div><button class="btn bo bsm" onclick="refreshMarket()">🔄 刷新</button></div><div id="market-prices"></div></div>
+      <div class="card mb10"><div class="fb mb8"><div class="ct" style="margin:0">农贸市场</div><button class="btn bo bsm" onclick="FarmActions.refreshMarket()">🔄 刷新</button></div><div id="market-prices"></div></div>
       <div class="card"><div class="ct">我的库存</div><div id="my-stock"></div></div>
     </div>
     <div>
@@ -235,395 +153,78 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 </div>
 
 </div>
+
+<!-- Core Utils -->
+<script src="modules/farm/utils.js"></script>
+
+<!-- Data Modules -->
+<script src="modules/farm/data/base.js"></script>
+<script src="modules/farm/data/fields.js"></script>
+<script src="modules/farm/data/seeds.js"></script>
+<script src="modules/farm/data/animals.js"></script>
+<script src="modules/farm/data/workers.js"></script>
+<script src="modules/farm/data/tools.js"></script>
+<script src="modules/farm/data/weather.js"></script>
+<script src="modules/farm/data/achievements.js"></script>
+
+<!-- System Modules -->
+<script src="modules/farm/system/fields.js"></script>
+<script src="modules/farm/system/animals.js"></script>
+<script src="modules/farm/system/market.js"></script>
+<script src="modules/farm/system/workers.js"></script>
+<script src="modules/farm/system/tools.js"></script>
+<script src="modules/farm/system/research.js"></script>
+<script src="modules/farm/system/weather.js"></script>
+
+<!-- Features Modules -->
+<script src="modules/farm/features/achievements.js"></script>
+
+<!-- Core and UI -->
+<script src="modules/farm/core/core.js"></script>
+<script src="modules/farm/ui/ui.js"></script>
+
+<!-- Actions and Render -->
+<script src="modules/farm/actions.js"></script>
+<script src="modules/farm/render.js"></script>
+
+<!-- Core Functions -->
+<script src="modules/farm/save.js"></script>
+<script src="modules/farm/init.js"></script>
+
+<!-- Data Merge and Startup -->
+<script src="modules/farm/main.js"></script>
+
+<!-- Page Inline Scripts -->
 <script>
-const $=id=>document.getElementById(id);
-const ts=()=>new Date().toTimeString().slice(0,8);
-function flog(msg,type=''){const b=$('flog'),d=document.createElement('div');d.className='ll '+type;d.innerHTML=`<span class="lts">[${ts()}]</span> <span class="lm">${msg}</span>`;b.prepend(d);while(b.children.length>60)b.removeChild(b.lastChild)}
-function tlog(msg,type=''){const b=$('trade-log'),d=document.createElement('div');d.className='ll '+type;d.innerHTML=`<span class="lts">[${ts()}]</span> <span class="lm">${msg}</span>`;b.prepend(d);while(b.children.length>60)b.removeChild(b.lastChild)}
-function rdlog(msg,type=''){const b=$('rd-log'),d=document.createElement('div');d.className='ll '+type;d.innerHTML=`<span class="lts">[${ts()}]</span> <span class="lm">${msg}</span>`;b.prepend(d);while(b.children.length>60)b.removeChild(b.lastChild)}
-function sw(i){document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',i===j));document.querySelectorAll('.panel').forEach((p,j)=>p.classList.toggle('on',i===j));render()}
-setInterval(()=>$('clk').textContent=new Date().toTimeString().slice(0,8),1000);
-
-const SEASONS=['春','夏','秋','冬'];
-const WEATHERS=[
-  {name:'晴天',icon:'☀️',desc:'生长速度正常',mult:1.0},
-  {name:'多云',icon:'⛅',desc:'生长速度-10%',mult:0.9},
-  {name:'大雨',icon:'🌧️',desc:'水分充足+20%',mult:1.2},
-  {name:'暴风雨',icon:'⛈️',desc:'生长暂停！触发病虫害',mult:0},
-  {name:'大雾',icon:'🌫️',desc:'采收效率-30%',mult:0.7},
-  {name:'寒潮',icon:'❄️',desc:'部分作物受损',mult:0.5},
-];
-const F={
-  gold:200,harvested:0,season:0,seasonDay:0,weather:0,weatherTimer:60,selectedSeed:'wheat',
-  fields:Array(25).fill(null).map((_,i)=>({id:i,crop:null,progress:0,pest:false,quality:1})),
-  seeds:[
-    {id:'wheat',name:'小麦',icon:'🌾',time:20,profit:15,req:null},
-    {id:'tomato',name:'番茄',icon:'🍅',time:30,profit:25,req:null},
-    {id:'corn',name:'玉米',icon:'🌽',time:45,profit:40,req:null},
-    {id:'berry',name:'草莓',icon:'🍓',time:60,profit:60,req:'rd1'},
-    {id:'melon',name:'西瓜',icon:'🍉',time:80,profit:80,req:'rd1'},
-    {id:'mushroom',name:'松茸',icon:'🍄',time:120,profit:150,req:'rd2'},
-    {id:'pumpkin',name:'南瓜',icon:'🎃',time:90,profit:100,req:'rd2'},
-    {id:'rose',name:'玫瑰',icon:'🌹',time:100,profit:200,req:'rd3'},
-  ],
-  animals:[],
-  animalTypes:[
-    {id:'chicken',name:'鸡',icon:'🐔',cost:30,desc:'产鸡蛋/3s',produce:{item:'egg',icon:'🥚',val:2,time:3}},
-    {id:'pig',name:'猪',icon:'🐷',cost:100,desc:'肉产出高',produce:{item:'pork',icon:'🥩',val:8,time:10}},
-    {id:'cow',name:'奶牛',icon:'🐄',cost:250,desc:'产牛奶/5s',produce:{item:'milk',icon:'🥛',val:5,time:5}},
-    {id:'sheep',name:'绵羊',icon:'🐑',cost:150,desc:'产羊毛/8s',produce:{item:'wool',icon:'🧶',val:4,time:8}},
-    {id:'bee',name:'蜜蜂箱',icon:'🐝',cost:80,desc:'产蜂蜜/6s',produce:{item:'honey',icon:'🍯',val:6,time:6}},
-  ],
-  animalProducts:{egg:0,pork:0,milk:0,wool:0,honey:0},
-  productNames:{egg:'鸡蛋',pork:'猪肉',milk:'牛奶',wool:'羊毛',honey:'蜂蜜'},
-  productIcons:{egg:'🥚',pork:'🥩',milk:'🥛',wool:'🧶',honey:'🍯'},
-  workers:[],
-  workerPool:[
-    {name:'村民甲',icon:'👨‍🌾',skill:1,role:'普通农民',cost:50,salary:10},
-    {name:'老农头',icon:'🧑‍🌾',skill:2,role:'老农民',cost:120,salary:25},
-    {name:'农业专家',icon:'👩‍🔬',skill:3,role:'专业农艺师',cost:300,salary:60},
-  ],
-  stock:{wheat:0,tomato:0,corn:0,berry:0,melon:0,mushroom:0,pumpkin:0,rose:0},
-  marketPrices:{},
-  stall:{active:false,cost:200,revenue:0},
-  wholesale:[],
-  tools:[
-    {id:'watercan',name:'喷水车',desc:'自动浇水，加速10%',cost:300,bought:false,icon:'🚿'},
-    {id:'harvester',name:'自动收割机',desc:'自动收获成熟作物',cost:800,bought:false,icon:'🚜'},
-    {id:'pesticide',name:'农药喷洒器',desc:'自动消灭害虫',cost:500,bought:false,icon:'💊'},
-    {id:'greenhouse',name:'温室',desc:'所有作物速度+30%',cost:1500,bought:false,icon:'🏠'},
-  ],
-  upgrades:[
-    {id:'rd1',name:'初级研发',desc:'解锁草莓/西瓜',cost:200,bought:false,icon:'🔬'},
-    {id:'rd2',name:'中级研发',desc:'解锁松茸/南瓜',cost:500,bought:false,icon:'🧪'},
-    {id:'rd3',name:'高级研发',desc:'解锁玫瑰+杂交实验',cost:1000,bought:false,icon:'⭐'},
-    {id:'ranch',name:'牧场升级',desc:'牲畜上限+5',cost:400,bought:false,icon:'🏡'},
-  ],
-  hybrids:[],researchProg:0,researchTarget:null,
-  maxAnimals:3,animalTimers:{},
-  achievements:[
-    {name:'初春播种',desc:'种下第一粒种子',check:f=>f.harvested>=1,done:false,icon:'🌱'},
-    {name:'丰收时节',desc:'收获50次',check:f=>f.harvested>=50,done:false,icon:'🌾'},
-    {name:'牧场主',desc:'拥有5头牲畜',check:f=>f.animals.length>=5,done:false,icon:'🐄'},
-    {name:'研究达人',desc:'研发1个杂交品种',check:f=>f.hybrids.length>=1,done:false,icon:'🧪'},
-    {name:'万金商人',desc:'金币超过1000',check:f=>f.gold>=1000,done:false,icon:'💰'},
-    {name:'百季丰收',desc:'收获100次',check:f=>f.harvested>=100,done:false,icon:'🏆'},
-  ],
-  pestActive:false,pestField:[],
-  autoHarvest:false,
-};
-
-// Init market prices
-F.seeds.forEach(s=>{F.marketPrices[s.id]=s.profit;F.stock[s.id]=0});
-
-try{const s=JSON.parse(localStorage.getItem('farm')||'{}');if(s.gold!==undefined){const saved={...s};F.fields=saved.fields||F.fields;F.gold=saved.gold||200;F.harvested=saved.harvested||0;F.season=saved.season||0;F.animals=saved.animals||[];F.workers=saved.workers||[];F.tools=saved.tools||F.tools;F.upgrades=saved.upgrades||F.upgrades;F.hybrids=saved.hybrids||[];F.stock=saved.stock||F.stock;F.stall=saved.stall||F.stall;F.animalProducts=saved.animalProducts||F.animalProducts;F.achievements=saved.achievements||F.achievements}}catch(e){}
-
-// Init market
-refreshMarket();
-
-function saveBack(){save();location.href='index.html'}
-function save(){try{localStorage.setItem('farm',JSON.stringify({gold:F.gold,harvested:F.harvested,season:F.season,animals:F.animals,workers:F.workers,tools:F.tools,upgrades:F.upgrades,hybrids:F.hybrids,stock:F.stock,stall:F.stall,animalProducts:F.animalProducts,achievements:F.achievements,fields:F.fields.map(f=>({id:f.id,crop:f.crop,progress:f.progress,pest:f.pest}))})}catch(e){}}
-
-function plantSeed(fieldId){
-  const field=F.fields[fieldId];if(field.crop)return;
-  const seed=F.seeds.find(s=>s.id===F.selectedSeed);if(!seed)return;
-  if(seed.req&&!F.upgrades.find(u=>u.id===seed.req)?.bought){flog(`❌ 需要${F.upgrades.find(u=>u.req===seed.req)?.name||'升级'}才能种植`,'lbad');return}
-  field.crop=seed.id;field.progress=0;field.pest=false;
-  flog(`🌱 在地块${fieldId+1}种下${seed.icon}${seed.name}`,'linfo');render();
-}
-function harvestField(fieldId){
-  const field=F.fields[fieldId];if(!field.crop||field.progress<1)return;
-  const seed=F.seeds.find(s=>s.id===field.crop);
-  const wMult=WEATHERS[F.weather].mult;
-  const sMult=F.season===0?1.2:F.season===2?1.1:1;
-  const ghMult=F.tools.find(t=>t.id==='greenhouse')?.bought?1.3:1;
-  const qualMult=field.quality||1;
-  const price=Math.floor(seed.profit*(F.marketPrices[field.crop]/seed.profit)*qualMult);
-  F.gold+=price;F.harvested++;F.stock[field.crop]=(F.stock[field.crop]||0)+1;
-  flog(`✅ 收获${seed.icon}${seed.name} +¥${price}`,'lok');
-  field.crop=null;field.progress=0;field.pest=false;field.quality=1;
-  checkAch();render();
-}
-function harvestAll(){F.fields.forEach((f,i)=>{if(f.crop&&f.progress>=1)harvestField(i)})}
-function plantAll(){F.fields.forEach((f,i)=>{if(!f.crop)plantSeed(i)})}
-function killPest(fieldId){
-  const field=F.fields[fieldId];if(!field.pest)return;
-  field.pest=false;flog(`💊 消灭地块${fieldId+1}的病虫害`,'lok');render();
+function st(t) {
+  localStorage.setItem('moyu-theme', t)
+  document.documentElement.setAttribute('data-theme', t)
 }
 
-function buyAnimal(id){
-  const at=F.animalTypes.find(a=>a.id===id);
-  const max=F.upgrades.find(u=>u.id==='ranch')?.bought?8:3;
-  if(F.gold<at.cost||F.animals.length>=max)return;
-  F.gold-=at.cost;F.animals.push({...at,id:Date.now(),hp:100,hunger:100,produce:{...at.produce},timer:0});
-  flog(`🐾 购入${at.icon}${at.name}`,'lok');render();
-}
-function feedAnimal(idx){
-  if(F.gold<5)return;F.gold-=5;F.animals[idx].hunger=100;F.animals[idx].hp=Math.min(100,F.animals[idx].hp+20);
-  flog(`🍎 喂食${F.animals[idx].icon}${F.animals[idx].name}`,'linfo');render();
-}
-function collectProduct(idx){
-  const a=F.animals[idx];if(!a||a.timer<a.produce.time)return;
-  F.animalProducts[a.produce.item]=(F.animalProducts[a.produce.item]||0)+a.produce.val;
-  a.timer=0;flog(`🥚 收获 ${a.produce.icon}${F.productNames[a.produce.item]}×${a.produce.val}`,'lok');render();
-}
-function sellProduct(item){
-  const prices={egg:3,pork:12,milk:8,wool:6,honey:10};
-  const qty=F.animalProducts[item]||0;if(qty<=0)return;
-  const earn=qty*prices[item];F.gold+=earn;F.animalProducts[item]=0;
-  tlog(`💰 出售${F.productIcons[item]}${F.productNames[item]}×${qty} +¥${earn}`,'lok');render();
-}
+setInterval(() => {
+  document.getElementById('clk').textContent = new Date().toTimeString().slice(0, 8)
+}, 1000)
+</script>
 
-function refreshMarket(){
-  F.seeds.forEach(s=>{F.marketPrices[s.id]=Math.floor(s.profit*(0.7+Math.random()*0.8))});
-  F.wholesale=[];
-  const seeds=F.seeds.slice().sort(()=>Math.random()-.5).slice(0,3);
-  seeds.forEach(s=>F.wholesale.push({crop:s.id,name:s.name,icon:s.icon,qty:10+Math.floor(Math.random()*20),price:Math.floor(s.profit*1.3)}));
-}
-function sellStock(id){
-  const qty=F.stock[id]||0;if(qty<=0)return;
-  const price=F.marketPrices[id];const earn=qty*price;
-  F.gold+=earn;F.stock[id]=0;
-  tlog(`💰 出售${F.seeds.find(s=>s.id===id)?.icon}${id} ×${qty} +¥${earn}`,'lok');render();
-}
-function fillWholesale(i){
-  const w=F.wholesale[i];if(!w)return;
-  const have=F.stock[w.crop]||0;if(have<w.qty){flog(`❌ 库存不足(${have}/${w.qty})`,'lbad');return}
-  F.stock[w.crop]-=w.qty;const earn=w.qty*w.price;F.gold+=earn;
-  tlog(`📦 完成批发订单:${w.icon}${w.name}×${w.qty} +¥${earn}`,'lok');F.wholesale.splice(i,1);render();
-}
-function buyTool(id){
-  const t=F.tools.find(x=>x.id===id);if(t.bought||F.gold<t.cost)return;
-  F.gold-=t.cost;t.bought=true;if(id==='harvester')F.autoHarvest=true;flog(`🔧 购入${t.icon}${t.name}`,'lok');render();
-}
-function buyUpgrade(id){
-  const u=F.upgrades.find(x=>x.id===id);if(u.bought||F.gold<u.cost)return;
-  F.gold-=u.cost;u.bought=true;flog(`🔬 解锁:${u.name}`,'lok');render();
-}
-function hireWorker(i){
-  const wp=F.workerPool[i];if(F.gold<wp.cost)return;
-  F.gold-=wp.cost;F.workers.push({...wp,id:Date.now()});F.workerPool.splice(i,1);
-  flog(`✅ 雇用${wp.icon}${wp.name}`,'lok');render();
-}
-function startResearch(a,b){
-  const sa=F.seeds.find(s=>s.id===a),sb=F.seeds.find(s=>s.id===b);if(!sa||!sb)return;
-  if(!F.upgrades.find(u=>u.id==='rd3')?.bought){flog('需要高级研发','lbad');return}
-  if(F.gold<200){flog('需要200金币','lbad');return}
-  F.gold-=200;F.researchTarget={a:sa,b:sb};F.researchProg=0;flog(`🧬 开始杂交:${sa.icon}${sa.name} × ${sb.icon}${sb.name}`,'linfo');render();
-}
-function setupStall(){
-  if(F.stall.active)return;if(F.gold<F.stall.cost)return;
-  F.gold-=F.stall.cost;F.stall.active=true;flog('🏪 开设农贸摊位','lok');render();
-}
-function checkAch(){F.achievements.forEach(a=>{if(!a.done&&a.check(F)){a.done=true;flog(`🏆 成就:${a.icon}${a.name}`,'lok')}})}
-
-function renderPlot(field,small){
-  const seed=F.seeds.find(s=>s.id===field.crop);
-  const pct=Math.min(100,field.progress*100);
-  const ready=field.progress>=1;const pest=field.pest;
-  if(!field.crop)return`<div class="plot" onclick="plantSeed(${field.id})"><div style="font-size:${small?12:18}px;color:var(--faint)">+</div>${!small?'<div class="plot-label">空地</div>':''}</div>`;
-  return`<div class="plot ${ready?'ready':''} ${pest?'pest':''}" onclick="${pest?`killPest(${field.id})`:ready?`harvestField(${field.id})`:''}">
-    <div${pest?' class="pulse"':''}>${pest?'🐛':seed.icon}</div>
-    ${!small?`<div class="plot-label">${pest?'点击除虫':ready?'点击收获':(pct.toFixed(0)+'%')}</div>`:''}
-    <div class="plot-bar"><div class="plot-pf" style="width:${pct}%"></div></div>
-  </div>`;
-}
-
-function render(){
-  $('gold').textContent=Math.floor(F.gold);$('harvested').textContent=F.harvested;
-  $('worker-cnt').textContent=F.workers.length;$('animal-cnt').textContent=F.animals.length;
-  // Weather
-  const w=WEATHERS[F.weather];
-  $('weatherlbl').textContent=w.icon+' '+w.name;
-  $('wstrip').innerHTML=`<div class="ws-icon">${w.icon}</div><div><div class="ws-name">${w.name}</div><div class="ws-desc">${w.desc}</div></div><div class="ws-right"><div>下次变化: <span>${Math.ceil(F.weatherTimer)}s</span></div></div>`;
-  // Season
-  const seasons=[{n:'春季',i:'🌸'},{n:'夏季',i:'☀️'},{n:'秋季',i:'🍂'},{n:'冬季',i:'❄️'}];
-  $('season-lbl').textContent=seasons[F.season].i+seasons[F.season].n;
-  $('season-strip').innerHTML=seasons.map((s,i)=>`<div class="season-block ${i===F.season?'current':''}">${s.i} ${s.n}</div>`).join('');
-
-  // Field overview
-  $('overview-field').innerHTML=F.fields.map(f=>renderPlot(f,true)).join('');
-  $('main-field').innerHTML=F.fields.map(f=>renderPlot(f,false)).join('');
-
-  // Seeds
-  $('seeds').innerHTML=F.seeds.map(s=>{
-    const unlocked=!s.req||F.upgrades.find(u=>u.id===s.req)?.bought;
-    return`<div class="row"><div><div class="rn">${s.icon}${s.name}${!unlocked?'🔒':''}</div><div class="rdd">成熟:${s.time}s·利润:¥${s.profit}</div></div><div class="rr"><button class="btn ${F.selectedSeed===s.id?'bg':'bo'} bsm" onclick="F.selectedSeed='${s.id}';render()" ${unlocked?'':'disabled'}>选择</button></div></div>`;}).join('');
-
-  // Tools & upgrades
-  $('tools').innerHTML=F.tools.map(t=>`<div class="row"><div><div class="rn">${t.bought?'✅ ':''}${t.icon}${t.name}</div><div class="rdd">${t.desc}</div></div><div class="rr">${t.bought?'<span class="bdg bdg-g">已购</span>':`<span class="faint">¥${t.cost}</span><button class="btn bo bsm" onclick="buyTool('${t.id}')" ${F.gold>=t.cost?'':'disabled'}>购买</button>`}</div></div>`).join('');
-  $('land-upgrade').innerHTML=F.upgrades.map(u=>`<div class="row"><div><div class="rn">${u.bought?'✅ ':''}${u.icon}${u.name}</div><div class="rdd">${u.desc}</div></div><div class="rr">${u.bought?'<span class="bdg bdg-g">已解锁</span>':`<span class="faint">¥${u.cost}</span><button class="btn bo bsm" onclick="buyUpgrade('${u.id}')" ${F.gold>=u.cost?'':'disabled'}>解锁</button>`}</div></div>`).join('');
-
-  // Crop status
-  const growing=F.fields.filter(f=>f.crop&&f.progress<1).length;
-  const ready=F.fields.filter(f=>f.crop&&f.progress>=1).length;
-  const pests=F.fields.filter(f=>f.pest).length;
-  $('crop-status').innerHTML=`<div class="row"><div class="rn">生长中</div><div class="rr"><span style="color:var(--amber)">${growing}块</span></div></div>
-    <div class="row"><div class="rn">可收获</div><div class="rr"><span style="color:var(--green)">${ready}块</span></div></div>
-    <div class="row"><div class="rn">病虫害</div><div class="rr"><span style="color:${pests>0?'var(--red)':'var(--faint)'}">${pests}块</span></div></div>`;
-
-  // Animals
-  $('my-animals').innerHTML=F.animals.map((a,i)=>`<div class="animal-card">
-    <div class="ac-icon">${a.icon}</div>
-    <div class="ac-info">
-      <div class="ac-name">${a.name}</div>
-      <div class="ac-desc">${a.desc}</div>
-      <div class="ac-stats"><div>生命: <span style="color:${a.hp>=60?'var(--green)':a.hp>=30?'var(--amber)':'var(--red)'}">${a.hp}%</span></div><div>饱食: <span>${a.hunger||100}%</span></div></div>
-      <div class="mt8 flex gap6">
-        <button class="btn bo bxs" onclick="feedAnimal(${i})" ${F.gold>=5?'':'disabled'}>喂食(¥5)</button>
-        <button class="btn bg bxs" onclick="collectProduct(${i})" ${(a.timer||0)>=a.produce.time?'':'disabled'}>收获${a.produce.icon}(${Math.floor(a.timer||0)}/${a.produce.time}s)</button>
-      </div>
-    </div>
-  </div>`).join('')||'<div class="faint" style="padding:8px">暂无牲畜</div>';
-
-  const max=F.upgrades.find(u=>u.id==='ranch')?.bought?8:3;
-  $('buy-animals').innerHTML=F.animalTypes.map(at=>`<div class="animal-card"><div class="ac-icon">${at.icon}</div><div class="ac-info"><div class="ac-name">${at.name}</div><div class="ac-desc">${at.desc}</div></div><div class="rr"><span class="faint">¥${at.cost}</span><button class="btn bo bsm" onclick="buyAnimal('${at.id}')" ${F.gold>=at.cost&&F.animals.length<max?'':'disabled'}>购买</button></div></div>`).join('');
-  $('animal-products').innerHTML=Object.entries(F.animalProducts).map(([item,qty])=>`<div class="row"><div class="rn">${F.productIcons[item]}${F.productNames[item]}</div><div class="rr"><span class="faint">×${qty}</span><button class="btn bg bxs" onclick="sellProduct('${item}')" ${qty>0?'':'disabled'}>出售</button></div></div>`).join('');
-  $('animal-mgmt').innerHTML=`<div class="row"><div class="rn">当前数量</div><div class="rr"><span class="faint">${F.animals.length}/${max}</span></div></div>
-    <div class="row"><div class="rn">饲料消耗</div><div class="rr"><span class="faint">${F.animals.length*5}/天</span></div></div>`;
-  $('ranch-upgrade').innerHTML=F.upgrades.filter(u=>u.id==='ranch').map(u=>`<div class="row"><div><div class="rn">${u.bought?'✅ ':''}${u.icon}${u.name}</div><div class="rdd">${u.desc}</div></div><div class="rr">${u.bought?'<span class="bdg bdg-g">已升级</span>':`<span class="faint">¥${u.cost}</span><button class="btn bo bsm" onclick="buyUpgrade('${u.id}')" ${F.gold>=u.cost?'':'disabled'}>升级</button>`}</div></div>`).join('');
-
-  // Market
-  $('market-prices').innerHTML=F.seeds.map(s=>{
-    const price=F.marketPrices[s.id],base=s.profit,trend=price>base;
-    return`<div class="market-item"><div class="mi-icon">${s.icon}</div><div class="mi-info"><div class="mi-name">${s.name}</div><div class="mi-price">¥${price}/个 <span class="mi-trend" style="color:${trend?'var(--green)':'var(--red)'}">${trend?'↑':'↓'}</span></div></div><div class="rr"><span class="faint">库存:${F.stock[s.id]||0}</span><button class="btn bg bxs" onclick="sellStock('${s.id}')" ${(F.stock[s.id]||0)>0?'':'disabled'}>出售</button></div></div>`;}).join('');
-  $('my-stock').innerHTML=Object.entries(F.stock).map(([id,qty])=>{const s=F.seeds.find(x=>x.id===id);return`<div class="row"><div class="rn">${s?.icon||'🌾'}${s?.name||id}</div><div class="rr"><span class="faint">×${qty}</span></div></div>`}).join('');
-  $('wholesale').innerHTML=F.wholesale.map((w,i)=>`<div class="row"><div><div class="rn">${w.icon}${w.name}</div><div class="rdd">需要×${w.qty}·单价¥${w.price}</div></div><div class="rr"><span class="faint">库存:${F.stock[w.crop]||0}</span><button class="btn ba bsm" onclick="fillWholesale(${i})" ${(F.stock[w.crop]||0)>=w.qty?'':'disabled'}>完成</button></div></div>`).join('')||'<div class="faint" style="padding:8px">暂无批发订单</div>';
-  $('stall').innerHTML=`<div class="row"><div class="rn">摊位状态</div><div class="rr">${F.stall.active?'<span class="bdg bdg-g">营业中</span>':`<button class="btn ba bsm" onclick="setupStall()" ${F.gold>=F.stall.cost?'':'disabled'}>开设摊位(¥${F.stall.cost})</button>`}</div></div>
-    ${F.stall.active?`<div class="row"><div class="rn">摊位营收</div><div class="rr"><span style="color:var(--amber)">¥${Math.floor(F.stall.revenue)}</span></div></div>`:''}`;
-
-  // Workers
-  $('my-workers').innerHTML=F.workers.map(w=>`<div class="worker-card"><div class="wc-icon">${w.icon}</div><div class="wc-info"><div class="wc-name">${w.name}</div><div class="wc-role">${w.role}·技能Lv.${w.skill}</div><div class="wc-stats">薪资:<span>¥${w.salary}/s</span></div></div></div>`).join('')||'<div class="faint" style="padding:8px">暂无工人</div>';
-  $('hire-workers').innerHTML=F.workerPool.map((w,i)=>`<div class="worker-card"><div class="wc-icon">${w.icon}</div><div class="wc-info"><div class="wc-name">${w.name}</div><div class="wc-role">${w.role}</div></div><div class="rr"><span class="faint">¥${w.cost}</span><button class="btn bo bsm" onclick="hireWorker(${i})" ${F.gold>=w.cost?'':'disabled'}>雇用</button></div></div>`).join('')||'<div class="faint" style="padding:8px">暂无可招募工人</div>';
-  $('wages').innerHTML=`<div class="row"><div class="rn">工资总支出</div><div class="rr"><span class="faint">¥${F.workers.reduce((a,w)=>a+w.salary,0)}/s</span></div></div>
-    <div class="row"><div class="rn">工作加速</div><div class="rr"><span style="color:var(--green)">+${F.workers.reduce((a,w)=>a+w.skill*5,0)}%</span></div></div>`;
-  $('task-assign').innerHTML=`<div class="row"><div class="rn">🌱 种植</div><div class="rr"><span class="faint">${Math.floor(F.workers.length/3)}人</span></div></div>
-    <div class="row"><div class="rn">🌾 收割</div><div class="rr"><span class="faint">${Math.floor(F.workers.length/3)}人</span></div></div>
-    <div class="row"><div class="rn">🐄 照料牲畜</div><div class="rr"><span class="faint">${F.workers.length-Math.floor(F.workers.length/3)*2}人</span></div></div>`;
-
-  // Research
-  const hasRd3=F.upgrades.find(u=>u.id==='rd3')?.bought;
-  $('hybrid-lab').innerHTML=hasRd3?`
-    <div style="font-size:10px;color:var(--muted);margin-bottom:10px">选择两种作物进行杂交，消耗¥200</div>
-    <div id="hybrid-select" class="flex gap6 mb8">${F.seeds.slice(0,4).map(s=>`<button class="btn ${F.researchTarget?.a?.id===s.id||F.researchTarget?.b?.id===s.id?'bg':'bo'} bxs" onclick="selectHybridSeed('${s.id}')">${s.icon}</button>`).join('')}</div>
-    <div class="faint mb8">已选:${F.researchTarget?`${F.researchTarget.a.icon}${F.researchTarget.a.name} × ${F.researchTarget.b.icon}${F.researchTarget.b.name}`:'未选'}</div>
-    ${F.researchTarget?`<div class="pb mb8"><div class="pbf pbg" style="width:${F.researchProg}%"></div></div><div class="faint">${F.researchProg.toFixed(0)}%</div>`:''}
-    <button class="btn bg bfull mt8" onclick="startResearch(F.seeds[0].id,F.seeds[2].id)" ${F.gold>=200?'':'disabled'}>🧬 开始杂交(¥200)</button>`
-    :'<div class="faint" style="padding:8px">需要解锁高级研发</div>';
-  $('hybrids').innerHTML=F.hybrids.map(h=>`<div class="hybrid-card"><div class="flex gap6 mb4"><span style="font-size:16px">${h.icon}</span><span style="font-size:11px;font-weight:500">${h.name}</span></div><div class="faint">成熟:${h.time}s·利润:¥${h.profit}</div></div>`).join('')||'<div class="faint" style="padding:8px">暂无杂交品种</div>';
-  $('research-progress').innerHTML=F.upgrades.map(u=>`<div class="row"><div><div class="rn">${u.bought?'✅ ':''}${u.icon}${u.name}</div><div class="rdd">${u.desc}</div></div><div class="rr">${u.bought?'<span class="bdg bdg-g">已解锁</span>':`<span class="faint">¥${u.cost}</span><button class="btn bo bsm" onclick="buyUpgrade('${u.id}')" ${F.gold>=u.cost?'':'disabled'}>解锁</button>`}</div></div>`).join('');
-  $('tech-tree').innerHTML=`<div class="row"><div class="rn">研发等级</div><div class="rr"><span class="faint">Lv.${F.upgrades.filter(u=>u.bought).length}</span></div></div>
-    <div class="row"><div class="rn">解锁品种</div><div class="rr"><span style="color:var(--green)">${F.seeds.filter(s=>!s.req||F.upgrades.find(u=>u.id===s.req)?.bought).length}种</span></div></div>
-    <div class="row"><div class="rn">杂交品种</div><div class="rr"><span class="faint">${F.hybrids.length}种</span></div></div>`;
-
-  // Pest alert
-  const pestFields=F.fields.filter(f=>f.pest);
-  $('pest-alert').innerHTML=pestFields.length?pestFields.map(f=>`<div class="row"><div><div class="rn">🐛 地块${f.id+1}病虫害</div><div class="rdd">点击地块除虫</div></div><div class="rr"><button class="btn br bsm" onclick="killPest(${f.id})">除虫</button></div></div>`).join(''):'<div class="faint" style="padding:8px">✅ 暂无病虫害</div>';
-
-  // Market quick
-  const topSeed=F.seeds.reduce((a,s)=>F.marketPrices[s.id]>F.marketPrices[a.id]?s:a,F.seeds[0]);
-  $('mkt-quick').innerHTML=`<div class="row"><div class="rn">最高价作物</div><div class="rr"><span style="color:var(--amber)">${topSeed.icon}${topSeed.name} ¥${F.marketPrices[topSeed.id]}</span></div></div>
-    <div class="row"><div class="rn">当前季节加成</div><div class="rr"><span style="color:var(--green)">${F.season===0?'春季+20%':F.season===2?'秋季+10%':'无加成'}</span></div></div>`;
-
-  // Achievements
-  $('achievements').innerHTML=F.achievements.map(a=>`<div class="row"><div><div class="rn">${a.icon}${a.name}</div><div class="rdd">${a.desc}</div></div><div class="rr">${a.done?'<span class="bdg bdg-g">✓</span>':'<span class="faint">未达成</span>'}</div></div>`).join('');
-}
-
-let _hybridA=null;
-function selectHybridSeed(id){if(!_hybridA){_hybridA=id}else{startResearch(_hybridA,id);_hybridA=null}}
-
-let tick=0;
-setInterval(()=>{
-  tick++;
-  // Weather timer
-  F.weatherTimer-=0.1;
-  if(F.weatherTimer<=0){F.weather=Math.floor(Math.random()*WEATHERS.length);F.weatherTimer=40+Math.random()*80;flog(`🌤️ 天气变为 ${WEATHERS[F.weather].icon}${WEATHERS[F.weather].name}`,'linfo');if(WEATHERS[F.weather].name==='暴风雨'){F.fields.forEach(f=>{if(f.crop&&Math.random()<.3)f.pest=true});flog('⚠️ 暴风雨引发病虫害！','lbad')}}
-
-  // Field growth
-  F.fields.forEach(f=>{
-    if(!f.crop||f.progress>=1)return;
-    const seed=F.seeds.find(s=>s.id===f.crop);if(!seed)return;
-    const wMult=WEATHERS[F.weather].mult;
-    const sMult=F.season===0?1.2:F.season===2?1.1:1;
-    const ghMult=F.tools.find(t=>t.id==='greenhouse')?.bought?1.3:1;
-    const wcMult=F.tools.find(t=>t.id==='watercan')?.bought?1.1:1;
-    const wkMult=1+F.workers.filter(w=>w.task==='plant'||true).reduce((a,w)=>a+w.skill*0.05,0);
-    f.progress+=0.001*(1/seed.time)*100*wMult*sMult*ghMult*wkMult*wcMult;
-    if(f.progress>=1){f.progress=1;flog(`✅ ${seed.icon}${seed.name}在地块${f.id+1}成熟了！`,'lok')}
-  });
-
-  // Auto harvest
-  if(F.autoHarvest&&tick%20===0)harvestAll();
-
-  // Animal timers
-  F.animals.forEach(a=>{a.timer=(a.timer||0)+0.1;a.hunger=Math.max(0,a.hunger-0.02)});
-  // 农药自动消灭害虫
-  if(F.tools.find(t=>t.id==='pesticide')?.bought){
-    F.fields.forEach(f=>{if(f.pest)f.pest=false});
-  }
-  // 动物hunger归零停止产出
-  F.animals.forEach(a=>{if(a.hunger<=0)a.timer=Math.min(a.timer,a.produce.time-0.1)});
-
-  // Stall passive income
-  if(F.stall.active&&tick%30===0){F.stall.revenue+=5+F.workers.length*2;F.gold+=5+F.workers.length*2}
-
-  // Research progress
-  if(F.researchTarget&&F.researchProg<100){F.researchProg+=0.2;if(F.researchProg>=100){const ra=F.researchTarget.a,rb=F.researchTarget.b;const h={name:`杂交${ra.name}×${rb.name}`,icon:'✨',time:Math.floor((ra.time+rb.time)/2*0.8),profit:Math.floor((ra.profit+rb.profit)*0.8)};F.hybrids.push(h);rdlog(`✨ 杂交成功:${h.name} 利润¥${h.profit}`,'lok');F.researchTarget=null;F.researchProg=0;checkAch()}}
-
-  // Season change
-  F.seasonDay+=0.01;if(F.seasonDay>=30){F.seasonDay=0;F.season=(F.season+1)%4;flog(`🌸 季节变换:${['春','夏','秋','冬'][F.season]}季`,'linfo')}
-
-  if(tick%5===0)render();
-  if(tick%300===0)save();
-},100);
-
-render();
-flog('🌱 农业项目管理系统启动','linfo');
-flog('点击空地种植，点击成熟作物收获','linfo');
-
-function st(t){
-  localStorage.setItem('moyu-theme',t);
-  document.documentElement.setAttribute('data-theme',t);
-}
-
-function resetGame(){
-  if(!confirm('确定要从头开始吗？所有进度将清空！'))return;
-  localStorage.removeItem('farm');
-  location.reload();
-}
-
-/* ── 公告栏接入：更新版本号和内容后，返回首页会自动弹出公告 ── */
-(function(){
-  var cl = JSON.parse(localStorage.getItem('moyu-changelog')||'{}');
+<!-- Changelog Integration -->
+<script>
+(function() {
+  var cl = JSON.parse(localStorage.getItem('moyu-changelog') || '{}')
   cl.farm = {
-    version: '2.0',       // ← 每次更新时，修改这里的版本号
+    version: '3.0',
     icon: '🌱',
     name: '农业项目管理',
     entries: [
-      /* 最新版本放最前面 */
-      { v:'2.0', date:'2025-03-27', items:[
-          '农场系统全面重构升级',
-          '新增牲畜养殖与品种杂交玩法',
-          '自然灾害事件系统上线'
+      { v: '3.0', date: '2026-03-28', items: [
+          '农场系统全面模块化重构',
+          '数据与逻辑分离',
+          '采用与 corp/cafe 一致的架构'
         ]
       }
-      /* 历史版本示例（可继续追加）：
-      { v:'1.0', date:'2025-03-01', items:['农业模块首次上线','基础种植与收获系统'] }
-      */
     ]
-  };
-  localStorage.setItem('moyu-changelog', JSON.stringify(cl));
-})();
+  }
+  localStorage.setItem('moyu-changelog', JSON.stringify(cl))
+})()
 </script>
 </body>
-<!-- CHANGELOG
-{
-  "version": "2.0",
-  "icon": "🌱",
-  "name": "农业项目管理",
-  "entries": [
-    { "v": "2.0", "date": "2025-03-27", "items": ["农场系统全面重构升级", "新增牲畜养殖与品种杂交玩法", "自然灾害事件系统上线"] }
-  ]
-}
-CHANGELOG -->
 </html>

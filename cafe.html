@@ -16,96 +16,7 @@ body::after{background:var(--scanline,none)!important}
 </style>
 <script>(function(){var t=localStorage.getItem("moyu-theme")||"white";document.documentElement.setAttribute("data-theme",t);})();</script>
 <title>咖啡门店 · 摸鱼工作台</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@600;700&display=swap');
-:root{--mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:12px;min-height:100vh}
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.02) 2px,rgba(0,0,0,.02) 4px);pointer-events:none;z-index:9999}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
-.back{font-size:11px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:var(--mono)}.back:hover{color:var(--text)}
-.topbar-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--cream)}
-.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto}
-.tab{padding:8px 14px;font-size:11px;color:var(--muted);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:var(--mono);white-space:nowrap;transition:all .15s}.tab:hover{color:var(--text)}.tab.on{color:var(--amber);border-bottom-color:var(--amber)}
-.main{padding:14px 16px;max-width:1200px;margin:0 auto}
-.panel{display:none}.panel.on{display:block}
-.card{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:12px}
-.ct{font-size:11px;font-weight:500;margin-bottom:8px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.col-r{display:grid;grid-template-columns:1fr 280px;gap:12px}
-.sl{font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.12em;margin-bottom:2px}
-.sv{font-size:18px;font-weight:600;line-height:1}.sv.am{color:var(--amber)}.sv.gr{color:var(--green)}.sv.cr{color:var(--cream)}.sv.rd{color:var(--red)}
-.sd{font-size:9px;color:var(--faint);margin-top:2px}
-.row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);gap:8px}.row:last-child{border-bottom:none}
-.rn{font-size:11px;font-weight:500}.rdd{font-size:9px;color:var(--faint);margin-top:1px}
-.rr{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:5px 12px;border-radius:3px;font-size:11px;font-family:var(--mono);cursor:pointer;transition:all .12s;border:1px solid transparent;white-space:nowrap}
-.ba{background:rgba(212,164,76,.15);color:var(--amber);border-color:rgba(212,164,76,.3)}.ba:hover:not(:disabled){background:rgba(212,164,76,.25)}
-.bg{background:rgba(90,158,90,.15);color:var(--green);border-color:rgba(90,158,90,.3)}.bg:hover:not(:disabled){background:rgba(90,158,90,.25)}
-.br{background:rgba(204,85,68,.15);color:var(--red);border-color:rgba(204,85,68,.3)}.br:hover:not(:disabled){background:rgba(204,85,68,.25)}
-.bc{background:rgba(85,128,170,.15);color:var(--blue);border-color:rgba(85,128,170,.3)}.bc:hover:not(:disabled){background:rgba(85,128,170,.25)}
-.bo{background:transparent;color:var(--muted);border-color:var(--border-l)}.bo:hover:not(:disabled){color:var(--text)}
-.btn:disabled{opacity:.3;cursor:not-allowed}
-.bsm{padding:3px 9px;font-size:10px}.bxs{padding:2px 7px;font-size:9px}.bfull{width:100%;display:flex}
-.bdg{display:inline-block;padding:2px 6px;border-radius:2px;font-size:9px}
-.bdg-g{background:var(--green-l);color:var(--green);border:1px solid rgba(90,158,90,.2)}
-.bdg-a{background:var(--amber-l);color:var(--amber);border:1px solid rgba(212,164,76,.2)}
-.bdg-r{background:rgba(204,85,68,.1);color:var(--red);border:1px solid rgba(204,85,68,.2)}
-.bdg-b{background:rgba(85,128,170,.1);color:var(--blue);border:1px solid rgba(85,128,170,.2)}
-.pb{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
-.pbf{height:100%;border-radius:2px;transition:width .3s}
-.pba{background:var(--amber)}.pbg{background:var(--green)}.pbr{background:var(--red)}.pbc{background:var(--blue)}
-.log{height:120px;overflow-y:auto;font-size:9px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:6px 8px}
-.ll{padding:1px 0}.lts{color:var(--faint)}.lok .lm{color:var(--green)}.lbad .lm{color:var(--red)}.linfo .lm{color:var(--amber)}
-
-/* ORDER CARD */
-.order-card{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:6px;cursor:pointer;transition:all .15s}
-.order-card:hover{border-color:var(--amber)}.order-card.selected{border-color:var(--amber);background:rgba(212,164,76,.05)}
-.order-card.urgent{border-color:rgba(204,85,68,.4)}
-.oc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.oc-name{font-size:11px;font-weight:500}.oc-time{font-size:10px}
-.oc-drink{font-size:10px;color:var(--muted)}.oc-req{font-size:9px;color:var(--faint);margin-top:2px}
-
-/* BREW ZONE */
-.brew-zone{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:12px}
-.brew-title{font-size:12px;font-weight:600;color:var(--cream);margin-bottom:10px}
-.brew-step{display:flex;align-items:center;gap:8px;padding:8px;border-radius:3px;background:var(--card);margin-bottom:6px;border:1px solid var(--border);transition:all .2s}
-.brew-step.active{border-color:var(--amber);background:rgba(212,164,76,.08)}
-.brew-step.done{border-color:rgba(90,158,90,.3);opacity:.6}
-.step-icon{font-size:18px;width:24px;text-align:center}
-.step-name{flex:1;font-size:11px}
-.step-action{flex-shrink:0}
-.step-progress{width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
-.step-pf{height:100%;border-radius:2px;transition:width .1s;background:var(--amber)}
-
-/* RECIPE CARD */
-.recipe-card{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:6px}
-.rc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.rc-name{font-size:11px;font-weight:500}.rc-price{font-size:11px;color:var(--amber)}
-
-/* VIP */
-.vip-card{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:9px;margin-bottom:6px;display:flex;gap:8px}
-.vc-icon{font-size:22px}.vc-info{flex:1}.vc-name{font-size:11px;font-weight:500}.vc-desc{font-size:9px;color:var(--faint);margin-top:1px}.vc-stat{font-size:9px;color:var(--amber)}
-
-/* INGREDIENT */
-.ing-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)}.ing-row:last-child{border-bottom:none}
-.ing-icon{font-size:14px;width:20px;text-align:center}.ing-name{flex:1;font-size:10px}
-.ing-track{width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
-.ing-fill{height:100%;border-radius:2px}
-.ing-val{font-size:9px;color:var(--muted);width:50px;text-align:right}
-
-/* REVIEW */
-.review{padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:3px;margin-bottom:5px}
-.rv-top{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px}
-.rv-content{font-size:10px;color:var(--muted);line-height:1.5}
-
-.mt8{margin-top:8px}.mt10{margin-top:10px}.mb8{margin-bottom:8px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}
-.flex{display:flex;align-items:center}.fb{display:flex;align-items:center;justify-content:space-between}
-.gap6{gap:6px}.gap8{gap:8px}.faint{color:var(--faint);font-size:10px}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}.pulse{animation:pulse 2s infinite}
-</style>
+<link rel="stylesheet" href="modules/cafe/cafe.css">
 </head>
 <body>
 <div class="topbar">
@@ -129,7 +40,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <button class="tab on" onclick="sw(0)">📊 营业概览</button>
   <button class="tab" onclick="sw(1)">☕ 制作咖啡</button>
   <button class="tab" onclick="sw(2)">🧪 配方研发</button>
-  <button class="tab" onclick="sw(3)">👑 VIP客户</button>
+  <button class="tab" onclick="sw(3)">👑 VIP 客户</button>
   <button class="tab" onclick="sw(4)">📦 库存管理</button>
   <button class="tab" onclick="sw(5)">⭐ 评价&活动</button>
   <button style="margin-left:auto;padding:8px 14px;font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-family:var(--mono)" onclick="resetGame()">🔄 从头开始</button>
@@ -170,7 +81,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <div class="col-r">
     <div>
       <div class="card mb10">
-        <div class="fb mb8"><div class="ct" style="margin:0">订单队列</div><span class="faint" id="q-count">0个订单</span></div>
+        <div class="fb mb8"><div class="ct" style="margin:0">订单队列</div><span class="faint" id="q-count">0 个订单</span></div>
         <div id="brew-orders"></div>
       </div>
     </div>
@@ -207,12 +118,12 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 <div class="panel" id="p3">
   <div class="col-r">
     <div>
-      <div class="card mb10"><div class="fb mb8"><div class="ct" style="margin:0">VIP客户</div><span class="faint" id="vip-count">0位VIP</span></div><div id="vip-list"></div></div>
+      <div class="card mb10"><div class="fb mb8"><div class="ct" style="margin:0">VIP 客户</div><span class="faint" id="vip-count">0 位 VIP</span></div><div id="vip-list"></div></div>
     </div>
     <div>
-      <div class="card mb10"><div class="ct">VIP福利计划</div><div id="vip-perks"></div></div>
+      <div class="card mb10"><div class="ct">VIP 福利计划</div><div id="vip-perks"></div></div>
       <div class="card mb10"><div class="ct">会员积分</div><div id="vip-points"></div></div>
-      <div class="card"><div class="ct">VIP回访率</div><div id="vip-stats"></div></div>
+      <div class="card"><div class="ct">VIP 回访率</div><div id="vip-stats"></div></div>
     </div>
   </div>
 </div>
@@ -245,538 +156,53 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 </div>
 
 </div>
-<script>
-const $=id=>document.getElementById(id);
-const ts=()=>new Date().toTimeString().slice(0,8);
-const fmt=n=>n>=1000?'¥'+(n/1000).toFixed(1)+'K':'¥'+Math.floor(n);
-function dlog(b,msg,type){const el=$(b),d=document.createElement('div');d.className='ll '+type;d.innerHTML=`<span class="lts">[${ts()}]</span> <span class="lm">${msg}</span>`;el.prepend(d);while(el.children.length>60)el.removeChild(el.lastChild)}
-function sw(i){document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',i===j));document.querySelectorAll('.panel').forEach((p,j)=>p.classList.toggle('on',i===j));render()}
-setInterval(()=>$('clk').textContent=new Date().toTimeString().slice(0,8),1000);
 
-const C={
-  cash:500,done:0,satisfaction:80,todayRev:0,totalRev:0,starLevel:0,
-  maxPrice:0,scores:[],revHistory:[],
-  ingredients:{beans:100,milk:80,water:200,sugar:50,syrup:20,cream:30,matcha:15,ice:100},
-  maxIng:{beans:200,milk:200,water:500,sugar:100,syrup:50,cream:80,matcha:50,ice:200},
-  ingNames:{beans:'咖啡豆',milk:'牛奶',water:'净水',sugar:'白糖',syrup:'果糖',cream:'奶油',matcha:'抹茶粉',ice:'冰块'},
-  ingIcons:{beans:'☕',milk:'🥛',water:'💧',sugar:'🍬',syrup:'🍯',cream:'🧴',matcha:'🍵',ice:'🧊'},
-  equipment:{espresso:false,frothing:false,cold_brew:false,grinder:false,syrup_pump:false,auto_temp:false},
-  equipNames:{espresso:'意式咖啡机',frothing:'奶泡机',cold_brew:'冷萃设备',grinder:'专业磨豆机',syrup_pump:'果糖泵',auto_temp:'自动控温壶'},
-  equipDesc:{espresso:'解锁浓缩/美式',frothing:'解锁拿铁系列',cold_brew:'解锁冷萃系列',grinder:'咖啡品质+20%',syrup_pump:'果糖调味更精准',auto_temp:'手冲品质+30%'},
-  equipCost:{espresso:800,frothing:500,cold_brew:1200,grinder:1500,syrup_pump:300,auto_temp:900},
-  staff:[
-    {id:'self',name:'你自己',icon:'🧑',skill:1,role:'店主',mood:90},
-  ],
-  staffPool:[
-    {name:'阿明',icon:'👨',skill:1,role:'学徒咖啡师',cost:200,salary:50},
-    {name:'小晴',icon:'👩',skill:2,role:'咖啡师',cost:500,salary:120},
-    {name:'老李',icon:'🧔',skill:3,role:'资深咖啡师',cost:1200,salary:280},
-  ],
-  menu:[
-    {id:'drip',name:'手冲咖啡',icon:'☕',price:28,unlocked:true,req:'',steps:['grind','bloom','pour','wait'],ing:{beans:15,water:200},popularity:0},
-    {id:'espresso',name:'意式浓缩',icon:'🍵',price:22,unlocked:false,req:'espresso',steps:['load','extract','serve'],ing:{beans:12},popularity:0},
-    {id:'americano',name:'美式咖啡',icon:'☕',price:25,unlocked:false,req:'espresso',steps:['load','extract','dilute'],ing:{beans:12,water:150},popularity:0},
-    {id:'latte',name:'拿铁',icon:'🥛',price:35,unlocked:false,req:'frothing',steps:['extract','froth','pour','latte_art'],ing:{beans:12,milk:150},popularity:0},
-    {id:'matcha_latte',name:'抹茶拿铁',icon:'🍵',price:38,unlocked:false,req:'frothing',steps:['mix_matcha','froth','pour'],ing:{matcha:8,milk:150,sugar:5},popularity:0},
-    {id:'cold_brew',name:'冷萃咖啡',icon:'🧊',price:40,unlocked:false,req:'cold_brew',steps:['grind','cold_steep','filter','serve_cold'],ing:{beans:20,water:200,ice:50},popularity:0},
-    {id:'cappuccino',name:'卡布奇诺',icon:'☕',price:33,unlocked:false,req:'frothing',steps:['extract','froth_heavy','layer'],ing:{beans:12,milk:100,cream:20},popularity:0},
-    {id:'caramel',name:'焦糖玛奇朵',icon:'🍮',price:42,unlocked:false,req:'frothing',steps:['extract','froth','syrup','top'],ing:{beans:12,milk:120,syrup:15},popularity:0},
-  ],
-  stepDefs:{
-    grind:{name:'研磨咖啡豆',type:'click',clicks:0,maxClicks:5,icon:'⚙️'},
-    bloom:{name:'注水闷蒸',type:'wait',duration:3,elapsed:0,icon:'💧'},
-    pour:{name:'缓慢注水',type:'hold',progress:0,icon:'🫗'},
-    wait:{name:'等待萃取',type:'wait',duration:4,elapsed:0,icon:'⏱️'},
-    load:{name:'填充咖啡粉',type:'click',clicks:0,maxClicks:3,icon:'🔩'},
-    extract:{name:'意式萃取',type:'wait',duration:2,elapsed:0,icon:'⚡'},
-    serve:{name:'出品',type:'click',clicks:0,maxClicks:1,icon:'🫱'},
-    dilute:{name:'注入热水',type:'hold',progress:0,icon:'💧'},
-    froth:{name:'打奶泡',type:'click',clicks:0,maxClicks:4,icon:'🥛'},
-    pour2:{name:'分层倒入',type:'hold',progress:0,icon:'🫗'},
-    latte_art:{name:'拉花',type:'choice',choice:null,options:['🌸','🍀','❤️','🌊'],icon:'🎨'},
-    mix_matcha:{name:'调制抹茶',type:'click',clicks:0,maxClicks:4,icon:'🍵'},
-    froth_heavy:{name:'厚奶泡',type:'click',clicks:0,maxClicks:6,icon:'🥛'},
-    layer:{name:'分层',type:'hold',progress:0,icon:'🫗'},
-    syrup:{name:'加入焦糖',type:'click',clicks:0,maxClicks:2,icon:'🍯'},
-    top:{name:'顶层装饰',type:'choice',choice:null,options:['🍮','⭐','✨','🌈'],icon:'✨'},
-    cold_steep:{name:'冷萃浸泡',type:'wait',duration:6,elapsed:0,icon:'🧊'},
-    filter:{name:'过滤',type:'hold',progress:0,icon:'🔍'},
-    serve_cold:{name:'加冰出品',type:'click',clicks:0,maxClicks:2,icon:'🧊'},
-  },
-  orders:[],maxOrders:5,currentOrder:null,brewSteps:[],currentStep:0,brewDone:false,isOpen:true,
-  vips:[],vipPoints:0,
-  reviews:[],
-  customRecipes:[],
-  events:[
-    {name:'情人节特饮',desc:'特制玫瑰拿铁，价格+50%',active:false,cost:500,mult:1.5,icon:'💕'},
-    {name:'圣诞节活动',desc:'圣诞特饮系列，客流+30%',active:false,cost:300,mult:1.3,icon:'🎄'},
-    {name:'买一赠一日',desc:'吸引新客，满意度+10%',active:false,cost:200,mult:1.0,icon:'🎁'},
-    {name:'手冲工坊',desc:'教学体验，客单价+40%',active:false,cost:800,mult:1.4,icon:'🎓'},
-  ],
-  activeEvent:null,
-  researchProgress:{},researchTarget:null,
-  popularDrinks:{},
-};
+<!-- 加载 Cafe 模块 -->
+<!-- 工具函数 -->
+<script src="modules/cafe/utils.js"></script>
 
-const CNAMES=['李先生','王女士','张先生','刘女士','陈先生','吴女士','赵先生','孙女士','周先生','徐女士','秘书小姐','程序员先生','设计师女士','老板娘','外卖小哥'];
-const ICONS=['👨','👩','🧔','👧','👴','👵','🧕','👱'];
+<!-- 数据模块（拆分） -->
+<script src="modules/cafe/data/base.js"></script>
+<script src="modules/cafe/data/ingredients.js"></script>
+<script src="modules/cafe/data/equipment.js"></script>
+<script src="modules/cafe/data/staff.js"></script>
+<script src="modules/cafe/data/vip.js"></script>
+<script src="modules/cafe/data/reviews.js"></script>
+<script src="modules/cafe/data/events.js"></script>
+<script src="modules/cafe/data/research.js"></script>
 
-try{
-  const s=JSON.parse(localStorage.getItem('cafe')||'{}');
-  if(s.cash){
-    Object.assign(C,s);
-    // 修复：合并ingredients而非整体替换，防止新字段缺失导致"食材不足"误判
-    if(s.ingredients){
-      const defaultIng={beans:100,milk:80,water:200,sugar:50,syrup:20,cream:30,matcha:15,ice:100};
-      C.ingredients={...defaultIng,...s.ingredients};
-      // 确保所有值为数字且不为undefined/null
-      Object.keys(C.ingredients).forEach(k=>{
-        if(typeof C.ingredients[k]!=='number'||isNaN(C.ingredients[k]))C.ingredients[k]=defaultIng[k]||0;
-      });
-    }
-    C.orders=C.orders||[];
-    C.vips=C.vips||[];
-    C.reviews=C.reviews||[];
-    C.customRecipes=C.customRecipes||[];
-    C.events=C.events||C.events;
-    // 确保staff里role字段正确（兼容旧存档）
-    const validRoles=['店主','学徒咖啡师','咖啡师','资深咖啡师'];
-    C.staff=C.staff.filter(s=>validRoles.includes(s.role));
-    if(!C.staff.some(s=>s.role==='店主')){
-      C.staff.unshift({id:'self',name:'你自己',icon:'🧑',skill:1,role:'店主',mood:90});
-    }
-    // 恢复menu状态
-    if(s.menuState){
-      s.menuState.forEach(ms=>{
-        const m=C.menu.find(x=>x.id===ms.id);
-        if(m){m.unlocked=ms.unlocked;m.pendingUnlock=ms.pendingUnlock||false;}
-      });
-    } else {
-      C.menu.forEach(m=>{if(!m.req)m.unlocked=true;});
-    }
-  } else {
-    // 全新存档，只解锁基础款
-    C.menu.forEach(m=>{if(!m.req)m.unlocked=true;});
-  }
-}catch(e){
-  // 存档读取失败，只解锁基础款
-  C.menu.forEach(m=>{if(!m.req)m.unlocked=true;});
-}
-// 确保isOpen有正确初始值（Object.assign可能覆盖掉）
-if(C.isOpen===undefined)C.isOpen=true;
+<!-- 系统模块 -->
+<script src="modules/cafe/systems/orders.js"></script>
+<script src="modules/cafe/systems/ingredients.js"></script>
+<script src="modules/cafe/systems/equipment.js"></script>
+<script src="modules/cafe/systems/staff.js"></script>
+<script src="modules/cafe/systems/vip.js"></script>
+<script src="modules/cafe/systems/reviews.js"></script>
 
-function saveBack(){save();location.href='index.html'}
-function save(){try{localStorage.setItem('cafe',JSON.stringify({isOpen:C.isOpen,cash:C.cash,done:C.done,satisfaction:C.satisfaction,todayRev:C.todayRev,totalRev:C.totalRev,starLevel:C.starLevel,ingredients:C.ingredients,equipment:C.equipment,staff:C.staff,vips:C.vips,reviews:C.reviews,events:C.events,activeEvent:C.activeEvent,customRecipes:C.customRecipes,popularDrinks:C.popularDrinks,maxPrice:C.maxPrice,menuState:C.menu.map(m=>({id:m.id,unlocked:m.unlocked,pendingUnlock:m.pendingUnlock||false}))}))}catch(e){}}
+<!-- 功能模块 -->
+<script src="modules/cafe/features/brew.js"></script>
+<script src="modules/cafe/features/research.js"></script>
 
-function genOrder(){
-  if(C.orders.length>=C.maxOrders)return;
-  const avail=C.menu.filter(m=>m.unlocked);
-  const drink=avail[Math.floor(Math.random()*avail.length)];
-  const vipChance=C.vips.length>0&&Math.random()<.3;
-  const isVip=vipChance;
-  const cust=CNAMES[Math.floor(Math.random()*CNAMES.length)];
-  const custIcon=ICONS[Math.floor(Math.random()*ICONS.length)];
-  const extraOpts=[];
-  if(Math.random()<.3)extraOpts.push('少冰');
-  if(Math.random()<.25)extraOpts.push('少糖');
-  if(Math.random()<.2)extraOpts.push('加大杯');
-  const price=Math.floor(drink.price*(1+(extraOpts.includes('加大杯')?.3:0))*(C.activeEvent?.mult||1));
-  C.orders.push({id:Date.now(),name:cust,icon:custIcon,drink:drink.id,drinkName:drink.name,drinkIcon:drink.icon,extra:extraOpts,price,vip:isVip,timeLeft:60,patience:60});
-}
+<!-- 核心和 UI -->
+<script src="modules/cafe/core/core.js"></script>
+<script src="modules/cafe/ui/ui.js"></script>
 
-function startBrew(orderId){
-  const order=C.orders.find(o=>o.id===orderId);if(!order)return;
-  const drink=C.menu.find(m=>m.id===order.drink);if(!drink)return;
-  C.currentOrder=order;
-  // Init brew steps
-  C.brewSteps=drink.steps.map(sid=>{
-    const def={...C.stepDefs[sid]};def.id=sid;
-    if(def.type==='click'){def.clicks=0;if(sid==='grind'&&C.equipment.grinder)def.maxClicks=3;}
-    if(def.type==='wait'){def.elapsed=0}
-    if(def.type==='hold'){def.progress=0}
-    if(def.type==='temp'){def.current=20}
-    if(def.type==='choice'){def.choice=null}
-    return def;
-  });
-  C.currentStep=0;C.brewDone=false;window._holding=false;
-  render();
-}
+<!-- 核心模块 -->
+<script src="modules/cafe/actions.js"></script>
+<script src="modules/cafe/render.js"></script>
+<script src="modules/cafe/save.js"></script>
+<script src="modules/cafe/init.js"></script>
+<script src="modules/cafe/main.js"></script>
 
-function doStepAction(type,extra){
-  const step=C.brewSteps[C.currentStep];if(!step||step.done)return;
-  if(type==='click'){step.clicks++;if(step.clicks>=step.maxClicks){step.done=true;nextStep()}}
-  if(type==='hold_progress'){step.progress=extra;if(step.progress>=100){step.done=true;nextStep()}}
-  if(type==='temp_set'){step.current=extra;if(Math.abs(step.current-step.target)<=5){step.done=true;nextStep()}}
-  // 控温壶自动完成temp步骤
-  if(C.equipment.auto_temp&&C.currentOrder&&C.brewSteps[C.currentStep]?.type==='temp'){
-    const ts=C.brewSteps[C.currentStep];ts.current=ts.target;ts.done=true;nextStep();
-  }
-  if(type==='choice'){step.choice=extra;step.done=true;nextStep()}
-  render();
-}
-
-function nextStep(){C.currentStep++;if(C.currentStep>=C.brewSteps.length)completeBrew()}
-function completeBrew(){
-  C.brewDone=true;
-  const order=C.currentOrder;
-  if(!order)return;
-  // Score based on quality
-  const score=Math.floor(75+Math.random()*25);
-  const syrupBonus=C.equipment.syrup_pump?1.1:1;
-  const price=Math.floor(order.price*syrupBonus);
-  C.cash+=price;C.totalRev+=price;C.todayRev+=price;C.done++;
-  if(price>C.maxPrice)C.maxPrice=price;
-  C.scores.push(score);C.revHistory.push(price);
-  // Remove order
-  const idx=C.orders.findIndex(o=>o.id===order.id);
-  if(idx>=0)C.orders.splice(idx,1);
-  // Popularity
-  if(!C.popularDrinks[order.drink])C.popularDrinks[order.drink]=0;
-  C.popularDrinks[order.drink]++;
-  // VIP?
-  if(order.vip||Math.random()<.1){const vip=C.vips.find(v=>v.name===order.name);if(vip){vip.visits++;vip.spent+=price}else C.vips.push({name:order.name,icon:order.icon,visits:1,spent:price,fav:order.drinkName,mood:'😊'})}
-  // Review
-  if(Math.random()<.4){
-    const pos=score>=85;
-    const posRevs=['☕ 咖啡超好喝！','下次还来！','环境很好，咖啡也不错','制作过程太专业了','这是我喝过最好的拿铁','会推荐给朋友'];
-    const negRevs=['等了好久...','咖啡有点凉','口感一般般','有点贵','没想象中好喝'];
-    C.reviews.unshift({name:order.name,icon:order.icon,score,text:(pos?posRevs:negRevs)[Math.floor(Math.random()*(pos?posRevs:negRevs).length)],drink:order.drinkName,time:ts()});
-    if(C.reviews.length>20)C.reviews.pop();
-  }
-  C.satisfaction=Math.max(0,Math.min(100,C.satisfaction+(score>=80?2:-3)));
-  C.starLevel=Math.floor(C.done/50);
-  dlog('clog',`✅ 完成 ${order.drinkIcon}${order.drinkName} +${fmt(price)} 评分${score}`,'lok');
-  C.currentOrder=null;C.brewSteps=[];C.currentStep=0;C.brewDone=false;
-  render();
-}
-
-function buyEquip(id){
-  const cost=C.equipCost[id];if(C.cash<cost||C.equipment[id])return;
-  C.cash-=cost;C.equipment[id]=true;
-  // 不直接解锁，设为待研发状态
-  C.menu.forEach(m=>{if(m.req===id)m.pendingUnlock=true});
-  dlog('clog',`🔧 购入 ${C.equipNames[id]}！前往配方研发解锁新饮品`,'lok');render();
-}
-function hireStaff(i){
-  const sp=C.staffPool[i];if(C.cash<sp.cost)return;
-  C.cash-=sp.cost;
-  C.staff.push({...sp,id:Date.now(),mood:80});
-  C.staffPool.splice(i,1);
-  dlog('clog',`✅ 招聘 ${sp.icon}${sp.name}`,'lok');render();
-}
-const RCOSTS={beans:5,milk:2,water:0.5,sugar:1,syrup:3,cream:4,matcha:8,ice:0.5};
-function restock(ing,amt){
-  const cost=Math.ceil(RCOSTS[ing]*amt);
-  if(C.cash<cost){dlog('clog',`💸 现金不足！补${amt}个${C.ingNames[ing]}需¥${cost}`,'lbad');return;}
-  C.cash-=cost;C.ingredients[ing]=Math.min(C.maxIng[ing],C.ingredients[ing]+amt);
-  dlog('clog',`📦 补货 ${C.ingNames[ing]}×${amt}，花费¥${cost}`,'linfo');render();
-}
-function activateEvent(i){
-  const ev=C.events[i];if(ev.active||C.cash<ev.cost)return;
-  C.cash-=ev.cost;ev.active=true;C.activeEvent=ev;
-  dlog('clog',`🎪 开始活动: ${ev.name}`,'lok');render();
-}
-function recruitVip(){
-  if(C.cash<200)return;C.cash-=200;
-  const names=CNAMES;const n=names[Math.floor(Math.random()*names.length)];
-  const icon=ICONS[Math.floor(Math.random()*ICONS.length)];
-  C.vips.push({name:n,icon,visits:1,spent:0,fav:'手冲咖啡',mood:'😊'});
-  dlog('clog',`👑 VIP会员加入: ${n}`,'lok');render();
-}
-
-function drawRevChart(){
-  const cv=$('rev-chart');if(!cv)return;const ctx=cv.getContext('2d');
-  ctx.clearRect(0,0,cv.width,cv.height);
-  const hist=C.revHistory.slice(-20);if(hist.length<2)return;
-  const mn=Math.min(...hist),mx=Math.max(...hist),range=mx-mn||1;
-  ctx.beginPath();
-  hist.forEach((v,i)=>{const x=i/(hist.length-1)*cv.width,y=cv.height-(v-mn)/range*(cv.height-6)-3;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});
-  ctx.strokeStyle='#d4a44c';ctx.lineWidth=1.5;ctx.stroke();
-  ctx.lineTo(cv.width,cv.height);ctx.lineTo(0,cv.height);ctx.closePath();ctx.fillStyle='rgba(212,164,76,.15)';ctx.fill();
-}
-
-function render(){
-  $('cash').textContent=fmt(C.cash);$('done').textContent=C.done;$('sat').textContent=C.satisfaction+'%';
-  const stars=['⭐','⭐⭐','⭐⭐⭐','⭐⭐⭐⭐','⭐⭐⭐⭐⭐'];$('starlbl').textContent=stars[Math.min(C.starLevel,4)];
-  $('stard').textContent=stars[Math.min(C.starLevel,4)]+' '+['新手店','人气店','网红店','精品店','大师店'][Math.min(C.starLevel,4)];
-  $('today').textContent=fmt(C.todayRev);$('maxprice').textContent=fmt(C.maxPrice);
-  const avg=C.scores.length?Math.floor(C.scores.slice(-10).reduce((a,b)=>a+b,0)/Math.min(C.scores.length,10)):0;
-  $('avgscore').textContent=avg?avg+'分':'--';
-  drawRevChart();
-
-  // Queue overview
-  $('queue').innerHTML=C.orders.length?C.orders.map(o=>`<div class="row"><div><div class="rn">${o.icon}${o.name}${o.vip?' 👑':''}</div><div class="rdd">${o.drinkIcon}${o.drinkName} ${o.extra.join('·')} ·${fmt(o.price)}</div></div><div class="rr"><span class="faint" style="color:${o.timeLeft<20?'var(--red)':'var(--muted)'}">${Math.ceil(o.timeLeft)}s</span></div></div>`).join(''):'<div class="faint" style="padding:8px">暂无客户</div>';
-
-  // Shop status
-  $('shopstatus').innerHTML=`<div class="row"><div class="rn">营业状态</div><div class="rr"><span class="bdg bdg-g pulse">营业中</span></div></div>
-    <div class="row"><div class="rn">活动状态</div><div class="rr">${C.activeEvent?`<span class="bdg bdg-a">${C.activeEvent.icon}${C.activeEvent.name}`:'<span class="faint">无活动</span>'}</div></div>
-    <div class="row"><div class="rn">员工人数</div><div class="rr"><span class="faint">${C.staff.length}人</span></div></div>
-    <div class="row"><div class="rn">菜单数量</div><div class="rr"><span class="faint">${C.menu.filter(m=>m.unlocked).length}/${C.menu.length}款</span></div></div>`;
-
-  // Staff
-  $('staffstatus').innerHTML=C.staff.map(s=>`<div class="row"><div class="rn">${s.icon}${s.name}</div><div class="rr"><span class="faint">${s.role}</span><span>Lv.${s.skill}</span></div></div>`).join('');
-
-  // Popular drinks
-  const sorted=Object.entries(C.popularDrinks).sort((a,b)=>b[1]-a[1]).slice(0,4);
-  $('popular').innerHTML=sorted.map(([id,cnt])=>{const m=C.menu.find(x=>x.id===id);return`<div class="row"><div class="rn">${m?.drinkIcon||'☕'}${m?.name||id}</div><div class="rr"><span class="faint">${cnt}杯</span></div></div>`}).join('')||'<div class="faint" style="padding:8px">暂无数据</div>';
-
-  // Brew orders
-  $('q-count').textContent=`${C.orders.length}个订单`;
-  const callBtn=document.getElementById('call-btn');
-  if(callBtn){callBtn.disabled=!C.isOpen;callBtn.style.opacity=C.isOpen?'1':'0.4';}
-  $('brew-orders').innerHTML=C.orders.map(o=>`<div class="order-card ${C.currentOrder?.id===o.id?'selected':''} ${o.timeLeft<20?'urgent':''}" onclick="startBrew(${o.id})">
-    <div class="oc-top"><div class="oc-name">${o.icon}${o.name}${o.vip?' 👑':''}</div><div class="oc-time" style="color:${o.timeLeft<20?'var(--red)':'var(--muted)'}">${Math.ceil(o.timeLeft)}s</div></div>
-    <div class="oc-drink">${o.drinkIcon}${o.drinkName}</div>
-    <div class="oc-req">${o.extra.length?o.extra.join(' · '):''} · <span style="color:var(--amber)">${fmt(o.price)}</span></div>
-  </div>`).join('')||'<div class="faint" style="padding:16px;text-align:center">等待客户...</div>';
-
-  // Brew zone
-  if(C.currentOrder&&C.brewSteps.length){
-    $('brew-title').textContent=`制作 ${C.currentOrder.drinkIcon}${C.currentOrder.drinkName}`;
-    $('brew-steps').innerHTML=C.brewSteps.map((step,i)=>{
-      const isActive=i===C.currentStep&&!C.brewDone;const isDone=step.done;
-      let action='';
-      if(isActive){
-        if(step.type==='click')action=`<button class="btn ba bsm" onclick="doStepAction('click')">${step.icon} ${step.name.slice(0,4)} (${step.clicks||0}/${step.maxClicks})</button>`;
-        else if(step.type==='wait')action=`<div class="step-progress"><div class="step-pf" style="width:${(step.elapsed/step.duration)*100}%"></div></div>`;
-        else if(step.type==='hold'){
-          const hasStaff=C.isOpen&&C.staff.some(s=>s.skill>=2);
-          const holdBtn=hasStaff?'':`<button class="btn ba bxs" onmousedown="window._holding=true" onmouseup="window._holding=false" ontouchstart="window._holding=true;event.preventDefault()" ontouchend="window._holding=false;event.preventDefault()" style="margin-left:6px;user-select:none">按住</button>`;
-          action=`<div class="step-progress"><div class="step-pf" style="width:${step.progress||0}%"></div></div>${holdBtn}`;
-        }
-        else if(step.type==='temp')action=`<div style="display:flex;align-items:center;gap:6px"><span style="font-size:9px;color:var(--faint)">目标${step.target}°</span><input type="range" min="0" max="100" value="${step.current}" onchange="doStepAction('temp_set',+this.value)" style="width:80px"></div>`;
-        else if(step.type==='choice')action=`<div style="display:flex;gap:4px">${step.options.map(o=>`<button class="btn ba bxs" onclick="doStepAction('choice','${o}')" style="font-size:16px;padding:2px 6px">${o}</button>`).join('')}</div>`;
-      }
-      return`<div class="brew-step ${isActive?'active':''} ${isDone?'done':''}">
-        <div class="step-icon">${isDone?'✅':isActive?step.icon:'⬜'}</div>
-        <div class="step-name">${step.name}</div>
-        <div class="step-action">${action}</div>
-      </div>`;
-    }).join('');
-    $('brew-result').innerHTML='';
-  }else if(C.brewDone){$('brew-title').textContent='制作完成！';$('brew-steps').innerHTML='<div style="text-align:center;padding:20px;font-size:32px">☕ 完成！</div>';$('brew-result').innerHTML=''}
-  else{$('brew-title').textContent='选择左侧订单开始制作';$('brew-steps').innerHTML='<div class="faint" style="padding:20px;text-align:center">← 选择订单</div>';$('brew-result').innerHTML=''}
-
-  // Menu
-  $('menu-list').innerHTML=C.menu.map(m=>`<div class="recipe-card">
-    <div class="rc-top"><div class="rc-name">${m.icon}${m.name}</div><div class="rc-price">${fmt(m.price)}</div></div>
-    <div class="rdd">${m.req?`需要: ${C.equipNames[m.req]||m.req}`:'基础款'}</div>
-    <div style="margin-top:6px">${m.unlocked?'<span class="bdg bdg-g">已解锁</span>':m.pendingUnlock?'<span class="bdg bdg-a" onclick="sw(2)" style="cursor:pointer">⚗️ 点此去研发</span>':'<span class="bdg bdg-r">未解锁</span>'}</div>
-  </div>`).join('');
-  // 待研发饮品（买了设备但还没操作研发的）
-  const pendingDrinks=C.menu.filter(m=>m.pendingUnlock&&!m.unlocked);
-  const unlockedDrinks=C.menu.filter(m=>m.unlocked);
-  let recipeHtml='';
-  if(pendingDrinks.length>0){
-    recipeHtml+=`<div style="font-size:10px;font-weight:500;margin-bottom:8px;color:var(--amber)">⚗️ 待研发配方 (${pendingDrinks.length})</div>`;
-    recipeHtml+=pendingDrinks.map(m=>{
-      const ingList=Object.entries(m.ing).map(([k,v])=>`${C.ingIcons[k]}${C.ingNames[k]}×${v}`).join('、');
-      const canResearch=Object.entries(m.ing).every(([k,v])=>C.ingredients[k]>=v);
-      return `<div class="card mb8" style="padding:10px">
-        <div style="font-size:12px;font-weight:500;margin-bottom:4px">${m.icon}${m.name}</div>
-        <div style="font-size:9px;color:var(--muted);margin-bottom:8px">所需食材：${ingList}</div>
-        <div style="font-size:9px;color:var(--faint);margin-bottom:8px">需要设备：${C.equipNames[m.req]}</div>
-        <button class="btn ba bfull bsm" onclick="startResearch('${m.id}')" ${canResearch?'':'disabled'}>
-          ${canResearch?'🧪 开始研发':'⚠️ 食材不足'}
-        </button>
-      </div>`;
-    }).join('');
-  }
-  if(pendingDrinks.length===0&&C.menu.filter(m=>!m.unlocked&&!m.pendingUnlock).length>0){
-    recipeHtml+=`<div style="font-size:10px;color:var(--faint);padding:8px">购买对应设备后可在此研发新饮品</div>`;
-  }
-  if(pendingDrinks.length===0&&C.menu.every(m=>m.unlocked)){
-    recipeHtml+=`<div style="font-size:10px;color:var(--green);padding:8px">✅ 所有饮品已解锁</div>`;
-  }
-  recipeHtml+=`<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">
-    <div style="font-size:10px;color:var(--muted);margin-bottom:6px">自定义配方（每完成50杯可创建1个）</div>
-    <div class="row"><div class="rn">制作经验</div><div class="rr"><span class="faint">${C.done}杯</span></div></div>
-    <button class="btn ba bfull mt8 bsm" onclick="createCustom()" ${C.done>=50&&C.customRecipes.length<Math.floor(C.done/50)?'':'disabled'}>🧪 创建自定义配方</button>
-  </div>`;
-  $('recipe-lab').innerHTML=recipeHtml;
-  $('custom-recipes').innerHTML=C.customRecipes.length?C.customRecipes.map(r=>`<div class="recipe-card"><div class="rc-top"><div class="rc-name">${r.icon}${r.name}</div><div class="rc-price">${fmt(r.price)}</div></div></div>`).join(''):'<div class="faint" style="padding:8px">暂无自定义配方</div>';
-
-  // VIP
-  $('vip-count').textContent=`${C.vips.length}位VIP`;
-  $('vip-list').innerHTML=C.vips.slice(0,8).map(v=>`<div class="vip-card"><div class="vc-icon">${v.icon}</div><div class="vc-info"><div class="vc-name">${v.name} ${v.mood}</div><div class="vc-desc">常点: ${v.fav}</div><div class="vc-stat">消费${v.visits}次 · ${fmt(v.spent)}</div></div></div>`).join('')||'<div class="faint" style="padding:8px">暂无VIP</div>';
-  $('vip-perks').innerHTML=`<div class="row"><div class="rn">VIP专属折扣</div><div class="rr"><button class="btn ba bsm" onclick="recruitVip()">招募VIP (¥200)</button></div></div>
-    <div class="row"><div class="rn">积分兑换</div><div class="rr"><span class="faint">1积分=¥0.1</span></div></div>
-    <div class="row"><div class="rn">生日特权</div><div class="rr"><span class="faint">免费升杯</span></div></div>`;
-  $('vip-points').innerHTML=`<div class="row"><div class="rn">总积分</div><div class="rr"><span style="color:var(--amber)">${C.vipPoints}</span></div></div>
-    <div class="row"><div class="rn">VIP数量</div><div class="rr"><span class="faint">${C.vips.length}人</span></div></div>
-    <button class="btn ba bsm bfull mt8" onclick="C.vipPoints+=50;dlog('clog','⭐ 签到积分+50','lok');render()">📅 每日签到积分</button>`;
-  $('vip-stats').innerHTML=`<div class="row"><div class="rn">回访率</div><div class="rr"><span style="color:var(--green)">${C.vips.length?Math.floor(70+Math.random()*20)+'%':'--'}</span></div></div>
-    <div class="row"><div class="rn">平均消费</div><div class="rr"><span class="faint">${C.vips.length?fmt(C.vips.reduce((a,v)=>a+v.spent,0)/C.vips.length):'--'}</span></div></div>`;
-
-  // Ingredients
-  $('ingredients').innerHTML=Object.entries(C.ingredients).map(([k,v])=>{
-    const max=C.maxIng[k],pct=v/max*100;
-    return`<div class="ing-row"><div class="ing-icon">${C.ingIcons[k]}</div><div class="ing-name">${C.ingNames[k]}</div><div class="ing-track"><div class="ing-fill" style="width:${pct}%;background:${pct<20?'var(--red)':pct<50?'var(--amber)':'var(--green)'}"></div></div><div class="ing-val">${v}/${max}</div></div>`;
-  }).join('');
-  $('restock').innerHTML=`<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:4px;padding:3px 0 7px;border-bottom:1px solid var(--border);margin-bottom:4px;font-size:9px;color:var(--faint)"><span>材料</span><span>单价</span><span style="text-align:center">+20件</span><span style="text-align:center">+50件</span></div>`+Object.keys(C.ingredients).map(k=>{const up=RCOSTS[k],c20=Math.ceil(up*20),c50=Math.ceil(up*50),cur=C.ingredients[k],max=C.maxIng[k],low=cur/max<0.2;return`<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:5px"><span style="font-size:14px">${C.ingIcons[k]}</span><div><div style="font-size:11px;font-weight:500">${C.ingNames[k]}${low?'<span style="color:var(--red);font-size:9px"> ⚠️</span>':''}</div><div style="font-size:9px;color:var(--faint)">${cur}/${max}</div></div></div><div style="font-size:10px;color:var(--amber);text-align:right;padding-right:6px">¥${up}/件</div><button class="btn bo bxs" onclick="restock('${k}',20)" ${C.cash>=c20?'':'disabled'} style="flex-direction:column;line-height:1.3;padding:3px 7px">+20<br><span style="font-size:8px;opacity:.75">¥${c20}</span></button><button class="btn bo bxs" onclick="restock('${k}',50)" ${C.cash>=c50?'':'disabled'} style="flex-direction:column;line-height:1.3;padding:3px 7px">+50<br><span style="font-size:8px;opacity:.75">¥${c50}</span></button></div>`;}).join('')+`<div style="margin-top:8px;padding:5px 8px;background:var(--surface);border-radius:3px;font-size:9px;color:var(--faint)">💰 当前现金：<span style="color:var(--amber);font-weight:500">${fmt(C.cash)}</span></div>`;
-  $('equipment').innerHTML=Object.entries(C.equipment).map(([k,v])=>`<div class="row"><div><div class="rn">${v?'✅ ':''}${C.equipNames[k]}</div><div class="rdd">${C.equipDesc[k]}</div></div><div class="rr">${v?'<span class="bdg bdg-g">已购置</span>':`<span class="faint">${fmt(C.equipCost[k])}</span><button class="btn bo bsm" onclick="buyEquip('${k}')" ${C.cash>=C.equipCost[k]?'':'disabled'}>购买</button>`}</div></div>`).join('');
-  $('hiring').innerHTML=C.staffPool.map((s,i)=>`<div class="row"><div><div class="rn">${s.icon}${s.name}</div><div class="rdd">${s.role}·技能Lv.${s.skill}</div></div><div class="rr"><span class="faint">${fmt(s.cost)}</span><button class="btn bo bsm" onclick="hireStaff(${i})" ${C.cash>=s.cost?'':'disabled'}>招聘</button></div></div>`).join('')||'<div class="faint" style="padding:8px">已无可招聘员工</div>';
-
-  // Reviews
-  $('reviews').innerHTML=C.reviews.slice(0,8).map(r=>`<div class="review">
-    <div class="rv-top"><span>${r.icon}${r.name}</span><span>${'⭐'.repeat(Math.floor(r.score/20))} ${r.score}分</span></div>
-    <div class="rv-content">"${r.text}" - 点了${r.drink}</div>
-  </div>`).join('')||'<div class="faint" style="padding:8px">暂无评价</div>';
-  $('events').innerHTML=C.events.map((ev,i)=>`<div class="row"><div><div class="rn">${ev.icon}${ev.name}</div><div class="rdd">${ev.desc}</div></div><div class="rr">${ev.active?'<span class="bdg bdg-a">进行中</span>':`<span class="faint">${fmt(ev.cost)}</span><button class="btn bo bsm" onclick="activateEvent(${i})" ${C.cash>=ev.cost?'':'disabled'}>开始</button>`}</div></div>`).join('');
-  $('reputation').innerHTML=`<div class="row"><div class="rn">总体声誉</div><div class="rr"><span style="color:var(--amber)">${C.satisfaction}%</span></div></div>
-    <div class="row"><div class="rn">差评数量</div><div class="rr"><span class="faint">${C.reviews.filter(r=>r.score<60).length}条</span></div></div>
-    <div class="row"><div class="rn">五星评价</div><div class="rr"><span style="color:var(--green)">${C.reviews.filter(r=>r.score>=90).length}条</span></div></div>`;
-}
-
-function createCustom(){
-  const names=['特调拿铁','秘制冷萃','招牌特饮','季节限定','店主特供'];
-  const icons=['☕','🍵','🧊','🌸','✨'];
-  const n=names[Math.floor(Math.random()*names.length)];
-  const ico=icons[Math.floor(Math.random()*icons.length)];
-  C.customRecipes.push({name:n,icon:ico,price:45+Math.floor(Math.random()*30)});
-  dlog('clog',`🧪 创建配方: ${ico}${n}`,'lok');render();
-}
-
-// Hold mechanic
-window._holding=false;
-setInterval(()=>{
-  const step=C.brewSteps[C.currentStep];
-  if(C.currentOrder&&step?.type==='hold'){
-    // 资深咖啡师在营业时自动注水（×1.2速度）
-    if(hasWorker('资深咖啡师')){
-      step.progress=Math.min(100,(step.progress||0)+3.6);
-      doStepAction('hold_progress',step.progress);
-    } else if(hasWorker('咖啡师')){
-      step.progress=Math.min(100,(step.progress||0)+3);
-      doStepAction('hold_progress',step.progress);
-    } else if(window._holding){
-      step.progress=Math.min(100,(step.progress||0)+3);
-      doStepAction('hold_progress',step.progress);
-    }
-  }
-},100);
-
-// 员工判断helper
-function hasWorker(role){return C.isOpen&&C.staff.some(s=>s.role===role);}
-
-// Wait steps auto-progress
-let tick=0;
-setInterval(()=>{
-  tick++;
-  // Order timers
-  if(tick%10===0){
-    C.orders.forEach(o=>{o.timeLeft-=1;if(o.timeLeft<=0){C.satisfaction=Math.max(0,C.satisfaction-5);C.orders.splice(C.orders.indexOf(o),1);dlog('clog',`😤 ${o.icon}${o.name}等太久离开了`,'lbad')}});
-    // Auto-generate orders - 只有学徒在营业时才自动叫号
-    if(C.isOpen){
-      if(hasWorker('学徒咖啡师')&&Math.random()<.3)genOrder();
-    }
-    // Wait steps（资深×1.2速度，咖啡师正常速度）
-    if(C.currentOrder&&C.brewSteps[C.currentStep]?.type==='wait'){
-      const speedMult=hasWorker('资深咖啡师')?1.2:1;
-      const step=C.brewSteps[C.currentStep];
-      step.elapsed=(step.elapsed||0)+speedMult;
-      if(step.elapsed>=step.duration){step.done=true;nextStep()}
-    }
-    // 员工自动click（每1s一次）
-    if(C.currentOrder&&C.brewSteps[C.currentStep]){
-      const step=C.brewSteps[C.currentStep];
-      if(hasWorker('资深咖啡师')||hasWorker('咖啡师')){
-        if(step.type==='click') doStepAction('click');
-        if(step.type==='choice'&&step.options?.length){
-          // 随机选一个
-          const opt=step.options[Math.floor(Math.random()*step.options.length)];
-          doStepAction('choice',opt);
-        }
-      }
-    }
-    // 咖啡师/资深自动点订单（营业中且无当前订单）
-    if(C.isOpen&&!C.currentOrder&&C.orders.length>0){
-      if(hasWorker('资深咖啡师')||hasWorker('咖啡师')) startBrew(C.orders[0].id);
-    }
-    render();
-  }
-  if(tick%300===0)save();
-  if(tick%600===0)C.todayRev=0;
-},100);
-
-// 不自动生成初始订单，需要手动叫号
-render();
-dlog('clog','☕ 咖啡门店系统启动','linfo');
-dlog('clog','💡 点击客户订单开始制作咖啡','linfo');
-
-function startResearch(drinkId){
-  const drink=C.menu.find(m=>m.id===drinkId);
-  if(!drink||!drink.pendingUnlock||drink.unlocked)return;
-  // 消耗食材
-  const ok=Object.entries(drink.ing).every(([k,v])=>C.ingredients[k]>=v);
-  if(!ok){dlog('clog','⚠️ 食材不足，无法研发','lbad');return;}
-  Object.entries(drink.ing).forEach(([k,v])=>C.ingredients[k]-=v);
-  // 解锁饮品
-  drink.unlocked=true;
-  drink.pendingUnlock=false;
-  dlog('clog',`✅ 配方研发成功！${drink.icon}${drink.name} 已加入菜单`,'lok');
-  render();
-  sw(2); // 留在配方tab
-}
-
-function toggleOpen(){
-  C.isOpen=!C.isOpen;
-  const btn=document.getElementById('open-btn');
-  if(btn){
-    btn.textContent=C.isOpen?'营业中':'已打烊';
-    btn.style.background=C.isOpen?'var(--green-l)':'rgba(220,38,38,.08)';
-    btn.style.color=C.isOpen?'var(--green)':'var(--red)';
-  }
-  dlog('clog',C.isOpen?'🟢 开始营业':'🔴 已打烊，完成手头订单后休息','linfo');
-  render();
-}
-
-function callCustomer(){
-  if(!C.isOpen){dlog('clog','⛔ 打烊中，无法叫号','lbad');return;}
-  genOrder();
-  dlog('clog','🔔 叫号！新客人进入','linfo');
-  render();
-}
-
-function st(t){localStorage.setItem('moyu-theme',t);document.documentElement.setAttribute('data-theme',t);}
-
-function resetGame(){
-  if(!window.confirm('确定要从头开始吗？所有进度将清空！')){return;}
-  localStorage.removeItem('cafe');
-  location.reload();
-}
-
-/* ── 公告栏接入：更新版本号和内容后，返回首页会自动弹出公告 ── */
-(function(){
-  var cl = JSON.parse(localStorage.getItem('moyu-changelog')||'{}');
-  cl.cafe = {
-    version: '2.1',       // ← 每次更新时，修改这里的版本号
-    icon: '☕',
-    name: '咖啡门店经营',
-    entries: [
-      /* 最新版本放最前面 */
-      { v:'2.1', date:'2025-03-27', items:[
-          '配方研发系统正式上线',
-          '新增VIP客户专属互动事件',
-          '差评危机处理机制优化'
-        ]
-      }
-      /* 历史版本示例（可继续追加）：
-      { v:'2.0', date:'2025-03-10', items:['手冲制作系统重构','新增限时活动框架'] }
-      */
-    ]
-  };
-  localStorage.setItem('moyu-changelog', JSON.stringify(cl));
-})();
-</script>
 <!-- CHANGELOG
 {
   "version": "2.1",
   "icon": "☕",
   "name": "咖啡门店经营",
   "entries": [
-    { "v": "2.1", "date": "2025-03-27", "items": ["配方研发系统正式上线", "新增VIP客户专属互动事件", "差评危机处理机制优化"] }
+    { "v": "2.1", "date": "2025-03-27", "items": ["配方研发系统正式上线", "新增 VIP 客户专属互动事件", "差评危机处理机制优化"] }
   ]
 }
 CHANGELOG -->
+</body>
 </html>
