@@ -194,7 +194,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   </div>
   <div style="display:flex;align-items:center;gap:10px">
     <button onclick="confirmRestart()" style="font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--red-l);color:var(--red);cursor:pointer;font-family:var(--mono)">⟳ 重开此生</button>
-    <span style="font-size:9px;color:var(--faint);letter-spacing:.08em">ANCIENT · v3.2</span>
+    <span style="font-size:9px;color:var(--faint);letter-spacing:.08em">ANCIENT · v3.3</span>
   </div>
 </div>
 <div id="app-main"></div>
@@ -428,11 +428,11 @@ const SHOP_ITEMS_POOL=[
   {id:'jade',      name:'翡翠玉佩', icon:'💚',price:80, effect:{charm:20,mood:10},   desc:'佩戴后魅力+20 心情+10',    stackable:false,tags:['general']},
   {id:'sword',     name:'宝剑一柄', icon:'⚔️',price:100,effect:{health:10,mood:10},  desc:'强身健体，健康+10 心情+10',stackable:false,tags:['general']},
   {id:'bigbag',    name:'大布袋',   icon:'🎒',price:50, effect:{bagExpand:5},        desc:'背包容量+5（最大20）',      stackable:false,tags:['general']},
-  {id:'bk_farmer', name:'农耕要术', icon:'📗',price:70, effect:{jobProf:10},isJobBook:true,desc:'职业书·熟练度+10',stackable:true, tags:['jobbook']},
-  {id:'bk_smith',  name:'锻造秘典', icon:'📘',price:70, effect:{jobProf:10},isJobBook:true,desc:'职业书·熟练度+10',stackable:true, tags:['jobbook']},
-  {id:'bk_merch',  name:'商道经',   icon:'📙',price:70, effect:{jobProf:10},isJobBook:true,desc:'职业书·熟练度+10',stackable:true, tags:['jobbook']},
-  {id:'bk_doctor', name:'医典精要', icon:'📕',price:70, effect:{jobProf:10},isJobBook:true,desc:'职业书·熟练度+10',stackable:true, tags:['jobbook']},
-  {id:'bk_soldier',name:'兵法三十六计',icon:'📜',price:70,effect:{jobProf:10},isJobBook:true,desc:'职业书·熟练度+10',stackable:true,tags:['jobbook']},
+  {id:'bk_farmer', name:'农耕要术', icon:'📗',price:70, effect:{jobProf:10},isJobBook:true,desc:'农夫专用·熟练度+10',jobId:'farmer', stackable:true, tags:['jobbook']},
+  {id:'bk_smith',  name:'锻造秘典', icon:'📘',price:70, effect:{jobProf:10},isJobBook:true,desc:'铁匠专用·熟练度+10',jobId:'smith',  stackable:true, tags:['jobbook']},
+  {id:'bk_merch',  name:'商道经',   icon:'📙',price:70, effect:{jobProf:10},isJobBook:true,desc:'行商专用·熟练度+10',jobId:'merchant',stackable:true, tags:['jobbook']},
+  {id:'bk_doctor', name:'医典精要', icon:'📕',price:70, effect:{jobProf:10},isJobBook:true,desc:'药师专用·熟练度+10',jobId:'doctor', stackable:true, tags:['jobbook']},
+  {id:'bk_soldier',name:'兵法三十六计',icon:'📜',price:70,effect:{jobProf:10},isJobBook:true,desc:'士兵专用·熟练度+10',jobId:'soldier',stackable:true,tags:['jobbook']},
   {id:'gift_poem', name:'精装诗集', icon:'📝',price:30, effect:{},isGift:true,giftTrait:['才华横溢','温文尔雅'],favorBonus:15,desc:'赠给有才情的人，好感+15',stackable:true,tags:['gift']},
   {id:'gift_wine', name:'陈年佳酿', icon:'🍷',price:35, effect:{},isGift:true,giftTrait:['豪爽仗义','风趣幽默'],favorBonus:15,desc:'赠给豪爽之人，好感+15',stackable:true,tags:['gift']},
   {id:'gift_flower',name:'鲜花一束',icon:'💐',price:20, effect:{},isGift:true,giftTrait:['温柔体贴','活泼开朗'],favorBonus:15,desc:'赠给温柔之人，好感+15',stackable:true,tags:['gift']},
@@ -794,7 +794,7 @@ function renderCareer(){
       </div>
       ${profNeeded>0?`<div style="font-size:8px;color:var(--faint);margin-bottom:2px">熟练度 ${G.jobProf}/${profNeeded}</div>
       <div class="xp-bar"><div class="xp-fill" style="width:${profPct}%"></div></div>`:'<div style="font-size:8px;color:var(--amber)">已达最高职级</div>'}
-      <div style="font-size:9px;color:var(--muted);margin-top:6px">薪俸区间：${Math.round(job.salaryRange[0]*(1+G.jobRank*0.3))}～${Math.round(job.salaryRange[1]*(1+G.jobRank*0.3))} 文/年（点击"度过一年"后自动发放）</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:6px">薪俸区间：${Math.round(job.salaryRange[0])} ～ ${Math.round(job.salaryRange[1]*(1+(job.ranks.length-1)*0.3))} 文/年（点击"度过一年"后自动发放）</div>
       <div style="font-size:9px;color:var(--faint);margin-top:3px">职级路径：${job.ranks.join(' → ')}</div>
     </div>`;
   }
@@ -1445,7 +1445,7 @@ function openDoctorSelect(diseaseIdx){
   showModal(`⚕️ 治疗【${d.name}】`,`${d.desc}\n\n选择大夫（越贵成功率越高，最低成功率1%，最低失败率1%）：`,
     DOCTORS.filter(doc=>G.money>=doc.cost).map(doc=>({
       label:`${doc.icon} ${doc.name}`,
-      sub:`成功率约${Math.round(Math.min(99,Math.max(1,(d.cureBase+doc.successBonus)*100))}%`,
+      sub:'成功率约'+Math.round(Math.min(99,Math.max(1,(d.cureBase+doc.successBonus)*100)))+'%',
       cost:`🪙${doc.cost}文`,id:doc.id
     })).concat(DOCTORS.filter(doc=>G.money<doc.cost).map(doc=>({label:`${doc.icon} ${doc.name}（钱不够）`,sub:'',cost:`🪙${doc.cost}文`,id:'_skip_'+doc.id}))),
     (id)=>{closeModal();if(id.startsWith('_skip_'))return;doTreatment(diseaseIdx,id);});
@@ -1678,15 +1678,17 @@ function enterSpot(venueId,spotId){
 ══════════════════════════════════════════ */
 function openNPCInteract(idx){
   const npc=G.npcs&&G.npcs[idx];if(!npc)return;
-  const alreadyInteracted=actionDone('interact_'+npc.id);
+  const alreadyChat=actionDone('interact_'+npc.id);
+  const alreadyMoney=actionDone('giveMoney_'+npc.id);
+  const alreadyGift=actionDone('giftBag_'+npc.id);
   const canPropose=npc.favor>=80&&!G.married;
   const canConcubine=npc.favor>=70&&G.married;
   const sameGender=npc.gender===G.gender;
   const gifts=G.inventory.filter(i=>i.isGift);
   const opts=[];
-  opts.push({label:'💬 聊天叙旧',sub:alreadyInteracted?'今年已互动':'魅力/智识影响好感',cost:'',id:'chat'});
-  if(gifts.length>0)opts.push({label:'🎁 赠送礼物',sub:`包裹中有${gifts.length}件礼物`,cost:'',id:'gift'});
-  opts.push({label:'💰 赠送钱财',sub:'花费文钱，增加好感',cost:'',id:'money'});
+  opts.push({label:'💬 聊天叙旧',sub:alreadyChat?'今年已互动':'魅力/智识影响好感',cost:'',id:'chat'});
+  if(gifts.length>0)opts.push({label:'🎁 赠送礼物',sub:alreadyGift?'今年已赠礼':`包裹中有${gifts.length}件礼物`,cost:'',id:'gift'});
+  opts.push({label:'💰 赠送钱财',sub:alreadyMoney?'今年已赠钱':'花费文钱，增加好感',cost:'',id:'money'});
   if(canPropose)opts.push({label:sameGender?'💍 求婚':'💍 提亲',sub:'好感≥80',cost:'',id:'propose'});
   if(canConcubine)opts.push({label:'🏮 纳为妾室/面首',sub:'好感≥70，已婚可纳',cost:'',id:'concubine'});
   if(npc.favor>=90)opts.push({label:'🤝 结为挚友',sub:'好感≥90',cost:'',id:'bestfriend'});
@@ -1724,6 +1726,7 @@ function doNPCChat(idx){
 
 function doNPCGiftFromBag(idx){
   const npc=G.npcs&&G.npcs[idx];if(!npc)return;
+  const key='giftBag_'+npc.id;if(actionDone(key)){showToast('今年已经送过礼了！');return;}
   const gifts=G.inventory.map((item,i)=>({item,i})).filter(({item})=>item.isGift);
   if(gifts.length===0){showToast('包裹里没有礼物！');return;}
   const opts=gifts.map(({item,i})=>{
@@ -1736,6 +1739,7 @@ function doNPCGiftFromBag(idx){
     const matched=item.giftTrait&&item.giftTrait.length>0&&item.giftTrait.includes(npc.trait);
     const bonus=matched?Math.round(item.favorBonus*1.5):item.favorBonus;
     npc.favor=Math.min(100,npc.favor+bonus);G.inventory.splice(slotIdx,1);
+    markAction('giftBag_'+npc.id);
     addLog(`🎁 将【${item.name}】送给 ${npc.name}，好感+${bonus}${matched?'（投其所好）':''}。`,'good');
     save();render();showModal('🎁 赠礼成功',`${npc.emoji} ${npc.name} ${matched?'喜笑颜开！':'礼貌收下。'}<br><br>好感+${bonus}（现为${npc.favor}/100）${matched?'<br>✨ 投其所好，效果加成！':''}`,
       [{label:'好的',sub:'',cost:'',id:'ok'}],()=>closeModal());
@@ -1744,9 +1748,10 @@ function doNPCGiftFromBag(idx){
 
 function doNPCGiveMoney(idx){
   const npc=G.npcs&&G.npcs[idx];if(!npc)return;
+  const key='giveMoney_'+npc.id;if(actionDone(key)){showToast('今年已经给过钱了！');return;}
   const cost=20+Math.floor(G.age/10)*5;if(G.money<cost){showToast(`赠钱需要 ${cost}文！`);return;}
   confirmSpend(cost,`💰 赠送 ${cost}文 给 ${npc.name}`,()=>{
-    G.money-=cost;const gain=8+Math.floor(Math.random()*8);npc.favor=Math.min(100,npc.favor+gain);
+    markAction(key);G.money-=cost;const gain=8+Math.floor(Math.random()*8);npc.favor=Math.min(100,npc.favor+gain);
     addLog(`💰 赠给 ${npc.name} ${cost}文，好感+${gain}。`,'good');save();render();
     showModal('💰 慷慨解囊',`${npc.emoji} ${npc.name} 感激不已。<br><br>好感+${gain}（现为${npc.favor}/100）`,
       [{label:'举手之劳',sub:'',cost:'',id:'ok'}],()=>closeModal());
@@ -1894,9 +1899,10 @@ function dismissConcubine(idx){
    SPOUSE / FAMILY INTERACT
 ══════════════════════════════════════════ */
 function openSpouseInteract(){
+  const giftDone=actionDone('giftSpouse');
   showModal(`${G.spouseEmoji||'👤'} ${G.spouseName}`,
     `${G.spouseGender==='male'?'夫君':'夫人'}\n好感度：${G.spouseFavor||50}/100`,
-    [{label:'💝 赠礼增感情',sub:actionDone('giftSpouse')?'今年已赠礼':'花费文钱',cost:'',id:'gift'},
+    [{label:'💝 赠礼增感情',sub:giftDone?'今年已赠礼':'花费文钱',cost:'',id:'gift'},
      {label:'⚔️ 和离',sub:'结束婚姻关系',cost:'',id:'divorce'}],
     (id)=>{closeModal();if(id==='gift')giftSpouse();else if(id==='divorce')divorceSpouse();});
 }
@@ -1946,16 +1952,22 @@ function interactParent(idx){
   const bg=FAMILY_BG[G.familyBg]||FAMILY_BG.normal;
   const canAsk=a>=3&&a<18&&!G.parentMoneyAskedThisYear&&bg.parentMoneyLimit>0;
   const giftDone=actionDone('giftParents_'+idx);
+  const chatDone=actionDone('chatParent_'+idx);
   showModal(`${parent.emoji} ${parent.name}（${parent.rel}）`,`好感度：${fav}/100`,
-    [{label:'💬 问候叙话',sub:'增进感情',cost:'',id:'chat'},
+    [{label:'💬 问候叙话',sub:chatDone?'今年已叙话':'增进感情',cost:'',id:'chat'},
      ...(a>=8&&!giftDone?[{label:'🎁 孝敬父母',sub:`花费文钱，好感+`,cost:'',id:'gift'}]:[]),
      ...(canAsk?[{label:'🙏 向父母要钱',sub:'好感影响成功率',cost:'',id:'ask'}]:[])],
     (id)=>{closeModal();if(id==='chat')doParentChat(idx);else if(id==='gift')doGiftParent(idx);else if(id==='ask')doAskParent(idx);});
 }
 
 function doParentChat(idx){
-  const p=G.parents[idx];if(!p)return;if(p.favor==null)p.favor=G.parentFavor||50;
+  const p=G.parents[idx];if(!p)return;
+  const key='chatParent_'+idx;
+  if(actionDone(key)){showToast('今年已经和'+p.rel+'叙话了！');return;}
+  markAction(key);
+  if(p.favor==null)p.favor=G.parentFavor||50;
   const gain=3+Math.floor(Math.random()*5);p.favor=clamp(p.favor+gain);G.mood=clamp(G.mood+2);
+  G.parentFavor=clamp(((G.parents[0]&&G.parents[0].favor||50)+(G.parents[1]&&G.parents[1].favor||50))/2);
   addLog(`💬 与${p.rel}闲话家常，好感+${gain}。`,'good');save();render();
   showModal('💬 温馨时光',`好感+${gain}（现为${p.favor}/100）`,[{label:'承欢膝下',sub:'',cost:'',id:'ok'}],()=>closeModal());
 }
@@ -2040,7 +2052,13 @@ function useItem(slotIdx){
       if(e.intel){G.intel=clamp(G.intel+e.intel);msg+=`，智识+${e.intel}`;}
       if(e.charm){G.charm=clamp(G.charm+e.charm);msg+=`，魅力+${e.charm}`;}
       if(e.bagExpand){G.bagLimit=Math.min(20,G.bagLimit+e.bagExpand);msg+=`，包裹上限+${e.bagExpand}（现${G.bagLimit}）`;}
-      if(e.jobProf){const cj=JOBS.find(j=>j.id===G.job);if(cj&&cj.id!=='none'){G.jobProf+=e.jobProf;msg+=`，熟练度+${e.jobProf}`;checkPromotion();}else{msg+=`（当前无业，无效）`;}}
+      if(e.jobProf){
+        const cj=JOBS.find(j=>j.id===G.job);
+        const matchJob=item.jobId?item.jobId===G.job:true;
+        if(cj&&cj.id!=='none'&&matchJob){G.jobProf+=e.jobProf;msg+=`，熟练度+${e.jobProf}`;checkPromotion();}
+        else if(!matchJob){const targetJob=JOBS.find(j=>j.id===item.jobId);msg+=`（此书仅适用于${targetJob?targetJob.name:'对应职业'}，当前职业不符，无效）`;}
+        else{msg+=`（当前无业，无效）`;}
+      }
       G.inventory.splice(slotIdx,1);addLog(msg+'。','good');save();render();
     });
 }
@@ -2129,8 +2147,9 @@ function nextYear(){
     const c=G.concubines[0];G.spouseFavor=clamp((G.spouseFavor||50)-15);
     addLog(`😡 ${G.spouseName} 察觉到了 ${c.name} 的存在，好感-15。`,'bad');
     if((G.spouseFavor||50)<25&&Math.random()<0.4){
+      const exSpouseName=G.spouseName;
       G.married=false;G.spouseName=null;G.spouseEmoji=null;G.spouseFavor=50;G.mood=clamp(G.mood-25);
-      addLog(`💔 ${G.spouseName||'配偶'} 无法忍受，提出和离！`,'bad');
+      addLog(`💔 ${exSpouseName} 无法忍受，提出和离！`,'bad');
     }
   }
 
@@ -2285,10 +2304,19 @@ if(!load())initGame(null);else render();
 </body>
 <!-- CHANGELOG
 {
-  "version": "3.2",
+  "version": "3.3",
   "icon": "🏯",
   "name": "古代人生模拟",
   "entries": [
+    { "v": "3.3", "date": "2026-03-28", "items": [
+      "薪俸弹窗不再显示区间，只显示实际到手金额",
+      "职业面板俸禄区间改为最低一级最低薪~最高一级最高薪",
+      "职业书描述改为对应职业专用，使用时检查职业匹配",
+      "所有社交行动全部每年限一次：父母聊天/赠礼/配偶赠礼/NPC聊天/NPC赠钱/NPC送礼",
+      "互动弹窗显示今年已做过的行动状态",
+      "修复bug：配偶和离时日志引用空指针",
+      "修复bug：父母聊天好感未同步G.parentFavor"
+    ]},
     { "v": "3.2", "date": "2026-03-28", "items": [
       "地产入住系统：自动默认入住 + 手动配置，防止未成年时售出",
       "自己+配偶+子女+妾室均可配置居所，父母不占地产",
