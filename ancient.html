@@ -699,7 +699,12 @@ function renderActions(){
     html+=`<div class="sec-head">工作任务（完成获得升职点）</div><div class="action-grid">`;
     job.tasks.forEach((t,i)=>{
       const stars='★'.repeat(t.diff)+'☆'.repeat(4-t.diff);
-      html+=actionBtn(['📋','📑','📊','🏆'][t.diff-1],t.name,`难度${stars} +${t.prof}熟练度`,'ab-amber',`doWorkTask(event,${i})`);
+      const taskDone=(G.tasksDoneThisYear||[]).includes(i);
+      html+=actionBtn(['📋','📑','📊','🏆'][t.diff-1],t.name,
+        taskDone?'今年已做':`难度${stars} +${t.prof}熟练度`,
+        taskDone?'':'ab-amber',
+        taskDone?'':`doWorkTask(event,${i})`,
+        taskDone, taskDone?'今年已做':'');
     });
     html+=`</div>`;
   }
@@ -1383,6 +1388,9 @@ function doWorkTask(e, taskIdx){
   const btn=e&&e.currentTarget;
   const job=JOBS.find(j=>j.id===G.job);
   if(!job||!job.tasks[taskIdx]) return;
+  if((G.tasksDoneThisYear||[]).includes(taskIdx)){ showToast('今年这项任务已做过了！'); return; }
+  if(!G.tasksDoneThisYear) G.tasksDoneThisYear=[];
+  G.tasksDoneThisYear.push(taskIdx);
   const task=job.tasks[taskIdx];
   // Success rate based on difficulty vs intel/health
   const baseRate=0.7-(task.diff-1)*0.1;
