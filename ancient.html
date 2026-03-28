@@ -25,8 +25,6 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
 .back{font-size:11px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:var(--mono)}.back:hover{color:var(--text)}
 .topbar-title{font-family:var(--serif);font-size:15px;font-weight:700}
-.topbar-r{display:flex;align-items:center;gap:8px}
-.topbar-ver{font-size:9px;color:var(--faint);letter-spacing:.08em}
 .main{padding:12px 14px 32px;max-width:960px;margin:0 auto}
 .main-grid{display:grid;grid-template-columns:300px 1fr;gap:12px;align-items:start}
 .card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:10px}
@@ -170,11 +168,19 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 </head>
 <body>
 <div class="topbar">
-  <button class="back" onclick="location.href='index.html'">← 返回工作台</button>
-  <span class="topbar-title">古代人生</span>
-  <div class="topbar-r" style="gap:10px">
-    <button class="back" onclick="confirmRestart()" style="color:var(--red);font-size:10px">⟳ 重开此生</button>
-    <span class="topbar-ver">ANCIENT · v2.0</span>
+  <button class="back" onclick="location.href='index.html'">← 返回</button>
+  <span class="topbar-title">🏯 古代人生模拟</span>
+  <div style="display:flex;gap:5px;align-items:center">
+    <button onclick="st('white')" title="纸白" style="width:14px;height:14px;border-radius:50%;background:#f8f8f6;border:1px solid #ccc;cursor:pointer;padding:0"></button>
+    <button onclick="st('dark')" title="暗黑" style="width:14px;height:14px;border-radius:50%;background:#191a19;border:1px solid #555;cursor:pointer;padding:0"></button>
+    <button onclick="st('mint')" title="薄荷" style="width:14px;height:14px;border-radius:50%;background:#a8d5c2;border:1px solid #8abfaa;cursor:pointer;padding:0"></button>
+    <button onclick="st('sakura')" title="樱花" style="width:14px;height:14px;border-radius:50%;background:#f0b8cc;border:1px solid #d898b0;cursor:pointer;padding:0"></button>
+    <button onclick="st('sky')" title="天空" style="width:14px;height:14px;border-radius:50%;background:#a8c4f0;border:1px solid #88a4d8;cursor:pointer;padding:0"></button>
+    <button onclick="st('warm')" title="暖橙" style="width:14px;height:14px;border-radius:50%;background:#e8c878;border:1px solid #c8a858;cursor:pointer;padding:0"></button>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button onclick="confirmRestart()" style="font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--red-l);color:var(--red);cursor:pointer;font-family:var(--mono)">⟳ 重开此生</button>
+    <span style="font-size:9px;color:var(--faint);letter-spacing:.08em">ANCIENT · v3.0</span>
   </div>
 </div>
 <div id="app-main"></div>
