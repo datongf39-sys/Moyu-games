@@ -474,7 +474,7 @@ body::after{
     <div class="mini-bar"><div class="mini-fill fill-blue" id="h-corp-bar" style="width:5%"></div></div>
     <div class="card-enter">
       <div class="enter-btn">进入模块 <span class="enter-arrow">→</span></div>
-      <div class="enter-hint">CORP_SIM · v3.2</div>
+      <div class="enter-hint" id="hint-corp">CORP_SIM · v3.2</div>
     </div>
   </div>
 
@@ -498,7 +498,7 @@ body::after{
     <div class="mini-bar"><div class="mini-fill fill-amber" id="h-cafe-bar" style="width:5%"></div></div>
     <div class="card-enter">
       <div class="enter-btn">进入模块 <span class="enter-arrow">→</span></div>
-      <div class="enter-hint">CAFE_OPS · v2.1</div>
+      <div class="enter-hint" id="hint-cafe">CAFE_OPS · v2.1</div>
     </div>
   </div>
 
@@ -522,7 +522,7 @@ body::after{
     <div class="mini-bar"><div class="mini-fill fill-green" id="h-farm-bar" style="width:5%"></div></div>
     <div class="card-enter">
       <div class="enter-btn">进入模块 <span class="enter-arrow">→</span></div>
-      <div class="enter-hint">AGRI_PROJ · v2.0</div>
+      <div class="enter-hint" id="hint-farm">AGRI_PROJ · v2.0</div>
     </div>
   </div>
 
@@ -546,7 +546,7 @@ body::after{
     <div class="mini-bar"><div class="mini-fill fill-red" id="h-doom-bar" style="width:5%"></div></div>
     <div class="card-enter">
       <div class="enter-btn">进入模块 <span class="enter-arrow">→</span></div>
-      <div class="enter-hint">DOOM_VAN · v1.0 · NEW</div>
+      <div class="enter-hint" id="hint-doom">DOOM_VAN · v1.0</div>
     </div>
   </div>
 
@@ -570,7 +570,7 @@ body::after{
     <div class="mini-bar"><div class="mini-fill" id="h-anc-bar" style="width:5%;background:var(--purple)"></div></div>
     <div class="card-enter">
       <div class="enter-btn">进入模块 <span class="enter-arrow">→</span></div>
-      <div class="enter-hint">ANCIENT · v1.0 · NEW</div>
+      <div class="enter-hint" id="hint-ancient">ANCIENT · v3.0</div>
     </div>
   </div>
 </div>
@@ -714,6 +714,14 @@ function clGetRead(){
   try{return JSON.parse(localStorage.getItem('moyu-cl-read')||'{}')}catch(e){return{}}
 }
 function clSetRead(rv){ localStorage.setItem('moyu-cl-read',JSON.stringify(rv)) }
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+function clIsNew(read, key, version){
+  const r=read[key];
+  if(!r) return true;                          // 从未读过
+  if(r.version !== version) return true;       // 版本更新了
+  if(r.readDate !== todayStr()) return true;   // 今天还没弹过
+  return false;
+}
 
 // 从 HTML 文本中解析 <!-- CHANGELOG ... CHANGELOG --> 块
 function parseChangelog(html){
@@ -814,7 +822,7 @@ function clClose(){
   document.body.style.overflow = '';
   // 标记全部已读
   const rv = clGetRead();
-  _allGroups.forEach(({key, data})=>{ rv[key] = data.version; });
+  _allGroups.forEach(({key, data})=>{ rv[key] = { version: data.version, readDate: todayStr() }; });
   clSetRead(rv);
   clUpdateDots(_allGroups);
 }
@@ -831,7 +839,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') clClose(); });
   const read = clGetRead();
   _allGroups = modules.map(({key, data})=>({
     key, data,
-    isNew: (read[key]||'') !== data.version
+    isNew: clIsNew(read, key, data.version)
   }));
   // 排序：新的在前
   _allGroups.sort((a,b)=> a.isNew===b.isNew ? 0 : a.isNew?-1:1);
