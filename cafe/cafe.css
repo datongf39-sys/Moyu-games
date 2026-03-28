@@ -1,0 +1,96 @@
+/**
+ * ═══════════════════════════════════════════════════════════
+ * 咖啡门店经营 - 样式
+ * 依赖：common.css (主题变量)
+ * ═══════════════════════════════════════════════════════════
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@600;700&display=swap');
+
+:root{--mono:'IBM Plex Mono',monospace;--serif:'Noto Serif SC',serif;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:12px;min-height:100vh}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.02) 2px,rgba(0,0,0,.02) 4px);pointer-events:none;z-index:9999}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
+.back{font-size:11px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:var(--mono)}.back:hover{color:var(--text)}
+.topbar-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--cream)}
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto}
+.tab{padding:8px 14px;font-size:11px;color:var(--muted);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:var(--mono);white-space:nowrap;transition:all .15s}.tab:hover{color:var(--text)}.tab.on{color:var(--amber);border-bottom-color:var(--amber)}
+.main{padding:14px 16px;max-width:1200px;margin:0 auto}
+.panel{display:none}.panel.on{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:12px}
+.ct{font-size:11px;font-weight:500;margin-bottom:8px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.col-r{display:grid;grid-template-columns:1fr 280px;gap:12px}
+.sl{font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.12em;margin-bottom:2px}
+.sv{font-size:18px;font-weight:600;line-height:1}.sv.am{color:var(--amber)}.sv.gr{color:var(--green)}.sv.cr{color:var(--cream)}.sv.rd{color:var(--red)}
+.sd{font-size:9px;color:var(--faint);margin-top:2px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);gap:8px}.row:last-child{border-bottom:none}
+.rn{font-size:11px;font-weight:500}.rdd{font-size:9px;color:var(--faint);margin-top:1px}
+.rr{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:5px 12px;border-radius:3px;font-size:11px;font-family:var(--mono);cursor:pointer;transition:all .12s;border:1px solid transparent;white-space:nowrap}
+.ba{background:rgba(212,164,76,.15);color:var(--amber);border-color:rgba(212,164,76,.3)}.ba:hover:not(:disabled){background:rgba(212,164,76,.25)}
+.bg{background:rgba(90,158,90,.15);color:var(--green);border-color:rgba(90,158,90,.3)}.bg:hover:not(:disabled){background:rgba(90,158,90,.25)}
+.br{background:rgba(204,85,68,.15);color:var(--red);border-color:rgba(204,85,68,.3)}.br:hover:not(:disabled){background:rgba(204,85,68,.25)}
+.bc{background:rgba(85,128,170,.15);color:var(--blue);border-color:rgba(85,128,170,.3)}.bc:hover:not(:disabled){background:rgba(85,128,170,.25)}
+.bo{background:transparent;color:var(--muted);border-color:var(--border-l)}.bo:hover:not(:disabled){color:var(--text)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.bsm{padding:3px 9px;font-size:10px}.bxs{padding:2px 7px;font-size:9px}.bfull{width:100%;display:flex}
+.bdg{display:inline-block;padding:2px 6px;border-radius:2px;font-size:9px}
+.bdg-g{background:var(--green-l);color:var(--green);border:1px solid rgba(90,158,90,.2)}
+.bdg-a{background:var(--amber-l);color:var(--amber);border:1px solid rgba(212,164,76,.2)}
+.bdg-r{background:rgba(204,85,68,.1);color:var(--red);border:1px solid rgba(204,85,68,.2)}
+.bdg-b{background:rgba(85,128,170,.1);color:var(--blue);border:1px solid rgba(85,128,170,.2)}
+.pb{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.pbf{height:100%;border-radius:2px;transition:width .3s}
+.pba{background:var(--amber)}.pbg{background:var(--green)}.pbr{background:var(--red)}.pbc{background:var(--blue)}
+.log{height:120px;overflow-y:auto;font-size:9px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:6px 8px}
+.ll{padding:1px 0}.lts{color:var(--faint)}.lok .lm{color:var(--green)}.lbad .lm{color:var(--red)}.linfo .lm{color:var(--amber)}
+
+/* ORDER CARD */
+.order-card{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:6px;cursor:pointer;transition:all .15s}
+.order-card:hover{border-color:var(--amber)}.order-card.selected{border-color:var(--amber);background:rgba(212,164,76,.05)}
+.order-card.urgent{border-color:rgba(204,85,68,.4)}
+.oc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.oc-name{font-size:11px;font-weight:500}.oc-time{font-size:10px}
+.oc-drink{font-size:10px;color:var(--muted)}.oc-req{font-size:9px;color:var(--faint);margin-top:2px}
+
+/* BREW ZONE */
+.brew-zone{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:12px}
+.brew-title{font-size:12px;font-weight:600;color:var(--cream);margin-bottom:10px}
+.brew-step{display:flex;align-items:center;gap:8px;padding:8px;border-radius:3px;background:var(--card);margin-bottom:6px;border:1px solid var(--border);transition:all .2s}
+.brew-step.active{border-color:var(--amber);background:rgba(212,164,76,.08)}
+.brew-step.done{border-color:rgba(90,158,90,.3);opacity:.6}
+.step-icon{font-size:18px;width:24px;text-align:center}
+.step-name{flex:1;font-size:11px}
+.step-action{flex-shrink:0}
+.step-progress{width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.step-pf{height:100%;border-radius:2px;transition:width .1s;background:var(--amber)}
+
+/* RECIPE CARD */
+.recipe-card{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:6px}
+.rc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.rc-name{font-size:11px;font-weight:500}.rc-price{font-size:11px;color:var(--amber)}
+
+/* VIP */
+.vip-card{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:9px;margin-bottom:6px;display:flex;gap:8px}
+.vc-icon{font-size:22px}.vc-info{flex:1}.vc-name{font-size:11px;font-weight:500}.vc-desc{font-size:9px;color:var(--faint);margin-top:1px}.vc-stat{font-size:9px;color:var(--amber)}
+
+/* INGREDIENT */
+.ing-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)}.ing-row:last-child{border-bottom:none}
+.ing-icon{font-size:14px;width:20px;text-align:center}.ing-name{flex:1;font-size:10px}
+.ing-track{width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.ing-fill{height:100%;border-radius:2px}
+.ing-val{font-size:9px;color:var(--muted);width:50px;text-align:right}
+
+/* REVIEW */
+.review{padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:3px;margin-bottom:5px}
+.rv-top{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px}
+.rv-content{font-size:10px;color:var(--muted);line-height:1.5}
+
+.mt8{margin-top:8px}.mt10{margin-top:10px}.mb8{margin-bottom:8px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}
+.flex{display:flex;align-items:center}.fb{display:flex;align-items:center;justify-content:space-between}
+.gap6{gap:6px}.gap8{gap:8px}.faint{color:var(--faint);font-size:10px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}.pulse{animation:pulse 2s infinite}
