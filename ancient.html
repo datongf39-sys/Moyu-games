@@ -638,6 +638,7 @@ function renderMain(){
       </div>
     </div>
   </div>`;
+  setTimeout(restoreTab, 0);
 }
 
 function statRow(icon,label,val,color){
@@ -831,6 +832,9 @@ ${tmpl.desc}
     G.estates.push({...tmpl, eid:'e_'+Date.now(), residents:[]});
     addLog(`🏠 购置了【${tmpl.name}】，花费 ${tmpl.price}文。`,'event');
     save(); render();
+    showModal(`🏠 购置成功`,
+      `${tmpl.icon} <b>${tmpl.name}</b> 已纳入名下。<br><br>容纳：${tmpl.capacity} 人${tmpl.incomePerYear>0?'<br>每年收入：+'+tmpl.incomePerYear+' 文':''}<br>花费：${tmpl.price} 文`,
+      [{label:'甚好',sub:'',cost:'',id:'ok'}],()=>closeModal());
   });
 }
 
@@ -840,10 +844,11 @@ function sellEstate(idx){
   const sellPrice=Math.floor(e.price*0.6);
   if(!confirm(`确定以 ${sellPrice}文 售出【${e.name}】吗？（原价${e.price}文，六折回收）`)) return;
   G.money+=sellPrice;
-  // 居住者须迁出
   G.estates.splice(idx,1);
   addLog(`🏠 售出【${e.name}】，得 ${sellPrice}文。`,'info');
   save(); render();
+  showModal('🏠 售出成功',`【${e.name}】已售出。<br><br>入账：+${sellPrice} 文`,
+    [{label:'好的',sub:'',cost:'',id:'ok'}],()=>closeModal());
 }
 
 /* ══════════════════════════════════════════
@@ -1085,6 +1090,8 @@ function toggleSchool(e){
     G.inSchool=false;
     addLog(`📚 退出了学堂，不再上学。`,'info');
     showResult(btn,'退学','info');
+    showModal('📚 离开学堂',`你收拾书册，离开了学堂。<br><br>当前成绩：${G.schoolGrade||'F'}`,
+      [{label:'知道了',sub:'',cost:'',id:'ok'}],()=>closeModal());
   } else {
     const bg=FAMILY_BG[G.familyBg]||FAMILY_BG.normal;
     const isFree=bg.freeSchoolAge>0&&G.age<bg.freeSchoolAge;
@@ -1103,6 +1110,8 @@ function toggleSchool(e){
     G.inSchool=true;
     addLog(`📖 家里供着，入读学堂，开始求学之路。`,'event');
     showResult(btn,'入学','good');
+    showModal('📖 入读学堂',`家里出钱供你读书，束脩已备好。<br><br>好好用功，每年写文应考可提升成绩。`,
+      [{label:'定当勤学',sub:'',cost:'',id:'ok'}],()=>closeModal());
   }
   save(); render();
 }
@@ -1429,8 +1438,13 @@ function openJobModal(){
         G.job=id; G.jobRank=0; G.jobProf=0;
         const j=JOBS.find(x=>x.id===id);
         addLog(`💼 开始从事 ${j.icon}${j.name} 一职，从头做起。`,'event');
+        save(); closeModal(); render();
+        showModal('💼 职业变更',
+          `你选择了新的职业：<br><br>${j.icon} <b>${j.name}</b><br>${j.desc}<br><br>薪资区间：${j.salaryRange[0]}～${j.salaryRange[1]} 文/年<br>职级从【${j.ranks[0]}】开始，完成任务积累熟练度可晋升。`,
+          [{label:'开始新生活',sub:'',cost:'',id:'ok'}],()=>closeModal());
+      } else {
+        save(); closeModal(); render();
       }
-      save(); closeModal(); render();
     }
   );
 }
@@ -1730,9 +1744,12 @@ function dismissConcubine(idx){
   if(!c) return;
   if(!confirm(`确定遣散 ${c.name} 吗？`)) return;
   G.estates.forEach(e=>{ if(e.residents) e.residents=e.residents.filter(n=>n!==c.name); });
+  const dismissedName=c.name, dismissedRole=c.role==='concubine'?'妾室':'面首';
   G.concubines.splice(idx,1);
-  addLog(`📜 遣散了${c.role==='concubine'?'妾室':'面首'} ${c.name}。`,'info');
+  addLog(`📜 遣散了${dismissedRole} ${dismissedName}。`,'info');
   save(); render();
+  showModal('📜 遣散',`${dismissedRole} ${dismissedName} 已离开，各自安好。`,
+    [{label:'好聚好散',sub:'',cost:'',id:'ok'}],()=>closeModal());
 }
 
 // ── 赠礼配偶 ──
@@ -1753,16 +1770,20 @@ function giftSpouse(){
 // ── 和离 ──
 function divorceSpouse(){
   if(!confirm(`确定要与 ${G.spouseName} 和离吗？`)) return;
-  addLog(`📜 与 ${G.spouseName} 和离，各奔东西。`,'bad');
+  const exName=G.spouseName;
+  const tookEstate=G.spouseEstates&&G.spouseEstates.length>0;
+  addLog(`📜 与 ${exName} 和离，各奔东西。`,'bad');
   G.mood=clamp(G.mood-20);
-  // 对方带走一半房产
-  if(G.spouseEstates&&G.spouseEstates.length>0){
+  if(tookEstate){
     G.spouseEstates.forEach(se=>{ G.estates=G.estates.filter(e=>e.id!==se.id); });
-    addLog(`🏠 ${G.spouseName} 带走了随嫁地产。`,'bad');
+    addLog(`🏠 ${exName} 带走了随嫁地产。`,'bad');
   }
   G.married=false; G.spouseName=null; G.spouseEmoji=null;
   G.spouseGender=null; G.spouseFavor=50; G.spouseEstates=[];
   save(); render();
+  showModal('📜 和离',
+    `与 <b>${exName}</b> 和离，从此各奔东西。<br><br>心情 -20${tookEstate?'<br>对方带走了随嫁地产':''}`,
+    [{label:'各自珍重',sub:'',cost:'',id:'ok'}],()=>closeModal());
 }
 
 // ── 疏远NPC ──
@@ -2147,23 +2168,49 @@ function nextYear(){
 
   save(); render();
   setTimeout(()=>{ const lw=document.querySelector('.log-wrap'); if(lw) lw.scrollTop=0; },100);
+
+  // 年度总结弹窗：展示本年日志里新增的条目
+  const yearLogs = G.log.filter(l=>l.age===G.age);
+  if(yearLogs.length>0){
+    const logHTML = yearLogs.map(l=>`<div style="padding:3px 0;border-bottom:1px solid var(--border);font-size:10px"><span class="log-${l.type}">${l.text}</span></div>`).join('');
+    setTimeout(()=>{
+      showModal(`📅 ${G.age}岁 · 本年记事`,
+        `<div style="max-height:300px;overflow-y:auto">${logHTML}</div>`,
+        [{label:'知道了',sub:'',cost:'',id:'ok'}],()=>closeModal());
+    },150);
+  }
 }
 
 /* ══════════════════════════════════════════
    UI HELPERS
 ══════════════════════════════════════════ */
+let _currentTab = 'actions';
+
 function switchTab(id){
+  _currentTab = id;
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('panel-'+id).classList.add('on');
   event.target.classList.add('on');
 }
 function switchTabDirect(id){
+  _currentTab = id;
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   const panel=document.getElementById('panel-'+id);
   if(panel) panel.classList.add('on');
-  document.querySelectorAll('.tab').forEach(t=>{ if(t.textContent.includes(id==='social'?'社交':id==='estate'?'地产':id)) t.classList.add('on'); });
+  document.querySelectorAll('.tab').forEach(t=>{ if(t.textContent.includes(id==='social'?'社交':id==='estate'?'地产':id==='shop'?'商店':id==='bag'?'包裹':id==='log'?'日志':id==='family'?'家族':id)) t.classList.add('on'); });
+}
+function restoreTab(){
+  const id = _currentTab || 'actions';
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  const panel = document.getElementById('panel-'+id);
+  if(panel) panel.classList.add('on');
+  document.querySelectorAll('.tab').forEach(t=>{
+    const map={actions:'行动',social:'社交',estate:'地产',shop:'商店',bag:'包裹',log:'日志',family:'家族'};
+    if(t.textContent.trim()===map[id]) t.classList.add('on');
+  });
 }
 
 function showModal(title,sub,opts,onSelect){
