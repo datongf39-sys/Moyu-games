@@ -506,9 +506,9 @@ function initGame(inheritFrom){
 /* ══════════════════════════════════════════
    SAVE / LOAD / LOG
 ══════════════════════════════════════════ */
-function save(){ localStorage.setItem('ancient2', JSON.stringify(G)); }
+function save(){ localStorage.setItem('ancient', JSON.stringify(G)); }
 function load(){
-  try{ const d=JSON.parse(localStorage.getItem('ancient2')||'null'); if(d) G=d; return !!d; }
+  try{ const d=JSON.parse(localStorage.getItem('ancient')||'null'); if(d) G=d; return !!d; }
   catch(e){ return false; }
 }
 function addLog(text, type='info'){
@@ -954,7 +954,7 @@ function confirmRestart(){
     '万般皆是命，半点不由人。\n确定要放弃此生，重入轮回吗？\n\n（所有进度将清空，无法恢复）',
     [{label:'🔄 放弃此生，重入轮回', sub:'所有数据清空', cost:'', id:'yes'},
      {label:'↩ 再活一阵', sub:'', cost:'', id:'no'}],
-    (id)=>{ closeModal(); if(id==='yes'){ localStorage.removeItem('ancient2'); location.reload(); } }
+    (id)=>{ closeModal(); if(id==='yes'){ localStorage.removeItem('ancient'); location.reload(); } }
   );
 }
 
@@ -2200,7 +2200,7 @@ function showToast(msg){
 }
 
 function st(t){ localStorage.setItem('moyu-theme',t); document.documentElement.setAttribute('data-theme',t); }
-function resetGame(){ if(!confirm('确定要从头开始吗？所有进度将清空！'))return; localStorage.removeItem('ancient2'); location.reload(); }
+function resetGame(){ if(!confirm('确定要从头开始吗？所有进度将清空！'))return; localStorage.removeItem('ancient'); location.reload(); }
 
 /* ══════════════════════════════════════════
    INIT
@@ -2213,17 +2213,18 @@ else render();
 </body>
 <!-- CHANGELOG
 {
-  "version": "2.1",
+  "version": "3.0",
   "icon": "🏯",
   "name": "古代人生模拟",
   "entries": [
-    { "v": "2.1", "date": "2026-03-28", "items": [
-      "更新了社交系统",
+    { "v": "3.0", "date": "2026-03-28", "items": [
+      "社交系统",
       "婚姻双路径（相亲 / 提亲）",
       "地产系统",
       "妾室与面首系统",
       "学堂成绩系统",
       "职业熟练度与晋升系统",
+      "科举限制入口"
     ]}
   ]
 }
