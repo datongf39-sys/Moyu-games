@@ -110,22 +110,53 @@ const AncientRender = {
     const G = AncientState.G;
     let html = `<div class="ct">今年可做的行动</div><div class="action-grid">`;
     const act = [
-      {icon:'💪',name:'锻炼身体',desc:'健康 +3~6',cls:'ab-red',fn:'exercise()'},
-      {icon:'🧘',name:'打坐冥想',desc:'心情 +3~6',cls:'ab-purple',fn:'meditate()'},
-      {icon:'💊',name:'自我疗愈',desc:'健康 +8~15',cls:'ab-red',fn:'healSelf()',dis:G.health>=80},
-      {icon:'👵',name:'拜访邻里',desc:'随机遭遇',cls:'ab-blue',fn:'visitNeighbor()'}
+      {icon:'💪',name:'锻炼身体',desc:'健康 +3~6',cls:'ab-red',fn:'AncientHealth.exercise(event)'},
+      {icon:'🧘',name:'打坐冥想',desc:'心情 +3~6',cls:'ab-purple',fn:'AncientHealth.meditate(event)'},
+      {icon:'👵',name:'拜访邻里',desc:'心情 +，魅力 +',cls:'ab-blue',fn:'AncientHealth.visitNeighbor(event)'}
     ];
     act.forEach(a => {
-      html += `<button class="action-btn ${a.cls}" ${a.dis?'disabled':''} onclick="${a.fn}">
+      const fnName = a.fn.split('(')[0].split('.').pop();
+      const disabled = AncientActions.actionDone(fnName);
+      html += `<button class="action-btn ${a.cls}" ${disabled?'disabled':''} onclick="${a.fn}">
         <div class="ab-icon">${a.icon}</div><div class="ab-name">${a.name}</div><div class="ab-cost">${a.desc}</div>
       </button>`;
     });
     html += `</div>`;
+    
+    // Education section
+    const bgInfo = AncientFamilyData.FAMILY_BG[G.familyBg] || AncientFamilyData.FAMILY_BG.normal;
+    const freeSchoolAge = bgInfo.freeSchoolAge;
+    const canSchool = G.age >= 6 && G.age <= 18;
+    const isFree = freeSchoolAge > 0 && G.age < freeSchoolAge;
+    const schoolCostNote = G.inSchool ? '就读中' : (isFree ? '免费就读' : '费:20 文/年');
+    
+    html += `<div class="sec-head">求学</div><div class="action-grid">`;
+    html += `<button class="action-btn ${G.inSchool?'ab-green':'ab-blue'}" onclick="AncientSchool.toggleSchool(event)" ${!canSchool?'disabled':''}>
+      <div class="ab-icon">📖</div><div class="ab-name">入读学堂</div><div class="ab-cost">${schoolCostNote}</div>
+    </button>`;
+    const canSelfStudy = G.age >= 8;
+    const selfDone = AncientActions.actionDone('selfStudy');
+    html += `<button class="action-btn ab-blue" onclick="AncientSchool.selfStudy(event)" ${!canSelfStudy||selfDone?'disabled':''}>
+      <div class="ab-icon">📜</div><div class="ab-name">自学苦读</div><div class="ab-cost">${!canSelfStudy?'年龄太小':(selfDone?'今年已做':'智识 +，消耗心情')}</div>
+    </button>`;
+    if (G.inSchool) {
+      const examDone = AncientActions.actionDone('exam');
+      html += `<button class="action-btn ab-amber" onclick="AncientSchool.openExamModal(event)" ${examDone?'disabled':''}>
+        <div class="ab-icon">✍️</div><div class="ab-name">写文应考</div><div class="ab-cost">${examDone?'今年已考':`成绩：${G.schoolGrade||'F'}`}</div>
+      </button>`;
+    }
+    if (G.examRecommended || G.examPassed) {
+      html += `<button class="action-btn ab-amber" onclick="AncientSchool.takeExam(event)" ${G.examPassed||AncientActions.actionDone('takeExam')?'disabled':''} ${G.age<16?'disabled':''}>
+        <div class="ab-icon">🏛️</div><div class="ab-name">参加科举</div><div class="ab-cost">${G.examPassed?'已高中，可再考':(G.age<16?'年龄太小':'老师推荐！')}</div>
+      </button>`;
+    }
+    html += `</div>`;
+    
     if (G.parents && G.parents.some(p => p.alive)){
       html += `<div class="sec-head">父母</div><div class="action-grid">`;
       G.parents.forEach((p,i) => {
         if (!p.alive) return;
-        html += `<button class="action-btn ${p.favor!=null&&p.favor<30?'ab-gray':'ab-green'}" onclick="interactParent(${i})">
+        html += `<button class="action-btn ${p.favor!=null&&p.favor<30?'ab-gray':'ab-green'}" onclick="AncientFamily.interactParent(${i})">
           <div class="ab-icon">${p.emoji}</div><div class="ab-name">${p.name}</div><div class="ab-cost">${p.rel}</div>
         </button>`;
       });
@@ -160,6 +191,34 @@ const AncientRender = {
         <div style="font-size:9px;color:var(--muted);margin-top:6px">薪俸区间：${Math.round(job.salaryRange[0])} ～ ${Math.round(job.salaryRange[1]*(1+(job.ranks.length-1)*0.3))} 文/年</div>
         <div style="font-size:9px;color:var(--faint);margin-top:3px">职级路径：${job.ranks.join(' → ')}</div>
       </div>`;
+      
+      // Render work tasks
+      if (job.tasks && job.tasks.length > 0) {
+        // Initialize yearly tasks if not exists
+        if (!G._yearTasks || G._yearTasksAge !== G.age || G._yearTasksJob !== G.job || G._yearTasksRank !== G.jobRank) {
+          const unlocked = job.tasks.filter(t => t.minRank <= G.jobRank);
+          const shuffled = [...unlocked].sort(() => Math.random() - 0.5);
+          G._yearTasks = shuffled.slice(0, Math.min(3, unlocked.length)).map(t => job.tasks.indexOf(t));
+          G._yearTasksAge = G.age;
+          G._yearTasksJob = G.job;
+          G._yearTasksRank = G.jobRank;
+        }
+        const doneCount = (G.tasksDoneThisYear || []).length;
+        html += `<div class="sec-head">工作任务（今年可做最多 2 件，已做${doneCount}/2）</div><div class="action-grid">`;
+        G._yearTasks.forEach(idx => {
+          const t = job.tasks[idx];
+          if (!t) return;
+          const stars = '★'.repeat(t.diff) + '☆'.repeat(5 - t.diff);
+          const taskDone = (G.tasksDoneThisYear || []).includes(idx);
+          const maxReached = doneCount >= 2 && !taskDone;
+          html += `<button class="action-btn ${taskDone ? 'ab-gray' : (maxReached ? 'ab-gray' : 'ab-amber')}" onclick="doWorkTask(event,${idx})" ${taskDone || maxReached ? 'disabled' : ''}>
+            <div class="ab-icon">${['📋','📑','📊','🏆','🌟'][t.diff-1]}</div>
+            <div class="ab-name">${t.name}</div>
+            <div class="ab-cost">${taskDone ? '今年已做' : (maxReached ? '已达上限' : `难度${stars}`)}</div>
+          </button>`;
+        });
+        html += `</div>`;
+      }
     } else {
       html += `<div style="color:var(--faint);font-size:10px;text-align:center;padding:16px">尚无职业，前往"转换职业"寻找差事。</div>`;
     }

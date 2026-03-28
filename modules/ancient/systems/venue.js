@@ -39,7 +39,7 @@ const AncientVenue = {
       </div>`;
       html += `<div style="font-size:10px;color:var(--muted);margin-top:12px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px">
         <div style="font-weight:600;margin-bottom:6px">大夫一览</div>
-        ${AncientDiseases.DOCTORS.map(d=>`<div style="padding:4px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between">
+        ${AncientDiseasesData.DOCTORS.map(d=>`<div style="padding:4px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between">
           <span>${d.icon} ${d.name} <span style="color:var(--faint)">${d.desc}</span></span>
           <span style="color:var(--amber)">🪙${d.cost}文</span>
         </div>`).join('')}
@@ -151,6 +151,90 @@ const AncientVenue = {
           _venueSpotPeople[spotId] = Math.max(0, count+Math.floor((Math.random()-0.5)*2));
           AncientSave.save(); AncientVenue.refreshVenueBody();
         }
+      });
+  }
+};
+
+// Clinic treatment functions
+window.openClinicTreatment = () => {
+  const G = AncientState.G;
+  if (!G.diseases || G.diseases.length === 0) {
+    AncientModal.showModal('⚕️ 身体无恙', '你目前没有任何疾病，无需治疗。',
+      [{ label: '好的', sub: '', cost: '', id: 'ok' }], () => AncientModal.closeModal());
+    return;
+  }
+  AncientModal.showModal('⚕️ 选择要治疗的疾病', '你目前患有：',
+    G.diseases.map((d, i) => ({
+      label: `${d.icon} ${d.name}（${['', '轻症', '中症', '重症', '危症'][d.level]}）`,
+      sub: d.desc,
+      cost: '',
+      id: String(i)
+    })),
+    (id) => {
+      AncientModal.closeModal();
+      AncientVenue.openDoctorSelect(parseInt(id));
+    });
+};
+
+AncientVenue.openDoctorSelect = (diseaseIdx) => {
+  const G = AncientState.G;
+  const d = G.diseases[diseaseIdx];
+  if (!d) return;
+  AncientModal.showModal(`⚕️ 治疗【${d.name}】`,
+    `${d.desc}\n\n选择大夫（越贵成功率越高，最低成功率 1%，最低失败率 1%）：`,
+    AncientDiseasesData.DOCTORS.filter(doc => G.money >= doc.cost).map(doc => ({
+      label: `${doc.icon} ${doc.name}`,
+      sub: '成功率约' + Math.round(Math.min(99, Math.max(1, (d.cureBase + doc.successBonus) * 100))) + '%',
+      cost: `🪙${doc.cost}文`,
+      id: doc.id
+    })).concat(
+      AncientDiseasesData.DOCTORS.filter(doc => G.money < doc.cost).map(doc => ({
+        label: `${doc.icon} ${doc.name}（钱不够）`,
+        sub: '',
+        cost: `🪙${doc.cost}文`,
+        id: '_skip_' + doc.id
+      }))
+    ),
+    (id) => {
+      AncientModal.closeModal();
+      if (id.startsWith('_skip_')) return;
+      AncientVenue.doTreatment(diseaseIdx, id);
+    });
+};
+
+AncientVenue.doTreatment = (diseaseIdx, doctorId) => {
+  const G = AncientState.G;
+  const d = G.diseases[diseaseIdx];
+  if (!d) return;
+  const doc = AncientDiseasesData.DOCTORS.find(doc => doc.id === doctorId);
+  if (!doc) return;
+  if (G.money < doc.cost) {
+    AncientModal.showToast('钱不够！');
+    return;
+  }
+  G.money -= doc.cost;
+  const successRate = d.cureBase + doc.successBonus;
+  const success = AncientState.roll(successRate);
+  if (success) {
+    G.diseases.splice(diseaseIdx, 1);
+    G.mood = AncientState.clamp(G.mood + 10);
+    AncientSave.addLog(`⚕️ ${doc.name}妙手回春，【${d.name}】痊愈！花费${doc.cost}文。`, 'good');
+    AncientModal.showModal('🎉 治疗成功', `${doc.name}妙手回春，【${d.name}】痊愈！\n花费：${doc.cost}文\n心情 +10`,
+      [{ label: '感谢大夫', sub: '', cost: '', id: 'ok' }], () => {
+        AncientModal.closeModal();
+        AncientSave.save();
+        AncientModal.refreshVenueBody();
+        AncientRender.render();
+      });
+  } else {
+    G.mood = AncientState.clamp(G.mood - 5);
+    AncientSave.addLog(`😞 ${doc.name}诊治失败，【${d.name}】未见好转。`, 'bad');
+    AncientModal.showModal('😞 治疗失败', `${doc.name}尽力了，但【${d.name}】未见好转。\n花费：${doc.cost}文\n心情 -5`,
+      [{ label: '唉', sub: '', cost: '', id: 'ok' }], () => {
+        AncientModal.closeModal();
+        AncientSave.save();
+        AncientModal.refreshVenueBody();
+        AncientRender.render();
       });
   }
 };

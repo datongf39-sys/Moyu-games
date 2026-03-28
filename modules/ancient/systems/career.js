@@ -1,15 +1,16 @@
 const AncientCareer = {
   openJobModal: () => {
+    const G = AncientState.G;
     const available = AncientJobs.JOBS.filter(j => {
-      if (j.minAge > AncientState.G.age || j.maxAge < G.age) return false;
-      if (j.examOnly && !AncientState.G.examPassed) return false;
+      if (j.minAge > G.age || j.maxAge < G.age) return false;
+      if (j.examOnly && !G.examPassed) return false;
       return true;
     });
     AncientModal.showModal('选择职业','选择一份工作，完成任务积累熟练度可晋升。新薪俸在每年结束时自动发放。',
       available.map(j => ({label:`${j.icon} ${j.name}`, sub:j.desc, cost:j.ranks.join('→'), id:j.id})),
       (id) => {
-        if (id !== AncientState.G.job){
-          AncientState.G.job=id; AncientState.G.jobRank=0; AncientState.G.jobProf=0; AncientState.G._yearTasksAge=-1;
+        if (id !== G.job){
+          G.job=id; G.jobRank=0; G.jobProf=0; G._yearTasksAge=-1;
           const j = AncientJobs.JOBS.find(x => x.id===id);
           AncientSave.addLog(`💼 开始从事 ${j.icon}${j.name}。`, 'event');
           AncientSave.save(); AncientModal.closeModal(); AncientRender.render();
