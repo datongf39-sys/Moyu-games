@@ -1239,13 +1239,17 @@ function selfStudy(e){
     G.intel=clamp(G.intel+gain); G.mood=clamp(G.mood-5);
     addLog(`📜 挑灯夜读，智识+${gain}，略感疲倦。`,'good');
     showResult(btn,`智识+${gain}`,'good');
+    markAction('selfStudy'); save(); render();
+    showModal('📜 自学有成',`挑灯夜读，孜孜不倦。<br><br>智识 +${gain}<br>心情 -5`,
+      [{label:'继续努力',sub:'',cost:'',id:'ok'}],()=>closeModal());
   } else {
     G.mood=clamp(G.mood-8);
     addLog(`😞 苦读半日，毫无所得，心情烦躁。`,'bad');
     showResult(btn,'没学进去','bad');
+    markAction('selfStudy'); save(); render();
+    showModal('😞 苦读无果',`苦读半日，脑中一片混沌，毫无所得。<br><br>心情 -8`,
+      [{label:'下次再来',sub:'',cost:'',id:'ok'}],()=>closeModal());
   }
-  markAction('selfStudy');
-  save(); render();
 }
 
 function takeExam(e){
@@ -1335,31 +1339,41 @@ function meditate(e){
     G.mood=clamp(G.mood+moodGain); G.intel=clamp(G.intel+intelGain);
     addLog(`🧘 静心打坐，心旷神怡，心情+${moodGain} 智识+${intelGain}。`,'good');
     showResult(btn,`心情+${moodGain}`,'good');
+    markAction('meditate'); save(); render();
+    showModal('🧘 心旷神怡',`静心打坐，万虑皆空。<br><br>心情 +${moodGain}${intelGain>0?'<br>智识 +'+intelGain:''}`,
+      [{label:'身心俱泰',sub:'',cost:'',id:'ok'}],()=>closeModal());
   } else {
     addLog(`🙄 坐立难安，心猿意马，修身养性失败了。`,'info');
     showResult(btn,'心神不定','info');
+    markAction('meditate'); save(); render();
+    showModal('🙄 心神不宁',`坐立难安，心猿意马，今日无缘静心。`,
+      [{label:'罢了',sub:'',cost:'',id:'ok'}],()=>closeModal());
   }
-  markAction('meditate');
-  save(); render();
 }
 
 function visitNeighbor(e){
   const btn=e&&e.currentTarget;
   const rate=0.55+(G.charm/100)*0.35;
   const success=roll(rate);
+  markAction('visitNeighbor');
   if(success){
     const moodGain=2+Math.floor(Math.random()*4);
     const charmGain=Math.floor(Math.random()*3);
     G.mood=clamp(G.mood+moodGain); G.charm=clamp(G.charm+charmGain);
-    addLog(`🍵 与邻里闲话家常，笑语欢声，心情+${moodGain}${charmGain>0?` 魅力+${charmGain}`:''}。`,'good');
+    addLog(`🍵 与邻里闲话家常，笑语欢声，心情+${moodGain}${charmGain>0?' 魅力+'+charmGain:''}。`,'good');
     showResult(btn,`心情+${moodGain}`,'good');
+    save(); render();
+    showModal('🍵 闲话家常',
+      `邻里相见，笑语不断，心情舒畅。<br><br>心情 +${moodGain}${charmGain>0?'<br>魅力 +'+charmGain:''}`,
+      [{label:'不错不错',sub:'',cost:'',id:'ok'}],()=>closeModal());
   } else {
     G.mood=clamp(G.mood-3);
     addLog(`😒 邻里今日不在，扑了个空，略感无聊。`,'info');
     showResult(btn,'扑空了','info');
+    save(); render();
+    showModal('😒 扑了个空',`邻里今日不在家，白跑一趟，略感无聊。<br><br>心情 -3`,
+      [{label:'下次再来',sub:'',cost:'',id:'ok'}],()=>closeModal());
   }
-  markAction('visitNeighbor');
-  save(); render();
 }
 
 /* ══════════════════════════════════════════
@@ -1376,18 +1390,25 @@ function doWorkTask(e, taskIdx){
   const success=roll(baseRate+attrBonus);
   if(success){
     G.jobProf+=task.prof;
-    addLog(`✅ [${job.name}·${job.ranks[Math.min(G.jobRank,job.ranks.length-1)]}] ${task.text} 职业熟练度+${task.prof}。`,'good');
+    const rankNow=job.ranks[Math.min(G.jobRank,job.ranks.length-1)];
+    addLog(`✅ [${job.name}·${rankNow}] ${task.text} 职业熟练度+${task.prof}。`,'good');
     showResult(btn,`+${task.prof}熟练`,'good');
-    // Check promotion
     checkPromotion();
+    save(); render();
+    showModal('✅ 任务完成',
+      `<b>${task.name}</b><br><br>${task.text}<br><br>职业熟练度 +${task.prof}<br>当前进度：${G.jobProf}／${job.profPerRank}`,
+      [{label:'好的',sub:'',cost:'',id:'ok'}],()=>closeModal());
   } else {
     const xpLoss=Math.floor(task.prof/3);
     G.jobProf=Math.max(0,G.jobProf-xpLoss);
     G.mood=clamp(G.mood-4);
-    addLog(`❌ [${job.name}] ${task.text.replace('。','') }，然而出了差错，职业熟练度-${xpLoss}。`,'bad');
+    addLog(`❌ [${job.name}] ${task.text.replace('。','')}，然而出了差错，职业熟练度-${xpLoss}。`,'bad');
     showResult(btn,'出了差错','bad');
+    save(); render();
+    showModal('❌ 任务失误',
+      `<b>${task.name}</b><br><br>${task.text.replace('。','')}，然而出了差错。<br><br>职业熟练度 -${xpLoss}<br>心情 -4`,
+      [{label:'知道了',sub:'',cost:'',id:'ok'}],()=>closeModal());
   }
-  save(); render();
 }
 
 function checkPromotion(){
