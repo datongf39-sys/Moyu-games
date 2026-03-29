@@ -33,6 +33,7 @@ body::after{background:var(--scanline,none)!important}
   <div class="flex gap8" style="font-size:10px;color:var(--faint)">
     <span id="daytxt">第 0 天</span>
     <span id="clk">--:--:--</span>
+    <span style="margin-left:8px;letter-spacing:.08em">DOOM · v3.0</span>
   </div>
 </div>
 <div class="danger-strip"></div>
@@ -298,25 +299,19 @@ setInterval(() => {
 }, 1000)
 </script>
 
-<!-- Changelog Integration -->
-<script>
-(function() {
-  var cl = JSON.parse(localStorage.getItem('moyu-changelog') || '{}')
-  cl.doom = {
-    version: '3.0',
-    icon: '🚐',
-    name: '末日房车囤货模拟器',
-    entries: [
-      { v: '3.0', date: '2026-03-29', items: [
-          '完全还原原版 HTML 结构和布局',
-          '采用原版渲染逻辑',
-          '保持与原版一致的视觉效果'
-        ]
-      }
-    ]
-  }
-  localStorage.setItem('moyu-changelog', JSON.stringify(cl))
-})()
-</script>
+<!-- CHANGELOG
+{
+  "version": "3.0",
+  "icon": "🚐",
+  "name": "末日房车囤货模拟器",
+  "entries": [
+    { "v": "3.0", "date": "2026-03-29", "items": [
+      "完全还原原版 HTML 结构和布局",
+      "采用原版渲染逻辑",
+      "保持与原版一致的视觉效果"
+    ]}
+  ]
+}
+CHANGELOG -->
 </body>
 </html>

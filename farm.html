@@ -33,6 +33,7 @@ body::after{background:var(--scanline,none)!important}
   <div class="flex gap8" style="font-size:10px;color:var(--faint)">
     <span id="weatherlbl">晴天</span>
     <span id="clk">--:--:--</span>
+    <span style="margin-left:8px;letter-spacing:.08em">FARM · v3.0</span>
   </div>
 </div>
 <div class="tabs">
@@ -206,25 +207,19 @@ setInterval(() => {
 }, 1000)
 </script>
 
-<!-- Changelog Integration -->
-<script>
-(function() {
-  var cl = JSON.parse(localStorage.getItem('moyu-changelog') || '{}')
-  cl.farm = {
-    version: '3.0',
-    icon: '🌱',
-    name: '农业项目管理',
-    entries: [
-      { v: '3.0', date: '2026-03-28', items: [
-          '农场系统全面模块化重构',
-          '数据与逻辑分离',
-          '采用与 corp/cafe 一致的架构'
-        ]
-      }
-    ]
-  }
-  localStorage.setItem('moyu-changelog', JSON.stringify(cl))
-})()
-</script>
+<!-- CHANGELOG
+{
+  "version": "3.0",
+  "icon": "🌱",
+  "name": "农业项目管理",
+  "entries": [
+    { "v": "3.0", "date": "2026-03-28", "items": [
+      "农场系统全面模块化重构",
+      "数据与逻辑分离",
+      "采用与 corp/cafe 一致的架构"
+    ]}
+  ]
+}
+CHANGELOG -->
 </body>
 </html>
