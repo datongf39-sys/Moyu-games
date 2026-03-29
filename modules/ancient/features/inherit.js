@@ -1,7 +1,7 @@
 const AncientInherit = {
   inheritChild: (idx) => {
     const child = AncientState.G.children[idx];
-    if (!child || child.age < 18){ AncientModal.showToast('子嗣尚未成年！'); return; }
+    if (!child || child.age < 18){ AncientModal.showToast('此子尚未及冠，不可托付家业！'); return; }
     const prev = {name:AncientState.G.name, emoji:AncientState.G.emoji, age:AncientState.G.age, money:AncientState.G.money};
     const newAncestors = [...AncientState.G.ancestors, {name:AncientState.G.name, emoji:AncientState.G.emoji, age:AncientState.G.age, rel:'先祖'}];
     const inheritMoney = Math.floor(AncientState.G.money * 0.4);

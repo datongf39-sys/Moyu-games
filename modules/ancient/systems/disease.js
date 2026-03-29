@@ -8,38 +8,38 @@ const AncientDiseases = {
       if (candidates.length > 0){
         const d = candidates[Math.floor(Math.random()*candidates.length)];
         AncientState.G.diseases.push({...d, turnsLeft: 2+d.level});
-        AncientSave.addLog(`🤒 染上了【${d.name}】，需要及时就医！`, 'bad');
+        AncientSave.addLog(`🤒 身染【${d.name}】，需早日延医问诊！`, 'bad');
       }
     }
     AncientState.G.diseases.forEach(d => {
       AncientState.G.health = AncientState.clamp(AncientState.G.health - d.healthPerYear);
       AncientState.G.mood   = AncientState.clamp(AncientState.G.mood   - d.moodPerYear);
       if (d.deathRisk > 0 && Math.random() < d.deathRisk){
-        AncientState.G.dead = true; AncientState.G.deathCause = `因【${d.name}】不治，${AncientState.G.age}岁含恨离世。`;
+        AncientState.G.dead = true; AncientState.G.deathCause = `因【${d.name}】久治不愈，于${AncientState.G.age}岁含恨离世，令人扼腕。`;
       }
     });
   },
 
   openClinicTreatment: () => {
     if (!AncientState.G.diseases || AncientState.G.diseases.length === 0){
-      AncientModal.showModal('⚕️ 身体无恙','你目前没有任何疾病，无需治疗。',
-        [{label:'好的',sub:'',cost:'',id:'ok'}], () => AncientModal.closeModal());
+      AncientModal.showModal('⚕️ 身体无恙','身体安泰，并无染恙，无需诊治。',
+        [{label:'甚好',sub:'',cost:'',id:'ok'}], () => AncientModal.closeModal());
       return;
     }
-    AncientModal.showModal('⚕️ 选择要治疗的疾病','你目前患有：',
-      AncientState.G.diseases.map((d,i) => ({label:`${d.icon} ${d.name}（${['','轻症','中症','重症','危症'][d.level]}）`, sub:d.desc, cost:'', id:String(i)})),
+    AncientModal.showModal('⚕️ 择疾问诊','目下身患数症，请择一诊治：',
+      AncientState.G.diseases.map((d,i) => ({label:`${d.icon} ${d.name}（${['','轻恙','中症','重症','危症'][d.level]}）`, sub:d.desc, cost:'', id:String(i)})),
       (id) => { AncientModal.closeModal(); AncientDiseases.openDoctorSelect(parseInt(id)); });
   },
 
   openDoctorSelect: (diseaseIdx) => {
     const d = AncientState.G.diseases[diseaseIdx]; if (!d) return;
-    AncientModal.showModal(`⚕️ 治疗【${d.name}】`, `${d.desc}\n\n选择大夫（越贵成功率越高，最低成功率 1%，最低失败率 1%）：`,
+    AncientModal.showModal(`⚕️ 延医治【${d.name}】`, `${d.desc}<br><br>延请坐堂大夫，诊金越丰则成效越高，然有术无术，天命尚在：`,
       AncientDiseasesData.DOCTORS.filter(doc => AncientState.G.money >= doc.cost).map(doc => ({
         label: `${doc.icon} ${doc.name}`,
-        sub: '成功率约' + Math.round(Math.min(99, Math.max(1, (d.cureBase+doc.successBonus)*100))) + '%',
+        sub: '约有'+Math.round(Math.min(99, Math.max(1, (d.cureBase+doc.successBonus)*100)))+'% 把握',
         cost: `🪙${doc.cost}文`, id: doc.id
       })).concat(AncientDiseasesData.DOCTORS.filter(doc => AncientState.G.money < doc.cost).map(doc => ({
-        label: `${doc.icon} ${doc.name}（钱不够）`, sub:'', cost:`🪙${doc.cost}文`, id:'_skip_'+doc.id
+        label: `${doc.icon} ${doc.name}（诊金不足）`, sub:'', cost:`🪙${doc.cost}文`, id:'_skip_'+doc.id
       }))),
       (id) => { AncientModal.closeModal(); if (id.startsWith('_skip_')) return; AncientDiseases.doTreatment(diseaseIdx, id); });
   },
@@ -47,25 +47,25 @@ const AncientDiseases = {
   doTreatment: (diseaseIdx, docId) => {
     const d = AncientState.G.diseases[diseaseIdx]; const doc = AncientDiseasesData.DOCTORS.find(x => x.id === docId);
     if (!d || !doc) return;
-    if (AncientState.G.money < doc.cost){ AncientModal.showToast('钱不够！'); return; }
-    AncientModal.confirmSpend(doc.cost, `⚕️ 请【${doc.name}】治疗【${d.name}】`, () => {
+    if (AncientState.G.money < doc.cost){ AncientModal.showToast('诊金不足，无法延请此大夫！'); return; }
+    AncientModal.confirmSpend(doc.cost, `⚕️ 延请【${doc.name}】诊治【${d.name}】`, () => {
       AncientState.G.money -= doc.cost;
       const successRate = Math.min(0.99, Math.max(0.01, d.cureBase + doc.successBonus));
       if (Math.random() < successRate){
         AncientState.G.diseases.splice(diseaseIdx, 1);
         const healBonus = 5 + doc.successBonus * 20;
         AncientState.G.health = AncientState.clamp(AncientState.G.health + healBonus);
-        AncientSave.addLog(`✅ 【${doc.name}】妙手回春，治愈了【${d.name}】！健康+${Math.round(healBonus)}。`, 'good');
+        AncientSave.addLog(`✅ 【${doc.name}】妙手回春，【${d.name}】已愈！健康复增 +${Math.round(healBonus)}。`, 'good');
         AncientSave.save(); AncientRender.render();
-        AncientModal.showModal('✅ 治愈成功！', `${doc.emoji} ${doc.name}妙手回春！<br><br>【${d.name}】已痊愈。<br>健康+${Math.round(healBonus)}`,
-          [{label:'多谢大夫',sub:'',cost:'',id:'ok'}], () => AncientModal.closeModal());
+        AncientModal.showModal('✅ 妙手回春！', `${doc.emoji} ${doc.name}妙手回春！<br><br>已全然痊愈，身轻如燕。`,
+          [{label:'大夫妙手，感激涕零',sub:'',cost:'',id:'ok'}], () => AncientModal.closeModal());
       } else {
         const dmg = 3 + d.level;
         AncientState.G.health = AncientState.clamp(AncientState.G.health - dmg);
-        AncientSave.addLog(`❌ 【${doc.name}】治疗【${d.name}】失败，病情未见好转，健康 -${dmg}。`, 'bad');
+        AncientSave.addLog(`❌ 【${doc.name}】诊治无效，【${d.name}】未见起色，健康损耗 -${dmg}。`, 'bad');
         AncientSave.save(); AncientRender.render();
-        AncientModal.showModal('❌ 治疗未愈', `${doc.emoji} ${doc.name}开的方子未见成效。<br><br>【${d.name}】仍在缠绕。<br>健康 -${dmg}`,
-          [{label:'再想办法',sub:'',cost:'',id:'ok'}], () => AncientModal.closeModal());
+        AncientModal.showModal('❌ 药石无灵', `${doc.emoji} ${doc.name}所开方子未见成效，病症仍缠身。<br><br>仍萦绕不去，令人忧虑。健康 -${dmg}`,
+          [{label:'再寻良医',sub:'',cost:'',id:'ok'}], () => AncientModal.closeModal());
       }
     });
   }

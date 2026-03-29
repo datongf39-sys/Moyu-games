@@ -49,7 +49,10 @@ const AncientState = {
       npcs: [],
       spouseGender: null, spouseBg: null, spouseMoney: 0, spouseEstates: [],
       concubines: [],
+      lovers: [],  // 外室列表
+      pendingMarriage: [],  // 待成亲对象列表
       spouseFavor: 80,
+      illegitimateChildren: [],  // 私生子列表（外室所生）
       diseases: [],
       venueStamina: 100,
       _yearTasks: null, _yearTasksAge: -1, _yearTasksJob: '', _yearTasksRank: -1,

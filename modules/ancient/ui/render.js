@@ -24,7 +24,6 @@ const AncientRender = {
       <div class="main-grid">
         <div>
           <div class="avatar-card fadeup">
-            <div class="avatar-emoji">${G.emoji}</div>
             <div class="avatar-name">${G.name}</div>
             <div class="avatar-meta">${G.gender==='male'?'男':'女'} · ${agePhase} · ${G.age}岁</div>
             <div style="margin-top:6px">
@@ -162,6 +161,16 @@ const AncientRender = {
       });
       html += `</div>`;
     }
+    
+    // 婚恋部分
+    if (!G.married && G.age >= 16){
+      html += `<div class="sec-head">婚恋</div><div class="action-grid">`;
+      html += `<button class="action-btn ab-pink" onclick="blindDate(event)">
+        <div class="ab-icon">💑</div><div class="ab-name">媒人说媒</div><div class="ab-cost">媒人登门说亲</div>
+      </button>`;
+      html += `</div>`;
+    }
+    
     return html;
   },
 
@@ -252,7 +261,6 @@ const AncientRender = {
       html += `<div class="sec-head">社交圈（已结交）</div>`;
       G.npcs.forEach((npc,i) => {
         html += `<div class="family-item">
-          <span class="fi-icon">${npc.emoji}</span>
           <div class="fi-info">
             <div class="fi-name">${npc.name} <span style="font-size:9px;color:var(--faint)">${npc.gender==='male'?'男':'女'} · ${npc.age}岁 · ${npc.job}</span></div>
             <div class="fi-rel">${npc.trait} · 好感<span style="color:var(--purple);font-weight:500">${npc.favor}</span>/100</div>
@@ -274,22 +282,22 @@ const AncientRender = {
         const residents = e.residents || [];
         const occupied = residents.length;
         const hasMinor = G.children.some(c => c.age<18 && residents.includes(c.name));
+        const isResidential = e.id !== 'farm' && e.id !== 'shop'; // 田庄和商铺不允许住人
+        
         html += `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px">
           <div style="display:flex;align-items:flex-start;gap:8px">
             <span style="font-size:22px">${e.icon}</span>
             <div style="flex:1">
-              <div style="font-size:11px;font-weight:600">${e.name} <span style="font-size:9px;color:var(--amber)">入住${occupied}/${e.capacity}人</span></div>
+              <div style="font-size:11px;font-weight:600">${e.name}</div>
               <div style="font-size:9px;color:var(--faint)">${e.desc}</div>
-              ${e.incomePerYear>0?`<div style="font-size:9px;color:var(--green)">每年收入+${e.incomePerYear}文</div>`:''}
-              <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:3px">
-                ${residents.map(r=>`<span class="estate-resident-chip" onclick="removeFromEstate(${i},'${r}')" title="点击移出">${r} ✕</span>`).join('')}
-                ${occupied===0?`<span style="font-size:9px;color:var(--faint)">空置</span>`:''}
-              </div>
-              <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
-                ${AncientEstate.familyResidents().filter(fr=>!residents.includes(fr.name)&&occupied<e.capacity).map(fr=>`<button class="fi-btn" onclick="addToEstate(${i},'${fr.name}')" style="font-size:8px">${fr.emoji} 安置${fr.label.split('（')[0]}</button>`).join('')}
-              </div>
+              ${e.incomePerYear>0?`<div style="font-size:9px;color:var(--green)">每年收入 +${e.incomePerYear}文</div>`:''}
+              ${isResidential?`<div style="font-size:9px;color:var(--amber);margin-top:4px">入住：${occupied}/${e.capacity}人</div>`:''}
+              ${isResidential && residents.length>0?`<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:3px">
+                ${residents.map(r=>`<span class="estate-resident-chip">${r}</span>`).join('')}
+              </div>`:''}
+              ${isResidential && residents.length===0?`<span style="font-size:9px;color:var(--faint)">空置</span>`:''}
             </div>
-            <button class="fi-btn" onclick="sellEstate(${i})" style="color:var(--red)" ${hasMinor?'disabled title="有未成年子女居住，不可售出"':''}>售出</button>
+            <button class="fi-btn" onclick="openEstateManageModal(${i})">管理</button>
           </div>
         </div>`;
       });
@@ -299,9 +307,10 @@ const AncientRender = {
     html += `<div class="sec-head">购置地产（当前余钱 🪙${G.money}文）</div><div class="shop-grid">`;
     AncientEstates.ESTATES.forEach(e => {
       const canBuy = G.money >= e.price;
+      const isResidential = e.id !== 'farm' && e.id !== 'shop';
       html += `<div class="shop-item${canBuy?'':' sold-out'}" onclick="${canBuy?`buyEstate('${e.id}')`:''}" >
         <div class="si-icon">${e.icon}</div>
-        <div class="si-name">${e.name} <span style="font-size:8px;color:var(--faint)">容${e.capacity}人</span></div>
+        <div class="si-name">${e.name}${isResidential?` <span style="font-size:8px;color:var(--faint)">容${e.capacity}人</span>`:''}</div>
         <div class="si-desc">${e.desc}</div>
         <div class="si-price">🪙 ${e.price}文${e.incomePerYear>0?' · 年入'+e.incomePerYear+'文':''}${!canBuy?' · 钱不够':''}</div>
       </div>`;
@@ -330,10 +339,9 @@ const AncientRender = {
     if (G.parents && G.parents.length > 0){
       html += `<div class="sec-head">父母</div>`;
       G.parents.forEach((p,i) => {
-        if (!p.alive){ html+=`<div class="family-item"><span class="fi-icon">${p.emoji}</span><div class="fi-info"><div class="fi-name">${p.name}</div><div class="fi-rel">${p.rel} · 已故</div></div></div>`; return; }
+        if (!p.alive){ html+=`<div class="family-item"><div class="fi-info"><div class="fi-name">${p.name}</div><div class="fi-rel">${p.rel} · 已故</div></div></div>`; return; }
         const fav = p.favor!=null?p.favor:(G.parentFavor||50);
         html += `<div class="family-item">
-          <span class="fi-icon">${p.emoji}</span>
           <div class="fi-info">
             <div class="fi-name">${p.name}</div><div class="fi-rel">${p.rel}</div>
             <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
@@ -349,7 +357,6 @@ const AncientRender = {
     if (G.married && G.spouseName){
       html += `<div class="sec-head">配偶</div>
       <div class="family-item">
-        <span class="fi-icon">${G.spouseEmoji||'👤'}</span>
         <div class="fi-info">
           <div class="fi-name">${G.spouseName}</div>
           <div class="fi-rel">${G.spouseGender==='male'?'夫君':'夫人'}</div>
@@ -360,31 +367,63 @@ const AncientRender = {
         </div>
         <button class="fi-btn" onclick="openSpouseInteract()">互动</button>
       </div>`;
-      if (G.concubines && G.concubines.length > 0){
-        html += `<div class="sec-head">内室成员</div>`;
-        G.concubines.forEach((c,i) => {
-          html += `<div class="family-item"><span class="fi-icon">${c.emoji}</span><div class="fi-info"><div class="fi-name">${c.name}</div><div class="fi-rel">${c.role==='concubine'?'妾室':'面首'} · 好感${c.favor}</div></div><button class="fi-btn" onclick="openConcubineInteract(${i})">互动</button></div>`;
-        });
-      }
+    }
+    if (G.concubines && G.concubines.length > 0){
+      html += `<div class="sec-head">内室成员</div>`;
+      G.concubines.forEach((c,i) => {
+        html += `<div class="family-item"><div class="fi-info"><div class="fi-name">${c.name}</div><div class="fi-rel">${c.role==='concubine'?'妾室':'面首'} · 好感${c.favor}</div></div><button class="fi-btn" onclick="openConcubineInteract(${i})">互动</button></div>`;
+      });
     }
     if (G.children.length > 0){
       html += `<div class="sec-head">子嗣</div>`;
       G.children.forEach((c,i) => {
+        const hasGrandchildren = c.children && c.children.length > 0;
+        // 区分嫡子、庶子
+        let childType = '';
+        if (c.motherType === 'concubine') {
+          childType = ' <span style="font-size:9px;color:var(--amber)">（庶出）</span>';
+        } else {
+          childType = ' <span style="font-size:9px;color:var(--purple)">（嫡出）</span>';
+        }
+        
         html += `<div class="family-item">
-          <span class="fi-icon">${c.emoji}</span>
-          <div class="fi-info"><div class="fi-name">${c.name}</div><div class="fi-rel">${c.gender==='male'?'子':'女'} · ${c.age}岁</div></div>
+          <div class="fi-info"><div class="fi-name">${c.name}${childType} ${c.spouse?`<span style="font-size:9px;color:var(--purple)">💑 ${c.spouseName}</span>`:''}</div><div class="fi-rel">${c.gender==='male'?'子':'女'} · ${c.age}岁 ${c.eloped?'<span style="color:var(--red)">（私奔中）</span>':''}</div></div>
           <div style="display:flex;gap:4px">
-            <button class="fi-btn" onclick="openChildInteract(${i})">互动</button>
-            ${!G.dead&&c.age>=18?`<button class="fi-btn" style="color:var(--amber)" onclick="inheritChild(${i})">继承</button>`:''}
+            <button class="fi-btn" onclick="openChildInteract(${i})" ${c.eloped?'disabled title="已私奔，无法互动"':''}>互动</button>
+            ${!G.dead&&c.age>=18&&!c.eloped?`<button class="fi-btn" style="color:var(--amber)" onclick="inheritChild(${i})">继承</button>`:''}
+          </div>
+        </div>`;
+        // Render grandchildren
+        if (hasGrandchildren){
+          html += `<div style="margin-left:32px;margin-bottom:8px">`;
+          c.children.forEach((gc, j) => {
+            html += `<div class="family-item" style="padding:6px 8px;background:var(--purple-l);border-radius:4px">
+              <div class="fi-info"><div class="fi-name">${gc.name}</div><div class="fi-rel">孙辈 · ${gc.gender==='male'?'孙':'孙女'} · ${gc.age}岁</div></div>
+            </div>`;
+          });
+          html += `</div>`;
+        }
+      });
+    }
+    
+    // Render illegitimate children (私生子)
+    if (G.illegitimateChildren && G.illegitimateChildren.length > 0){
+      html += `<div class="sec-head" style="color:var(--red)">私生子</div>`;
+      G.illegitimateChildren.forEach((c,i) => {
+        html += `<div class="family-item" style="background:var(--red-l);border:1px solid rgba(220,38,38,.1)">
+          <div class="fi-info">
+            <div class="fi-name">${c.name} <span style="font-size:9px;color:var(--red)">（私生）</span></div>
+            <div class="fi-rel">${c.gender==='male'?'私生子':'私生女'} · ${c.age}岁 · 生母：${c.mother}</div>
           </div>
         </div>`;
       });
+      html += `<div style="font-size:9px;color:var(--faint);padding:8px;text-align:center">注：私生子不列入家族谱系，无继承权</div>`;
     }
     if ((!G.parents||G.parents.length===0)&&!G.married&&G.children.length===0)
       html += `<div style="color:var(--faint);font-size:10px;text-align:center;padding:16px">暂无家族成员</div>`;
     if (G.ancestors && G.ancestors.length > 0){
       html += `<div class="sec-head">先祖</div>`;
-      G.ancestors.forEach(a => { html+=`<div class="family-item"><span class="fi-icon">${a.emoji}</span><div class="fi-info"><div class="fi-name">${a.name}</div><div class="fi-rel">${a.rel} · 享年${a.age}岁</div></div></div>`; });
+      G.ancestors.forEach(a => { html+=`<div class="family-item"><div class="fi-info"><div class="fi-name">${a.name}</div><div class="fi-rel">${a.rel} · 享年${a.age}岁</div></div></div>`; });
     }
     return html;
   },

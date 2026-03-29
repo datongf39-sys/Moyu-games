@@ -6,7 +6,7 @@ const AncientCareer = {
       if (j.examOnly && !G.examPassed) return false;
       return true;
     });
-    AncientModal.showModal('选择职业','选择一份工作，完成任务积累熟练度可晋升。新薪俸在每年结束时自动发放。',
+    AncientModal.showModal('择业问仕','选定一行，勤勉任事，积累熟练可升迁晋级。每年岁末薪俸自行发放，勿需惦念。',
       available.map(j => ({label:`${j.icon} ${j.name}`, sub:j.desc, cost:j.ranks.join('→'), id:j.id})),
       (id) => {
         if (id !== G.job){
@@ -21,8 +21,8 @@ const AncientCareer = {
   doWorkTask: (e, taskIdx) => {
     const btn = e && e.currentTarget;
     const job = AncientJobs.JOBS.find(j => j.id === AncientState.G.job); if (!job || !job.tasks[taskIdx]) return;
-    if ((AncientState.G.tasksDoneThisYear||[]).length >= 2){ AncientModal.showToast('今年已完成 2 项任务，不能再做了！'); return; }
-    if ((AncientState.G.tasksDoneThisYear||[]).includes(taskIdx)){ AncientModal.showToast('今年这项任务已做过了！'); return; }
+    if ((AncientState.G.tasksDoneThisYear||[]).length >= 2){ AncientModal.showToast('今岁已尽职两件差事，不可贪多！'); return; }
+    if ((AncientState.G.tasksDoneThisYear||[]).includes(taskIdx)){ AncientModal.showToast('此差事今岁已办过，不可重复！'); return; }
     if (!AncientState.G.tasksDoneThisYear) AncientState.G.tasksDoneThisYear = [];
     AncientState.G.tasksDoneThisYear.push(taskIdx);
     const task = job.tasks[taskIdx];
@@ -32,17 +32,17 @@ const AncientCareer = {
       AncientState.G.jobProf += task.prof;
       const rankNow = job.ranks[Math.min(AncientState.G.jobRank, job.ranks.length-1)];
       const profNeeded = job.profPerRank[Math.min(AncientState.G.jobRank, job.profPerRank.length-1)] || 0;
-      AncientSave.addLog(`✅ [${job.name}·${rankNow}] ${task.text} 熟练度+${task.prof}。`, 'good');
+      AncientSave.addLog(`✅ 【${job.name}·${rankNow}】${task.text}，熟练精进 +${task.prof}。`, 'good');
       AncientModal.showResult(btn, `+${task.prof}熟练`, 'good'); AncientCareer.checkPromotion(); AncientSave.save();
-      AncientModal.showModal('✅ 任务完成', `<b>${task.name}</b><br><br>${task.text}<br><br>职业熟练度 +${task.prof}<br>当前进度：${AncientState.G.jobProf}／${profNeeded}`,
-        [{label:'好的',sub:'',cost:'',id:'ok'}], () => { AncientModal.closeModal(); AncientRender.render(); });
+      AncientModal.showModal('✅ 差事办妥', `<b>${task.name}</b><br><br>${task.text}<br><br>熟练精进 +${task.prof}<br>升迁进度：${AncientState.G.jobProf}／${profNeeded}`,
+        [{label:'知晓',sub:'',cost:'',id:'ok'}], () => { AncientModal.closeModal(); AncientRender.render(); });
     } else {
       const xpLoss = task.failProf || Math.floor(task.prof*0.75);
       AncientState.G.jobProf = Math.max(0, AncientState.G.jobProf-xpLoss); AncientState.G.mood = AncientState.clamp(AncientState.G.mood-4);
-      AncientSave.addLog(`❌ [${job.name}] ${task.name} 出了差错，熟练度 -${xpLoss}。`, 'bad');
+      AncientSave.addLog(`❌ 【${job.name}】${task.name} 出了岔子，熟练退步 -${xpLoss}。`, 'bad');
       AncientModal.showResult(btn, '出了差错', 'bad'); AncientSave.save();
-      AncientModal.showModal('❌ 任务失误', `<b>${task.name}</b><br><br>出了差错。<br>熟练度 -${xpLoss}，心情 -4`,
-        [{label:'知道了',sub:'',cost:'',id:'ok'}], () => { AncientModal.closeModal(); AncientRender.render(); });
+      AncientModal.showModal('❌ 差事有失', `<b>${task.name}</b><br><br>此番办差有失，令人汗颜。<br>熟练退步 -${xpLoss}，心情受损 -4`,
+        [{label:'惭愧',sub:'',cost:'',id:'ok'}], () => { AncientModal.closeModal(); AncientRender.render(); });
     }
   },
 
@@ -56,15 +56,15 @@ const AncientCareer = {
       AncientState.G.jobProf -= needed; AncientState.G.jobRank++;
       lastRank = job.ranks[AncientState.G.jobRank]; lastBonus = 50 + AncientState.G.jobRank*30;
       AncientState.G.money += lastBonus; AncientState.G.totalMoney += lastBonus; AncientState.G.mood = AncientState.clamp(AncientState.G.mood+20);
-      AncientSave.addLog(`🎊 晋升为【${lastRank}】，获奖赏 ${lastBonus}文！`, 'event');
+      AncientSave.addLog(`🎊 擢升为【${lastRank}】，朝廷赐赏 ${lastBonus}文！`, 'event');
       promoted = true; AncientState.G._yearTasksAge = -1;
     }
     if (promoted){
       const nsl = Math.round(job.salaryRange[0]*(1+AncientState.G.jobRank*0.3));
       const nsh = Math.round(job.salaryRange[1]*(1+AncientState.G.jobRank*0.3));
-      setTimeout(() => AncientModal.showModal('🎊 职位晋升！',
-        `荣升 <b>【${lastRank}】</b>！<br><br>🪙 晋升奖赏：+${lastBonus} 文<br>📈 新薪资：${nsl}～${nsh} 文/年<br>😊 心情 +20`,
-        [{label:'🎉 多谢提携！',sub:'',cost:'',id:'ok'}], () => AncientModal.closeModal()), 200);
+      setTimeout(() => AncientModal.showModal('🎊 擢升高位！',
+        `恭喜荣膺 <b>【${lastRank}】</b>！<br><br>🪙 朝廷赐赏：+${lastBonus} 文<br>📈 新俸禄：${nsl}～${nsh} 文/年<br>😊 意气风发，心情 +20`,
+        [{label:'🎉 感激涕零，定当尽忠职守！',sub:'',cost:'',id:'ok'}], () => AncientModal.closeModal()), 200);
     }
   }
 };
