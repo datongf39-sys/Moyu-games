@@ -161,17 +161,6 @@ const AncientRender = {
     }
     html += `</div>`;
     
-    if (G.parents && G.parents.some(p => p.alive)){
-      html += `<div class="sec-head">父母</div><div class="action-grid">`;
-      G.parents.forEach((p,i) => {
-        if (!p.alive) return;
-        html += `<button class="action-btn ${p.favor!=null&&p.favor<30?'ab-gray':'ab-green'}" onclick="AncientFamily.interactParent(${i})">
-          <div class="ab-icon">${p.emoji}</div><div class="ab-name">${p.name}</div><div class="ab-cost">${p.rel}</div>
-        </button>`;
-      });
-      html += `</div>`;
-    }
-    
     // 婚恋部分
     if (!G.married && G.age >= 16){
       html += `<div class="sec-head">婚恋</div><div class="action-grid">`;
