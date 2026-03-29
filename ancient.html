@@ -7,10 +7,38 @@
 
 <!-- CHANGELOG
 {
-  "version": "3.3",
+  "version": "4.0",
   "icon": "🏯",
   "name": "古代人生模拟",
   "entries": [
+    { "v": "4.0", "date": "2026-03-29", "items": [
+      "子女互动界面全面改造，新增聊天、给零花钱、送礼功能",
+      "新增为子女安排婚配功能，父母可随机抽取异性 NPC 供选择",
+      "新增子女带人回家事件，成年子女有概率带人回家请求成亲",
+      "新增子女婚后生育逻辑，已婚异性恋子女可生育孙辈",
+      "家族面板优化，展示子女配偶信息及孙辈列表",
+      "私奔子女标记为不可交互且不可继承",
+      "婚配系统支持同性婚姻",
+      "提亲流程改为「提亲/相亲」机制，对方当年响应，同意后来年成亲",
+      "成亲事件优先级提升，在年份推进时最先触发，优先于生育事件",
+      "新增外室系统，玩家可在外养人",
+      "配偶、妾室、外室互动新增亲热选项，下年有概率生育",
+      "生育事件优先级提升，在年份推进时第二顺位触发",
+      "妾室提亲流程优化，成功率较正妻低",
+      "外室生育私生子后触发上门事件，可选择给予房产、纳妾、扶正、给钱或不管不顾",
+      "私生子单独展示在家族面板，不与正妻妾室子女混列",
+      "地产容量检测，人数超限则拒绝亲热",
+      "外室上门闹事机制，根据给钱比例或不管不顾触发不同后果",
+      "子女区分嫡庶：正妻子女标注嫡出，妾室子女标注庶出，外室子女标注私生",
+      "地产系统重构，出售和人员配置统一收入管理弹窗",
+      "田庄和商铺类型地产不可住人，无人员配置选项",
+      "外室不得与正室、妾室或子女同住一宅",
+      "新增收为外室功能，好感度达标可尝试，概率较纳妾低",
+      "收为外室需分配独立房产，无房产时可选择拒绝或来年再收",
+      "承诺来年买房则 NPC 好感降低，下年再度要求房产",
+      "拒绝收为外室则 NPC 好感大幅下降",
+      "家族成员必须拥有房产，配偶妾室子女自动入住空房"
+    ]},
     { "v": "3.3", "date": "2026-03-28", "items": [
       "薪俸弹窗不再显示区间，只显示实际到手金额",
       "职业面板俸禄区间改为最低一级最低薪~最高一级最高薪",
@@ -68,7 +96,7 @@ CHANGELOG -->
   </div>
   <div style="display:flex;align-items:center;gap:10px">
     <button onclick="confirmRestart()" style="font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--red-l);color:var(--red);cursor:pointer;font-family:var(--mono)">⟳ 重开此生</button>
-    <span style="font-size:9px;color:var(--faint);letter-spacing:.08em">ANCIENT · v3.3</span>
+    <span style="font-size:9px;color:var(--faint);letter-spacing:.08em">ANCIENT · v4.0</span>
   </div>
 </div>
 
@@ -112,6 +140,7 @@ CHANGELOG -->
 <script src="modules/ancient/data/items.js"></script>
 <script src="modules/ancient/data/events.js"></script>
 <script src="modules/ancient/data/diseases.js"></script>
+<script src="modules/ancient/data/naming.js"></script>
 <script src="modules/ancient/core/state.js"></script>
 <script src="modules/ancient/core/loop.js"></script>
 <script src="modules/ancient/save.js"></script>
@@ -119,9 +148,9 @@ CHANGELOG -->
 <script src="modules/ancient/ui/render.js"></script>
 <script src="modules/ancient/ui/tabs.js"></script>
 <script src="modules/ancient/features/actions.js"></script>
+<script src="modules/ancient/features/marriage.js"></script>
 <script src="modules/ancient/features/social.js"></script>
 <script src="modules/ancient/features/estate.js"></script>
-<script src="modules/ancient/features/marriage.js"></script>
 <script src="modules/ancient/features/family.js"></script>
 <script src="modules/ancient/features/health.js"></script>
 <script src="modules/ancient/features/inherit.js"></script>

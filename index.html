@@ -181,7 +181,7 @@
     <div class="mini-bar"><div class="mini-fill" id="h-anc-bar" style="width:5%;background:var(--purple)"></div></div>
     <div class="card-enter">
       <div class="enter-btn">进入模块 <span class="enter-arrow">→</span></div>
-      <div class="enter-hint" id="hint-ancient">ANCIENT · v3.3</div>
+      <div class="enter-hint" id="hint-ancient">ANCIENT · v4.0</div>
     </div>
   </div>
 </div>
@@ -418,6 +418,15 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') clClose(); });
   if(anyNew){
     setTimeout(()=>clOpen(false), 420);
   }
+  
+  // 自动更新卡片上的版本号显示
+  modules.forEach(({key, data})=>{
+    const hintEl = document.getElementById(`hint-${key}`);
+    if(hintEl){
+      const prefix = hintEl.textContent.split('·')[0].trim();
+      hintEl.textContent = `${prefix}· v${data.version}`;
+    }
+  });
 })();
 </script>
 </body>
