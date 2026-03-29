@@ -431,6 +431,8 @@ const AncientRender = {
     const G = AncientState.G;
     const app = document.getElementById('app-main');
     const inheritables = G.children.filter(c => c.age>=18);
+    const will = G.will;
+    
     app.innerHTML = `
     <div class="main"><div class="card fadeup" style="max-width:520px;margin:20px auto">
       <div class="obituary">
@@ -442,6 +444,7 @@ const AncientRender = {
           <div class="os"><div class="os-val">${G.totalMoney}</div><div class="os-lbl">一生积财 (文)</div></div>
           <div class="os"><div class="os-val">${G.children.length}</div><div class="os-lbl">子嗣数</div></div>
         </div>
+        ${will ? `<div style="font-size:10px;color:var(--purple);margin:10px 0;padding:8px;background:var(--purple-l);border-radius:4px;text-align:center">📜 字据指定钱财继承人：<b>${will.heirName}</b></div>` : (inheritables.length>0 ? `<div style="font-size:10px;color:var(--muted);margin:10px 0;padding:8px;background:var(--blue-l);border-radius:4px;text-align:center">💰 无字据，钱财默认归最年长子嗣：<b>${G.children.reduce((oldest, c) => c.age > oldest.age ? c : oldest, G.children[0]).name}</b></div>` : '')}
         ${inheritables.length>0?`<div style="font-size:11px;color:var(--muted);margin-bottom:10px;text-align:left">选择继承人：</div>
         <div class="inherit-list">${inheritables.map((c,i)=>`<div class="inherit-item" onclick="inheritChild(${G.children.indexOf(c)})">
           <div class="ii-left"><span class="ii-icon">${c.emoji}</span><div><div class="ii-name">${c.name}</div><div class="ii-rel">${c.gender==='male'?'子':'女'}</div></div></div>

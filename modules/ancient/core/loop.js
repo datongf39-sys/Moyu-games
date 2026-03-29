@@ -920,18 +920,10 @@ const AncientLoop = {
       AncientState.G.dead=true; AncientState.G.deathCause=cause||AncientState.G.deathCause;
       AncientSave.addLog(`☠️ ${cause||AncientState.G.deathCause}`, 'bad');
       
-      // 执行继承
-      const hasHeir = AncientInherit.executeInheritance();
-      
+      // 显示讣告界面，让玩家选择继承人
       AncientSave.save();
       if (window.AncientRender) {
-        if (hasHeir) {
-          // 有继承人，直接渲染新角色
-          window.AncientRender.render();
-        } else {
-          // 无继承人，显示讣告并重新开始
-          window.AncientRender.renderObituary();
-        }
+        window.AncientRender.renderObituary();
       }
       return;
     }
