@@ -28,7 +28,8 @@ const AncientLoop = {
           // 可超过 100%，超过则必定成功
         }
         
-        if (Math.random() < fertilityRate) {
+        // 强制生育测试：概率 >= 1 时必定成功
+        if (fertilityRate >= 1 || Math.random() < fertilityRate) {
           const childGender = Math.random() > 0.5 ? 'male' : 'female';
           
           // 查找有配偶居住的房产
@@ -37,14 +38,17 @@ const AncientLoop = {
             return residents.includes(AncientState.G.spouseName);
           });
           
-          // 触发取名系统
-          AncientMarriage.startNaming({
+          // 记录日志
+          AncientSave.addLog(`🎉 ${AncientState.G.spouseName} 诞下一名${childGender==='male'?'男婴':'女婴'}。`, 'good');
+          
+          // 保存到全局变量，等所有事件结束后再触发取名
+          window._pendingNaming = {
             gender: childGender,
             motherType: 'spouse',
             spouseName: AncientState.G.spouseName,
             spouseEmoji: AncientState.G.spouseEmoji,
             estateId: estate ? (estate.eid||estate.id) : null
-          });
+          };
         }
       }
     }
@@ -931,11 +935,28 @@ const AncientLoop = {
     AncientSave.save();
     if (window.AncientRender) window.AncientRender.render();
     setTimeout(() => { const lw=document.querySelector('.log-wrap'); if(lw) lw.scrollTop=0; }, 100);
-    if (yearEvents.length > 0) AncientLoop.showSequentialEvents(yearEvents, 0);
+    if (yearEvents.length > 0) {
+      AncientLoop.showSequentialEvents(yearEvents, 0);
+    } else if (window._pendingNaming) {
+      // 没有事件但有待处理的取名，直接触发
+      setTimeout(() => {
+        AncientMarriage.startNaming(window._pendingNaming);
+        window._pendingNaming = null;
+      }, 300);
+    }
   },
 
   showSequentialEvents: (events, idx) => {
-    if (idx >= events.length) return;
+    if (idx >= events.length) {
+      // 所有事件结束，检查是否有待处理的取名
+      if (window._pendingNaming) {
+        setTimeout(() => {
+          AncientMarriage.startNaming(window._pendingNaming);
+          window._pendingNaming = null;
+        }, 300);
+      }
+      return;
+    }
     const ev = events[idx];
     const isInteractive = ev.opts && ev.opts.length > 0;
     const opts = isInteractive
@@ -946,6 +967,13 @@ const AncientLoop = {
       if (isInteractive && ev.onAction) ev.onAction(id);
       AncientSave.save();
       if (idx+1 < events.length) setTimeout(() => AncientLoop.showSequentialEvents(events, idx+1), 120);
+      else if (window._pendingNaming) {
+        // 最后一个事件结束，触发取名
+        setTimeout(() => {
+          AncientMarriage.startNaming(window._pendingNaming);
+          window._pendingNaming = null;
+        }, 300);
+      }
     });
   }
 };
