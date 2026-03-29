@@ -5,6 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>古代人生 · 摸鱼工作台</title>
 
+<!-- CHANGELOG
+{
+  "version": "3.3",
+  "icon": "🏯",
+  "name": "古代人生模拟",
+  "entries": [
+    { "v": "3.3", "date": "2026-03-28", "items": [
+      "薪俸弹窗不再显示区间，只显示实际到手金额",
+      "职业面板俸禄区间改为最低一级最低薪~最高一级最高薪",
+      "职业书描述改为对应职业专用，使用时检查职业匹配",
+      "所有社交行动全部每年限一次：父母聊天/赠礼/配偶赠礼/NPC 聊天/NPC 赠钱/NPC 送礼",
+      "互动弹窗显示今年已做过的行动状态",
+      "修复 bug：配偶和离时日志引用空指针",
+      "修复 bug：父母聊天好感未同步 G.parentFavor"
+    ]},
+    { "v": "3.2", "date": "2026-03-28", "items": [
+      "地产入住系统：自动默认入住 + 手动配置，防止未成年时售出",
+      "自己 + 配偶 + 子女 + 妾室均可配置居所，父母不占地产",
+      "疾病系统：随机染病，4 种大夫可选，治愈率有差异",
+      "地点系统：原社交→地点，医馆 + 杂货铺 + 社交场所统一管理",
+      "社交场所全屏模态，含体力系统，可进入小地点结识 NPC",
+      "商店移入杂货铺地点，随机 6 件商品",
+      "职业与生计独立 tab，薪俸改为点击下一年自动发放",
+      "所有 NPC（父母/子女/配偶/妾室）均有互动弹窗",
+      "年度事件改为逐条顺序弹窗展示",
+      "家族 tab 整合所有 NPC 互动"
+    ]}
+  ]
+}
+CHANGELOG -->
+
 <!-- 主题变量内联，确保无闪烁 -->
 <style id="theme-vars">
 [data-theme="white"]{--bg:#f8f8f6;--surface:#ffffff;--card:#ffffff;--border:#e4e4e0;--border-l:#d0d0cc;--text:#1a1a18;--muted:#6b6b66;--faint:#b0b0aa;--green:#16a34a;--green-l:rgba(22,163,74,.08);--amber:#d97706;--amber-l:rgba(217,119,6,.08);--blue:#2563eb;--blue-l:rgba(37,99,235,.08);--red:#dc2626;--red-l:rgba(220,38,38,.08);--purple:#7c3aed;--scanline:none}
