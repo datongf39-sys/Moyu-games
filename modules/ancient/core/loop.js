@@ -7,10 +7,214 @@ const AncientLoop = {
     AncientState.G._shopSeed = false; AncientState.G._shopYear = -1;
     AncientState.G._yearTasksAge = -1;
     AncientState.G.venueStamina = 100;
+    // 清除备孕状态（新的一年）
+    AncientState.G._pregnancyBoostDoctor = false;
+    AncientState.G._pregnancyBoostSachet = false;
     if (!AncientState.G.diseases) AncientState.G.diseases = [];
     if (!AncientState.G.npcs) AncientState.G.npcs = [];
 
     const yearEvents = [];
+
+    // ========== 兄弟姐妹系统 ==========
+    // 1. 出生时有 10% 概率已经有哥哥姐姐（只在 3 岁及以后触发，避免每年重复）
+    if (AncientState.G.age === 3 && AncientState.G.siblings.length === 0) {
+      if (Math.random() < 0.1) {
+        const olderSiblingAge = AncientState.G.age + Math.floor(Math.random() * 5) + 1; // 大 1-5 岁
+        const isMale = Math.random() > 0.5;
+        const surname = AncientState.G.name.charAt(0);
+        const givenName = AncientNaming.genName(isMale ? 'male' : 'female');
+        const sibling = {
+          name: surname + givenName,
+          gender: isMale ? 'male' : 'female',
+          emoji: isMale ? AncientNames.MALE_EMOJI[Math.floor(Math.random()*3)] : AncientNames.FEMALE_EMOJI[Math.floor(Math.random()*3)],
+          age: olderSiblingAge,
+          favor: 50,
+          spouse: null, spouseName: null, spouseGender: null, spouseEmoji: null, spouseFavor: 50,
+          children: [],
+          isOlder: true  // 标记为哥哥/姐姐
+        };
+        AncientState.G.siblings.push(sibling);
+        yearEvents.push({
+          icon:'👫', title:'家有兄长/姊姊',
+          body:`${sibling.emoji} ${sibling.name}（${sibling.age}岁）与你一同成长，日后相互扶持。`,
+          type:'good'
+        });
+    
+    // ========== 子女就业系统 ==========
+    // 合法子女找工作
+    if (G.children) {
+      G.children.forEach((c, idx) => {
+        // 18 岁以上，未入学或已毕业，无职业，50% 概率找工作
+        if (c.age >= 18 && !c.job && c.job !== 'official' && (!c.inSchool || c.age > 18)) {
+          if (Math.random() < 0.5) { // 50% 概率
+            // 高智识有概率当官
+            const intelligence = c.intelligence || 0;
+            const officialChance = intelligence >= 80 ? 0.4 : intelligence >= 60 ? 0.2 : intelligence >= 40 ? 0.1 : 0.05;
+            
+            if (Math.random() < officialChance) {
+              // 当官
+              c.job = 'official';
+              c.jobRank = 0;
+              c.jobProf = 0;
+              yearEvents.push({
+                icon:'🎓', title:`${c.name} 考取功名`,
+                body:`${c.emoji} ${c.name} 天资聪颖，学识渊博，今科考中，授以官职。<br><br>智识：${intelligence}<br>职位：官员（未入流）<br><br>此乃光宗耀祖之事，合府同庆！`,
+                type:'good'
+              });
+              AncientSave.addLog(`🎓 ${c.name} 考取功名，当官为宦，智识：${intelligence}。`, 'good');
+            } else {
+              // 随机找工作
+              const availableJobs = AncientJobs.JOBS.filter(j => j.id !== 'none' && j.id !== 'official');
+              const randomJob = availableJobs[Math.floor(Math.random() * availableJobs.length)];
+              c.job = randomJob.id;
+              c.jobRank = 0;
+              c.jobProf = 0;
+              yearEvents.push({
+                icon:'💼', title:`${c.name} 找到工作`,
+                body:`${c.emoji} ${c.name} 寻得一份营生：<b>${randomJob.icon} ${randomJob.name}</b><br><br>职位：${randomJob.ranks[0]}<br>薪俸：${Math.round(randomJob.salaryRange[0])}～${Math.round(randomJob.salaryRange[1])} 文/年<br><br>自此可自食其力，补贴家用。`,
+                type:'event'
+              });
+              AncientSave.addLog(`💼 ${c.name} 找到工作：${randomJob.name}。`, 'event');
+            }
+          }
+        }
+      });
+    }
+    
+    // 私生子找工作
+    if (G.illegitimateChildren) {
+      G.illegitimateChildren.forEach((c, idx) => {
+        // 18 岁以上，未入学或已毕业，无职业，50% 概率找工作
+        if (c.age >= 18 && !c.job && c.job !== 'official' && (!c.inSchool || c.age > 18)) {
+          if (Math.random() < 0.5) { // 50% 概率
+            // 高智识有概率当官
+            const intelligence = c.intelligence || 0;
+            const officialChance = intelligence >= 80 ? 0.4 : intelligence >= 60 ? 0.2 : intelligence >= 40 ? 0.1 : 0.05;
+            
+            if (Math.random() < officialChance) {
+              // 当官
+              c.job = 'official';
+              c.jobRank = 0;
+              c.jobProf = 0;
+              yearEvents.push({
+                icon:'🎓', title:`${c.name} 考取功名`,
+                body:`${c.emoji} ${c.name} 天资聪颖，学识渊博，今科考中，授以官职。<br><br>智识：${intelligence}<br>职位：官员（未入流）<br><br>此乃光宗耀祖之事！`,
+                type:'good'
+              });
+              AncientSave.addLog(`🎓 私生子 ${c.name} 考取功名，当官为宦，智识：${intelligence}。`, 'good');
+            } else {
+              // 随机找工作
+              const availableJobs = AncientJobs.JOBS.filter(j => j.id !== 'none' && j.id !== 'official');
+              const randomJob = availableJobs[Math.floor(Math.random() * availableJobs.length)];
+              c.job = randomJob.id;
+              c.jobRank = 0;
+              c.jobProf = 0;
+              yearEvents.push({
+                icon:'💼', title:`${c.name} 找到工作`,
+                body:`${c.emoji} ${c.name} 寻得一份营生：<b>${randomJob.icon} ${randomJob.name}</b><br><br>职位：${randomJob.ranks[0]}<br>薪俸：${Math.round(randomJob.salaryRange[0])}～${Math.round(randomJob.salaryRange[1])} 文/年<br><br>自此可自食其力。`,
+                type:'event'
+              });
+              AncientSave.addLog(`💼 私生子 ${c.name} 找到工作：${randomJob.name}。`, 'event');
+            }
+          }
+        }
+      });
+    }
+        AncientSave.addLog(`👫 你有一位${isMale?'哥哥':'姐姐'} ${sibling.name}，年长${sibling.age - AncientState.G.age}岁。`, 'good');
+      }
+    }
+    
+    // 2. 每年有 2% 概率会有弟弟妹妹（父母生育，受年龄限制）
+    if (AncientState.G.age >= 3 && AncientState.G.parents && AncientState.G.parents.some(p => p.alive)) {
+      const father = AncientState.G.parents.find(p => p.rel === '父亲' && p.alive);
+      const mother = AncientState.G.parents.find(p => p.rel === '母亲' && p.alive);
+      
+      if (father && mother) {
+        const fatherAge = father.age || (AncientState.G.age + 25); // 估算父亲年龄
+        const motherAge = mother.age || (AncientState.G.age + 25); // 估算母亲年龄
+        
+        // 使用通用生育概率（母亲年龄为准）
+        const fertilityRate = AncientMarriage.getFertilityRate(motherAge) * 0.2; // 2% 基础概率调整
+        
+        if (Math.random() < fertilityRate) {
+          const isMale = Math.random() > 0.5;
+          const surname = AncientState.G.name.charAt(0);
+          const givenName = AncientNaming.genName(isMale ? 'male' : 'female');
+          const sibling = {
+            name: surname + givenName,
+            gender: isMale ? 'male' : 'female',
+            emoji: isMale ? AncientNames.MALE_EMOJI[Math.floor(Math.random()*3)] : AncientNames.FEMALE_EMOJI[Math.floor(Math.random()*3)],
+            age: 0,
+            favor: 50,
+            spouse: null, spouseName: null, spouseGender: null, spouseEmoji: null, spouseFavor: 50,
+            children: [],
+            isOlder: false  // 标记为弟弟/妹妹
+          };
+          AncientState.G.siblings.push(sibling);
+          yearEvents.push({
+            icon:'🎉', title:`弄${isMale?'璋':'瓦'}之喜`,
+            body:`父母又添一${isMale?'子':'女'}，${sibling.emoji} ${sibling.name} 降生，家中添丁！`,
+            type:'good'
+          });
+          AncientSave.addLog(`🎉 父母诞下${isMale?'一子':'一女'} ${sibling.name}，你多了个${isMale?'弟弟':'妹妹'}。`, 'good');
+        }
+      }
+    }
+    
+    // 3. 兄弟姐妹成亲、生子随机事件
+    if (AncientState.G.siblings && AncientState.G.siblings.length > 0) {
+      AncientState.G.siblings.forEach((sib, idx) => {
+        // 成亲事件（18 岁以上，未婚）
+        if (sib.age >= 18 && !sib.spouse && Math.random() < 0.05) { // 5% 概率成亲
+          const isMale = sib.gender === 'male';
+          const spouseName = AncientNames.SURNAMES[Math.floor(Math.random() * AncientNames.SURNAMES.length)] + 
+                            (isMale ? AncientNames.FEMALE_NAMES : AncientNames.MALE_NAMES)[Math.floor(Math.random() * 10)];
+          const spouseGender = isMale ? 'female' : 'male';
+          
+          sib.spouse = true;
+          sib.spouseName = spouseName;
+          sib.spouseGender = spouseGender;
+          sib.spouseEmoji = spouseGender === 'male' ? AncientNames.MALE_EMOJI[0] : AncientNames.FEMALE_EMOJI[0];
+          sib.spouseFavor = 50;
+          
+          yearEvents.push({
+            icon:'💑', title:`${sib.name} 成家`,
+            body:`${sib.emoji} ${sib.name} 与 ${spouseName} 喜结连理，家中添一${isMale?'嫂':'婿'}。`,
+            type:'good'
+          });
+          AncientSave.addLog(`💑 ${sib.name} 与 ${spouseName} 成亲。`, 'good');
+        }
+        
+        // 生子事件（已婚，18-50 岁）
+        if (sib.spouse && sib.age >= 18 && sib.age <= 50) {
+          const fertilityRate = AncientMarriage.getFertilityRate(sib.age);
+          if (Math.random() < fertilityRate) {
+            const childGender = Math.random() > 0.5 ? 'male' : 'female';
+            const surname = sib.name.charAt(0);
+            const givenName = AncientNaming.genName(childGender);
+            const childName = surname + givenName;
+            
+            if (!sib.children) sib.children = [];
+            sib.children.push({
+              name: childName,
+              gender: childGender,
+              emoji: childGender === 'male' ? AncientNames.MALE_EMOJI[0] : AncientNames.FEMALE_EMOJI[0],
+              age: 0
+            });
+            
+            yearEvents.push({
+              icon:'👶', title:`${sib.name} 添丁`,
+              body:`${sib.emoji} ${sib.name} 的${sib.gender==='male'?'夫人':'夫君'} 诞下一名${childGender==='male'?'男婴':'女婴'}，取名 ${childName}。`,
+              type:'good'
+            });
+            AncientSave.addLog(`👶 ${sib.name} 喜得${childGender==='male'?'子':'女'} ${childName}。`, 'good');
+          }
+        }
+        
+        // 年龄增长
+        sib.age += 1;
+      });
+    }
 
     // ========== 处理 NPC 的承诺（来年再收） ==========
     if (AncientState.G.npcs && AncientState.G.npcs.length > 0){
@@ -144,23 +348,46 @@ const AncientLoop = {
     // 1. 配偶生育（正妻）
     if (AncientState.G.married && AncientState.G.spouseName){
       const intimacyDone = AncientActions.actionDone('intimacySpouse');
-      if (intimacyDone && Math.random() < 0.1){ // 10% chance
-        const childGender = Math.random() > 0.5 ? 'male' : 'female';
+      if (intimacyDone) {
+        // 估算配偶年龄（假设比玩家大 0-5 岁）
+        const spouseAge = AncientState.G.age + Math.floor(Math.random() * 5);
+        let fertilityRate = AncientMarriage.getFertilityRate(spouseAge);
         
-        // 查找有配偶居住的房产
-        const estate = AncientState.G.estates.find(e => {
-          const residents = e.residents || [];
-          return residents.includes(AncientState.G.spouseName);
-        });
+        // 50 岁以上无法生育
+        if (spouseAge >= 50) {
+          fertilityRate = 0;
+        } else {
+          // 备孕概率提升（可叠加）
+          // 大夫调养：+15%
+          if (AncientState.G._pregnancyBoostDoctor) {
+            fertilityRate += 0.15;
+          }
+          // 催子香囊：+5%
+          if (AncientState.G._pregnancyBoostSachet) {
+            fertilityRate += 0.05;
+          }
+          // 最高不超过 50%
+          fertilityRate = Math.min(fertilityRate, 0.5);
+        }
         
-        // 触发取名系统
-        AncientMarriage.startNaming({
-          gender: childGender,
-          motherType: 'spouse',
-          spouseName: AncientState.G.spouseName,
-          spouseEmoji: AncientState.G.spouseEmoji,
-          estateId: estate ? (estate.eid||estate.id) : null
-        });
+        if (Math.random() < fertilityRate) {
+          const childGender = Math.random() > 0.5 ? 'male' : 'female';
+          
+          // 查找有配偶居住的房产
+          const estate = AncientState.G.estates.find(e => {
+            const residents = e.residents || [];
+            return residents.includes(AncientState.G.spouseName);
+          });
+          
+          // 触发取名系统
+          AncientMarriage.startNaming({
+            gender: childGender,
+            motherType: 'spouse',
+            spouseName: AncientState.G.spouseName,
+            spouseEmoji: AncientState.G.spouseEmoji,
+            estateId: estate ? (estate.eid||estate.id) : null
+          });
+        }
       }
     }
     
@@ -168,22 +395,45 @@ const AncientLoop = {
     if (AncientState.G.concubines && AncientState.G.concubines.length > 0){
       AncientState.G.concubines.forEach((c, idx) => {
         const intimacyDone = AncientActions.actionDone('intimacyConcubine_'+idx);
-        if (intimacyDone && Math.random() < 0.1){ // 10% chance
-          const childGender = Math.random() > 0.5 ? 'male' : 'female';
+        if (intimacyDone) {
+          // 估算妾室年龄（假设比玩家小 0-10 岁）
+          const concubineAge = AncientState.G.age - Math.floor(Math.random() * 10);
+          let fertilityRate = AncientMarriage.getFertilityRate(concubineAge);
           
-          // 查找妾室居住的房产
-          const estate = AncientState.G.estates.find(e => {
-            const residents = e.residents || [];
-            return residents.includes(c.name);
-          });
+          // 50 岁以上无法生育
+          if (concubineAge >= 50) {
+            fertilityRate = 0;
+          } else {
+            // 备孕概率提升（可叠加）
+            // 大夫调养：+15%
+            if (AncientState.G._pregnancyBoostDoctor) {
+              fertilityRate += 0.15;
+            }
+            // 催子香囊：+5%
+            if (AncientState.G._pregnancyBoostSachet) {
+              fertilityRate += 0.05;
+            }
+            // 最高不超过 50%
+            fertilityRate = Math.min(fertilityRate, 0.5);
+          }
           
-          // 触发取名系统
-          AncientMarriage.startNaming({
-            gender: childGender,
-            motherType: 'concubine',
-            motherName: c.name,
-            estateId: estate ? (estate.eid||estate.id) : null
-          });
+          if (Math.random() < fertilityRate) {
+            const childGender = Math.random() > 0.5 ? 'male' : 'female';
+            
+            // 查找妾室居住的房产
+            const estate = AncientState.G.estates.find(e => {
+              const residents = e.residents || [];
+              return residents.includes(c.name);
+            });
+            
+            // 触发取名系统
+            AncientMarriage.startNaming({
+              gender: childGender,
+              motherType: 'concubine',
+              motherName: c.name,
+              estateId: estate ? (estate.eid||estate.id) : null
+            });
+          }
         }
       });
     }
@@ -192,28 +442,51 @@ const AncientLoop = {
     if (AncientState.G.lovers && AncientState.G.lovers.length > 0){
       AncientState.G.lovers.forEach((lover, idx) => {
         const intimacyDone = AncientActions.actionDone('intimacyLover_'+idx);
-        if (intimacyDone && Math.random() < 0.1){ // 10% chance
-          const childGender = Math.random() > 0.5 ? 'male' : 'female';
-          // 私生子随外室姓，不参与取名系统
-          const surname = lover.name.charAt(0);
-          const given = AncientNaming.genName(childGender);
-          const babyName = surname + given;
-          const babyEmoji = childGender === 'male' ? AncientNames.MALE_EMOJI[Math.floor(Math.random()*3)] : AncientNames.FEMALE_EMOJI[Math.floor(Math.random()*3)];
+        if (intimacyDone) {
+          // 估算外室年龄（假设比玩家小 0-15 岁）
+          const loverAge = AncientState.G.age - Math.floor(Math.random() * 15);
+          let fertilityRate = AncientMarriage.getFertilityRate(loverAge);
           
-          AncientState.G.illegitimateChildren.push({
-            name: babyName,
-            gender: childGender,
-            emoji: babyEmoji,
-            age: 0,
-            favor: 50,
-            mother: lover.name,
-            motherType: 'lover',
-            isIllegitimate: true
-          });
+          // 50 岁以上无法生育
+          if (loverAge >= 50) {
+            fertilityRate = 0;
+          } else {
+            // 备孕概率提升（可叠加）
+            // 大夫调养：+15%
+            if (AncientState.G._pregnancyBoostDoctor) {
+              fertilityRate += 0.15;
+            }
+            // 催子香囊：+5%
+            if (AncientState.G._pregnancyBoostSachet) {
+              fertilityRate += 0.05;
+            }
+            // 最高不超过 50%
+            fertilityRate = Math.min(fertilityRate, 0.5);
+          }
           
-          AncientSave.addLog(`🌸 外室 ${lover.name} 诞下私生子 ${babyName}。`, 'event');
-          // 触发外室上门事件
-          AncientFamily.triggerLoverVisit(idx, babyName, babyEmoji);
+          if (Math.random() < fertilityRate) {
+            const childGender = Math.random() > 0.5 ? 'male' : 'female';
+            // 私生子随外室姓，不参与取名系统
+            const surname = lover.name.charAt(0);
+            const given = AncientNaming.genName(childGender);
+            const babyName = surname + given;
+            const babyEmoji = childGender === 'male' ? AncientNames.MALE_EMOJI[Math.floor(Math.random()*3)] : AncientNames.FEMALE_EMOJI[Math.floor(Math.random()*3)];
+            
+            AncientState.G.illegitimateChildren.push({
+              name: babyName,
+              gender: childGender,
+              emoji: babyEmoji,
+              age: 0,
+              favor: 50,
+              mother: lover.name,
+              motherType: 'lover',
+              isIllegitimate: true
+            });
+            
+            AncientSave.addLog(`🌸 外室 ${lover.name} 诞下私生子 ${babyName}。`, 'event');
+            // 触发外室上门事件
+            AncientFamily.triggerLoverVisit(idx, babyName, babyEmoji);
+          }
         }
       });
     }
@@ -221,6 +494,175 @@ const AncientLoop = {
 
     // Age children
     AncientState.G.children.forEach(c => c.age += 1);
+    if (AncientState.G.illegitimateChildren) {
+      AncientState.G.illegitimateChildren.forEach(c => c.age += 1);
+    }
+    
+    // ========== 学费扣费逻辑（从大到小） ==========
+    const G = AncientState.G;
+    
+    // 收集所有在学的子嗣（含私生子），按年龄从大到小排序
+    const allInSchoolChildren = [];
+    if (G.children) {
+      G.children.forEach(c => {
+        if (c.inSchool && c.age >= 6 && c.age <= 18) {
+          allInSchoolChildren.push({child: c, type: 'legitimate'});
+        }
+      });
+    }
+    if (G.illegitimateChildren) {
+      G.illegitimateChildren.forEach(c => {
+        if (c.inSchool && c.age >= 6 && c.age <= 18) {
+          allInSchoolChildren.push({child: c, type: 'illegitimate'});
+        }
+      });
+    }
+    
+    // 按年龄从大到小排序
+    allInSchoolChildren.sort((a, b) => b.child.age - a.child.age);
+    
+    // 从大到小一个个判定学费
+    let moneyLeft = G.money;
+    let droppedCount = 0;
+    
+    for (const item of allInSchoolChildren) {
+      const child = item.child;
+      if (moneyLeft >= 20) {
+        // 钱够，继续上学
+        moneyLeft -= 20;
+      } else {
+        // 钱不够，退学
+        child.inSchool = false;
+        droppedCount++;
+        yearEvents.push({
+          icon:'💸', title:`${child.name} 因家贫退学`,
+          body:`${child.emoji} ${child.name} 因家中钱财不足，无力供其继续读书，只得退学回家。<br><br>学费：20 文/年<br>剩余钱财：${moneyLeft} 文`,
+          type:'bad'
+        });
+        AncientSave.addLog(`💸 ${child.name} 因家贫退学。`, 'bad');
+      }
+    }
+    
+    // 有退学的，显示总览
+    if (droppedCount > 0) {
+      yearEvents.push({
+        icon:'💰', title:'学费不足',
+        body:`家中钱财紧张，无力供所有子嗣读书。<br><br>在学子嗣：${allInSchoolChildren.length - droppedCount}人<br>退学子嗣：${droppedCount}人<br>花费学费：${(allInSchoolChildren.length - droppedCount) * 20} 文`,
+        type:'bad'
+      });
+    } else if (allInSchoolChildren.length > 0) {
+      // 没有退学，显示缴费通知
+      yearEvents.push({
+        icon:'📚', title:'缴纳学费',
+        body:`今年子嗣读书学费共计 ${allInSchoolChildren.length * 20} 文。<br><br>在学子嗣：${allInSchoolChildren.length}人<br>每人学费：20 文/年`,
+        type:'info'
+      });
+    }
+    
+    // 扣除实际花费的学费
+    G.money = moneyLeft;
+    
+    // 子嗣钱财增长（按职业）
+    AncientState.G.children.forEach(c => {
+      if (c.age >= 18 && c.job && c.job !== 'none') {
+        // 查找职业数据
+        const jobData = AncientJobs.JOBS.find(j => j.id === c.job);
+        if (jobData) {
+          const currentRank = Math.min(c.jobRank || 0, jobData.ranks.length - 1);
+          const salaryRange = jobData.salaryRange;
+          if (salaryRange && Array.isArray(salaryRange)) {
+            // 计算当前等级的薪水
+            const baseSalary = salaryRange[0] * (1 + currentRank * 0.3);
+            const maxSalary = salaryRange[1] * (1 + currentRank * 0.3);
+            const avgSalary = (baseSalary + maxSalary) / 2;
+            
+            // 随机增长，不超过平均值
+            const increase = Math.random() * avgSalary;
+            if (!c.money) c.money = 0;
+            c.money += Math.floor(increase);
+            
+            // 职业熟练度增长
+            if (jobData.profPerRank && Array.isArray(jobData.profPerRank)) {
+              const profNeeded = jobData.profPerRank[currentRank] || 0;
+              if (profNeeded > 0 && (c.jobProf || 0) < profNeeded) {
+                c.jobProf = (c.jobProf || 0) + Math.floor(Math.random() * 10) + 5;
+                // 检查是否可以晋升
+                if (c.jobProf >= profNeeded && currentRank < jobData.ranks.length - 1) {
+                  c.jobRank += 1;
+                  c.jobProf = 0;
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    // 6 岁入学弹窗
+    AncientState.G.children.forEach((c, idx) => {
+      if (c.age === 6 && !c.inSchool) {
+        yearEvents.push({
+          icon:'📖', title:`${c.name} 已到入学年龄`,
+          body:`${c.emoji} ${c.name} 已满六岁，当择一学堂，令其读书识字，增长智识。<br><br>入学后每年智识会自然增长。<br><br>学费：20 文/年`,
+          type:'event',
+          opts: [
+            {label:'✅ 送入学堂', id:'enroll', cost:'20 文/年'},
+            {label:'❌ 暂不入学', id:'later'}
+          ],
+          onAction: (id) => {
+            if (id === 'enroll') {
+              c.inSchool = true;
+              c.schoolAge = 6;
+              AncientSave.addLog(`📖 送 ${c.name} 入读学堂，每年智识 +2~5，学费 20 文/年。`, 'good');
+            } else {
+              AncientSave.addLog(`📖 暂未送 ${c.name} 入学，待来年再议。`, 'info');
+            }
+            AncientSave.save();
+            AncientRender.render();
+          }
+        });
+      }
+      
+      // 在校智识增长
+      if (c.inSchool && c.age >= 6 && c.age <= 18) {
+        const intGain = Math.floor(Math.random() * 4) + 2; // 2-5
+        c.intelligence = (c.intelligence || 0) + intGain;
+      }
+    });
+    
+    // 私生子 6 岁入学弹窗
+    if (AncientState.G.illegitimateChildren) {
+      AncientState.G.illegitimateChildren.forEach((c, idx) => {
+        if (c.age === 6 && !c.inSchool) {
+          yearEvents.push({
+            icon:'📖', title:`${c.name} 已到入学年龄`,
+            body:`${c.emoji} ${c.name} 已满六岁，当择一学堂，令其读书识字，增长智识。<br><br>入学后每年智识会自然增长。<br><br>学费：20 文/年`,
+            type:'event',
+            opts: [
+              {label:'✅ 送入学堂', id:'enroll', cost:'20 文/年'},
+              {label:'❌ 暂不入学', id:'later'}
+            ],
+            onAction: (id) => {
+              if (id === 'enroll') {
+                c.inSchool = true;
+                c.schoolAge = 6;
+                AncientSave.addLog(`📖 送 ${c.name} 入读学堂，每年智识 +2~5，学费 20 文/年。`, 'good');
+              } else {
+                AncientSave.addLog(`📖 暂未送 ${c.name} 入学，待来年再议。`, 'info');
+              }
+              AncientSave.save();
+              AncientRender.render();
+            }
+          });
+        }
+        
+        // 在校智识增长
+        if (c.inSchool && c.age >= 6 && c.age <= 18) {
+          const intGain = Math.floor(Math.random() * 4) + 2;
+          c.intelligence = (c.intelligence || 0) + intGain;
+        }
+      });
+    }
     
     // Child bring home event (for adult children)
     AncientState.G.children.forEach((c, idx) => {
@@ -477,8 +919,20 @@ const AncientLoop = {
     if (dead){
       AncientState.G.dead=true; AncientState.G.deathCause=cause||AncientState.G.deathCause;
       AncientSave.addLog(`☠️ ${cause||AncientState.G.deathCause}`, 'bad');
+      
+      // 执行继承
+      const hasHeir = AncientInherit.executeInheritance();
+      
       AncientSave.save();
-      if (window.AncientRender) window.AncientRender.renderObituary();
+      if (window.AncientRender) {
+        if (hasHeir) {
+          // 有继承人，直接渲染新角色
+          window.AncientRender.render();
+        } else {
+          // 无继承人，显示讣告并重新开始
+          window.AncientRender.renderObituary();
+        }
+      }
       return;
     }
 

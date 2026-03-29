@@ -283,14 +283,17 @@ const AncientFamily = {
     const key = 'giveMoneyChild_'+idx;
     if (AncientActions.actionDone(key)){ showToast('今年已经给过零花钱了！'); return; }
     const opts = [5,10,20,50].map(amt => ({label:`给予 ${amt} 文`, sub:`当前余钱 ${G.money}`, cost:String(amt), id:String(amt)}));
-    showModal(`💰 给 ${c.name} 零花钱`, '给零花钱可增加好感', opts, (id) => {
+    showModal(`💰 给 ${c.name} 零花钱`, '给零花钱可增加好感并存入子女钱财', opts, (id) => {
       closeModal(); const amt=parseInt(id); if (G.money<amt){ showToast('钱不够！'); return; }
       AncientActions.markAction(key);
       G.money -= amt;
       if (c.favor == null) c.favor = 50;
       const gain = Math.floor(amt/5);
       c.favor = Math.min(100, c.favor+gain);
-      AncientSave.addLog(`💰 给 ${c.name} ${amt}文零花钱，好感+${gain}。`, 'good');
+      // 零花钱自动记录进子女的钱
+      if (!c.money) c.money = 0;
+      c.money += amt;
+      AncientSave.addLog(`💰 给 ${c.name} ${amt}文零花钱，好感 +${gain}，子女钱财 +${amt}文。`, 'good');
       AncientSave.save(); AncientRender.render();
     });
   },

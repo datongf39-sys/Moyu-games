@@ -34,6 +34,7 @@ const AncientState = {
       inSchool: false,
       married: false, spouseName: null, spouseEmoji: null,
       children: [],
+      siblings: [],  // 兄弟姐妹列表
       parents: inheritFrom ? [] : [
         {name: surname+AncientNames.MALE_NAMES[Math.floor(Math.random()*AncientNames.MALE_NAMES.length)], rel:'父亲', emoji:'👨', alive:true, favor:baseFavor},
         {name: AncientNames.SURNAMES[Math.floor(Math.random()*AncientNames.SURNAMES.length)]+AncientNames.FEMALE_NAMES[Math.floor(Math.random()*AncientNames.FEMALE_NAMES.length)], rel:'母亲', emoji:'👩', alive:true, favor:baseFavor},
@@ -53,6 +54,7 @@ const AncientState = {
       pendingMarriage: [],  // 待成亲对象列表
       spouseFavor: 80,
       illegitimateChildren: [],  // 私生子列表（外室所生）
+      will: null,  // 遗嘱：{heirName, heirType, heirGender}
       diseases: [],
       venueStamina: 100,
       _yearTasks: null, _yearTasksAge: -1, _yearTasksJob: '', _yearTasksRank: -1,

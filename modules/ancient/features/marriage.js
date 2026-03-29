@@ -1,4 +1,11 @@
 const AncientMarriage = {
+  // 通用生育概率计算（18-50 岁，35 岁后逐年下降）
+  getFertilityRate: (age) => {
+    if (age < 18 || age > 50) return 0;  // 年龄限制
+    if (age <= 35) return 0.1;  // 18-35 岁：10% 基础概率
+    // 35-50 岁：逐年下降，从 10% 降到 0%
+    return 0.1 * (1 - (age - 35) / 15);
+  },
   proposeToNPC: (idx) => {
     const npc = AncientState.G.npcs && AncientState.G.npcs[idx]; if (!npc) return;
     if (npc.favor < 80){ AncientModal.showToast('好感度不足 80！'); return; }
@@ -240,7 +247,15 @@ const AncientMarriage = {
       spouseEmoji: null,
       spouseFavor: 50,
       children: [],
-      motherType: babyInfo.motherType || 'spouse'
+      motherType: babyInfo.motherType || 'spouse',
+      // 新增字段
+      money: 0,  // 子嗣的钱财
+      job: 'none',  // 子嗣的职业
+      jobRank: 0,  // 职业等级
+      jobProf: 0,  // 职业熟练度
+      intelligence: 0,  // 智识
+      inSchool: false,  // 是否在学堂
+      schoolAge: 0  // 入学年龄
     };
     
     AncientState.G.children.push(child);

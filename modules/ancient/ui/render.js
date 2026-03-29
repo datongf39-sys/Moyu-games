@@ -122,6 +122,16 @@ const AncientRender = {
     });
     html += `</div>`;
     
+    // 人生大事（立遗嘱、重新来过）
+    html += `<div class="sec-head">人生大事</div><div class="action-grid">`;
+    html += `<button class="action-btn ab-amber" onclick="makeWill()">
+      <div class="ab-icon">📜</div><div class="ab-name">立遗嘱</div><div class="ab-cost">择一子嗣为继承人</div>
+    </button>`;
+    html += `<button class="action-btn ab-red" onclick="restartLife()">
+      <div class="ab-icon">🔄</div><div class="ab-name">重新来过</div><div class="ab-cost">重头再来</div>
+    </button>`;
+    html += `</div>`;
+    
     // Education section
     const bgInfo = AncientFamilyData.FAMILY_BG[G.familyBg] || AncientFamilyData.FAMILY_BG.normal;
     const freeSchoolAge = bgInfo.freeSchoolAge;
