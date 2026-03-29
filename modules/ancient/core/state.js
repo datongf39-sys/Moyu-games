@@ -28,7 +28,6 @@ const AncientState = {
       money: startMoney,
       job: 'none', jobRank: 0, jobProf: 0,
       salaryCollectedThisYear: false,
-      parentMoneyAskedThisYear: false,
       tasksDoneThisYear: [],
       actionsThisYear: [],
       inSchool: false,
@@ -59,6 +58,8 @@ const AncientState = {
       venueStamina: 100,
       _yearTasks: null, _yearTasksAge: -1, _yearTasksJob: '', _yearTasksRank: -1,
       _shopSeed: false, _shopYear: -1, _shopPool: [],
+      _pregnancyBoostDoctor: false,
+      _pregnancyBoostSachetCount: 0,  // 香囊使用数量（可累加）
     });
 
     // 默认给初始房子

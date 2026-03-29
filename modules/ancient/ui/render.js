@@ -122,13 +122,13 @@ const AncientRender = {
     });
     html += `</div>`;
     
-    // 人生大事（立遗嘱、重新来过）
+    // 人生大事（托付家业、重新来过）
     html += `<div class="sec-head">人生大事</div><div class="action-grid">`;
     html += `<button class="action-btn ab-amber" onclick="makeWill()">
-      <div class="ab-icon">📜</div><div class="ab-name">立遗嘱</div><div class="ab-cost">择一子嗣为继承人</div>
+      <div class="ab-icon">📜</div><div class="ab-name">托付家业</div><div class="ab-cost">择一子嗣，立下字据</div>
     </button>`;
     html += `<button class="action-btn ab-red" onclick="restartLife()">
-      <div class="ab-icon">🔄</div><div class="ab-name">重新来过</div><div class="ab-cost">重头再来</div>
+      <div class="ab-icon">🔄</div><div class="ab-name">此生已矣</div><div class="ab-cost">放下这一切</div>
     </button>`;
     html += `</div>`;
     

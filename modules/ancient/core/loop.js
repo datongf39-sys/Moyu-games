@@ -1,19 +1,166 @@
 // Game loop system
 const AncientLoop = {
   nextYear: () => {
+    const yearEvents = [];
+    
+    // ========== 生育事件（最优先，在清空 actionsThisYear 之前检查） ==========
+    // 1. 配偶生育（正妻）
+    if (AncientState.G.married && AncientState.G.spouseName){
+      const intimacyDone = AncientActions.actionDone('intimacySpouse');
+      if (intimacyDone) {
+        // 估算配偶年龄（假设比玩家大 0-5 岁）
+        const spouseAge = AncientState.G.age + Math.floor(Math.random() * 5);
+        let fertilityRate = AncientMarriage.getFertilityRate(spouseAge);
+        
+        // 50 岁以上无法生育
+        if (spouseAge >= 50) {
+          fertilityRate = 0;
+        } else {
+          // 备孕概率提升（可叠加）
+          // 大夫调养：+15%
+          if (AncientState.G._pregnancyBoostDoctor) {
+            fertilityRate += 0.15;
+          }
+          // 催子香囊：每个 +5%，可累加
+          if (AncientState.G._pregnancyBoostSachetCount && AncientState.G._pregnancyBoostSachetCount > 0) {
+            fertilityRate += (AncientState.G._pregnancyBoostSachetCount * 0.05);
+          }
+          // 可超过 100%，超过则必定成功
+        }
+        
+        if (Math.random() < fertilityRate) {
+          const childGender = Math.random() > 0.5 ? 'male' : 'female';
+          
+          // 查找有配偶居住的房产
+          const estate = AncientState.G.estates.find(e => {
+            const residents = e.residents || [];
+            return residents.includes(AncientState.G.spouseName);
+          });
+          
+          // 触发取名系统
+          AncientMarriage.startNaming({
+            gender: childGender,
+            motherType: 'spouse',
+            spouseName: AncientState.G.spouseName,
+            spouseEmoji: AncientState.G.spouseEmoji,
+            estateId: estate ? (estate.eid||estate.id) : null
+          });
+        }
+      }
+    }
+    
+    // 2. 妾室生育
+    if (AncientState.G.concubines && AncientState.G.concubines.length > 0){
+      AncientState.G.concubines.forEach((c, idx) => {
+        const intimacyDone = AncientActions.actionDone('intimacyConcubine_'+idx);
+        if (intimacyDone) {
+          // 估算妾室年龄（假设比玩家小 0-10 岁）
+          const concubineAge = AncientState.G.age - Math.floor(Math.random() * 10);
+          let fertilityRate = AncientMarriage.getFertilityRate(concubineAge);
+          
+          // 50 岁以上无法生育
+          if (concubineAge >= 50) {
+            fertilityRate = 0;
+          } else {
+            // 备孕概率提升（可叠加）
+            // 大夫调养：+15%
+            if (AncientState.G._pregnancyBoostDoctor) {
+              fertilityRate += 0.15;
+            }
+            // 催子香囊：每个 +5%，可累加
+            if (AncientState.G._pregnancyBoostSachetCount && AncientState.G._pregnancyBoostSachetCount > 0) {
+              fertilityRate += (AncientState.G._pregnancyBoostSachetCount * 0.05);
+            }
+            // 可超过 100%，超过则必定成功
+          }
+          
+          if (Math.random() < fertilityRate) {
+            const childGender = Math.random() > 0.5 ? 'male' : 'female';
+            
+            // 查找妾室居住的房产
+            const estate = AncientState.G.estates.find(e => {
+              const residents = e.residents || [];
+              return residents.includes(c.name);
+            });
+            
+            // 触发取名系统
+            AncientMarriage.startNaming({
+              gender: childGender,
+              motherType: 'concubine',
+              motherName: c.name,
+              estateId: estate ? (estate.eid||estate.id) : null
+            });
+          }
+        }
+      });
+    }
+    
+    // 3. 外室生育（私生子）
+    if (AncientState.G.lovers && AncientState.G.lovers.length > 0){
+      AncientState.G.lovers.forEach((lover, idx) => {
+        const intimacyDone = AncientActions.actionDone('intimacyLover_'+idx);
+        if (intimacyDone) {
+          // 估算外室年龄（假设比玩家小 0-15 岁）
+          const loverAge = AncientState.G.age - Math.floor(Math.random() * 15);
+          let fertilityRate = AncientMarriage.getFertilityRate(loverAge);
+          
+          // 50 岁以上无法生育
+          if (loverAge >= 50) {
+            fertilityRate = 0;
+          } else {
+            // 备孕概率提升（可叠加）
+            // 大夫调养：+15%
+            if (AncientState.G._pregnancyBoostDoctor) {
+              fertilityRate += 0.15;
+            }
+            // 催子香囊：每个 +5%，可累加
+            if (AncientState.G._pregnancyBoostSachetCount && AncientState.G._pregnancyBoostSachetCount > 0) {
+              fertilityRate += (AncientState.G._pregnancyBoostSachetCount * 0.05);
+            }
+            // 可超过 100%，超过则必定成功
+          }
+          
+          if (Math.random() < fertilityRate) {
+            const childGender = Math.random() > 0.5 ? 'male' : 'female';
+            // 私生子随外室姓，不参与取名系统
+            const surname = lover.name.charAt(0);
+            const given = AncientNaming.genName(childGender);
+            const babyName = surname + given;
+            const babyEmoji = childGender === 'male' ? AncientNames.MALE_EMOJI[Math.floor(Math.random()*3)] : AncientNames.FEMALE_EMOJI[Math.floor(Math.random()*3)];
+            
+            AncientState.G.illegitimateChildren.push({
+              name: babyName,
+              gender: childGender,
+              emoji: babyEmoji,
+              age: 0,
+              favor: 50,
+              mother: lover.name,
+              motherType: 'lover',
+              isIllegitimate: true
+            });
+            
+            AncientSave.addLog(`🌸 外室 ${lover.name} 诞下私生子 ${babyName}。`, 'event');
+            // 触发外室上门事件
+            AncientFamily.triggerLoverVisit(idx, babyName, babyEmoji);
+          }
+        }
+      });
+    }
+    // ========== 生育事件结束 ==========
+    
+    // 年份推进
     AncientState.G.age += 1; AncientState.G.yearsLived += 1;
-    AncientState.G.salaryCollectedThisYear = false; AncientState.G.parentMoneyAskedThisYear = false;
-    AncientState.G.tasksDoneThisYear = []; AncientState.G.actionsThisYear = [];
+    AncientState.G.salaryCollectedThisYear = false;
+    AncientState.G.tasksDoneThisYear = [];
+    AncientState.G.actionsThisYear = [];
     AncientState.G._shopSeed = false; AncientState.G._shopYear = -1;
     AncientState.G._yearTasksAge = -1;
     AncientState.G.venueStamina = 100;
     // 清除备孕状态（新的一年）
     AncientState.G._pregnancyBoostDoctor = false;
-    AncientState.G._pregnancyBoostSachet = false;
+    AncientState.G._pregnancyBoostSachetCount = 0;
     if (!AncientState.G.diseases) AncientState.G.diseases = [];
     if (!AncientState.G.npcs) AncientState.G.npcs = [];
-
-    const yearEvents = [];
 
     // ========== 兄弟姐妹系统 ==========
     // 1. 出生时有 10% 概率已经有哥哥姐姐（只在 3 岁及以后触发，避免每年重复）
@@ -344,153 +491,6 @@ const AncientLoop = {
       AncientState.G.pendingConcubine = [];
     }
     
-    // ========== 生育事件（优先级第二） ==========
-    // 1. 配偶生育（正妻）
-    if (AncientState.G.married && AncientState.G.spouseName){
-      const intimacyDone = AncientActions.actionDone('intimacySpouse');
-      if (intimacyDone) {
-        // 估算配偶年龄（假设比玩家大 0-5 岁）
-        const spouseAge = AncientState.G.age + Math.floor(Math.random() * 5);
-        let fertilityRate = AncientMarriage.getFertilityRate(spouseAge);
-        
-        // 50 岁以上无法生育
-        if (spouseAge >= 50) {
-          fertilityRate = 0;
-        } else {
-          // 备孕概率提升（可叠加）
-          // 大夫调养：+15%
-          if (AncientState.G._pregnancyBoostDoctor) {
-            fertilityRate += 0.15;
-          }
-          // 催子香囊：+5%
-          if (AncientState.G._pregnancyBoostSachet) {
-            fertilityRate += 0.05;
-          }
-          // 最高不超过 50%
-          fertilityRate = Math.min(fertilityRate, 0.5);
-        }
-        
-        if (Math.random() < fertilityRate) {
-          const childGender = Math.random() > 0.5 ? 'male' : 'female';
-          
-          // 查找有配偶居住的房产
-          const estate = AncientState.G.estates.find(e => {
-            const residents = e.residents || [];
-            return residents.includes(AncientState.G.spouseName);
-          });
-          
-          // 触发取名系统
-          AncientMarriage.startNaming({
-            gender: childGender,
-            motherType: 'spouse',
-            spouseName: AncientState.G.spouseName,
-            spouseEmoji: AncientState.G.spouseEmoji,
-            estateId: estate ? (estate.eid||estate.id) : null
-          });
-        }
-      }
-    }
-    
-    // 2. 妾室生育
-    if (AncientState.G.concubines && AncientState.G.concubines.length > 0){
-      AncientState.G.concubines.forEach((c, idx) => {
-        const intimacyDone = AncientActions.actionDone('intimacyConcubine_'+idx);
-        if (intimacyDone) {
-          // 估算妾室年龄（假设比玩家小 0-10 岁）
-          const concubineAge = AncientState.G.age - Math.floor(Math.random() * 10);
-          let fertilityRate = AncientMarriage.getFertilityRate(concubineAge);
-          
-          // 50 岁以上无法生育
-          if (concubineAge >= 50) {
-            fertilityRate = 0;
-          } else {
-            // 备孕概率提升（可叠加）
-            // 大夫调养：+15%
-            if (AncientState.G._pregnancyBoostDoctor) {
-              fertilityRate += 0.15;
-            }
-            // 催子香囊：+5%
-            if (AncientState.G._pregnancyBoostSachet) {
-              fertilityRate += 0.05;
-            }
-            // 最高不超过 50%
-            fertilityRate = Math.min(fertilityRate, 0.5);
-          }
-          
-          if (Math.random() < fertilityRate) {
-            const childGender = Math.random() > 0.5 ? 'male' : 'female';
-            
-            // 查找妾室居住的房产
-            const estate = AncientState.G.estates.find(e => {
-              const residents = e.residents || [];
-              return residents.includes(c.name);
-            });
-            
-            // 触发取名系统
-            AncientMarriage.startNaming({
-              gender: childGender,
-              motherType: 'concubine',
-              motherName: c.name,
-              estateId: estate ? (estate.eid||estate.id) : null
-            });
-          }
-        }
-      });
-    }
-    
-    // 3. 外室生育（私生子）
-    if (AncientState.G.lovers && AncientState.G.lovers.length > 0){
-      AncientState.G.lovers.forEach((lover, idx) => {
-        const intimacyDone = AncientActions.actionDone('intimacyLover_'+idx);
-        if (intimacyDone) {
-          // 估算外室年龄（假设比玩家小 0-15 岁）
-          const loverAge = AncientState.G.age - Math.floor(Math.random() * 15);
-          let fertilityRate = AncientMarriage.getFertilityRate(loverAge);
-          
-          // 50 岁以上无法生育
-          if (loverAge >= 50) {
-            fertilityRate = 0;
-          } else {
-            // 备孕概率提升（可叠加）
-            // 大夫调养：+15%
-            if (AncientState.G._pregnancyBoostDoctor) {
-              fertilityRate += 0.15;
-            }
-            // 催子香囊：+5%
-            if (AncientState.G._pregnancyBoostSachet) {
-              fertilityRate += 0.05;
-            }
-            // 最高不超过 50%
-            fertilityRate = Math.min(fertilityRate, 0.5);
-          }
-          
-          if (Math.random() < fertilityRate) {
-            const childGender = Math.random() > 0.5 ? 'male' : 'female';
-            // 私生子随外室姓，不参与取名系统
-            const surname = lover.name.charAt(0);
-            const given = AncientNaming.genName(childGender);
-            const babyName = surname + given;
-            const babyEmoji = childGender === 'male' ? AncientNames.MALE_EMOJI[Math.floor(Math.random()*3)] : AncientNames.FEMALE_EMOJI[Math.floor(Math.random()*3)];
-            
-            AncientState.G.illegitimateChildren.push({
-              name: babyName,
-              gender: childGender,
-              emoji: babyEmoji,
-              age: 0,
-              favor: 50,
-              mother: lover.name,
-              motherType: 'lover',
-              isIllegitimate: true
-            });
-            
-            AncientSave.addLog(`🌸 外室 ${lover.name} 诞下私生子 ${babyName}。`, 'event');
-            // 触发外室上门事件
-            AncientFamily.triggerLoverVisit(idx, babyName, babyEmoji);
-          }
-        }
-      });
-    }
-    // ========== 生育事件结束 ==========
 
     // Age children
     AncientState.G.children.forEach(c => c.age += 1);

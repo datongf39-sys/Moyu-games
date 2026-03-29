@@ -4,13 +4,17 @@ const AncientFamily = {
     if (!parent || !parent.alive){ AncientModal.showToast('父母已不在了...'); return; }
     const a = AncientState.G.age; const fav = parent.favor != null ? parent.favor : (AncientState.G.parentFavor||50);
     const bg = AncientFamilyData.FAMILY_BG[AncientState.G.familyBg] || AncientFamilyData.FAMILY_BG.normal;
-    const canAsk  = a>=3 && a<18 && !AncientState.G.parentMoneyAskedThisYear && bg.parentMoneyLimit>0;
+    
+    // 检查是否已向此父母要过钱
+    const askKey = 'askParent_' + idx;
+    const canAsk  = a>=3 && a<18 && !AncientActions.actionDone(askKey) && bg.parentMoneyLimit>0;
+    
     const giftDone = AncientActions.actionDone('giftParents_'+idx);
     const chatDone = AncientActions.actionDone('chatParent_'+idx);
     AncientModal.showModal(`${parent.emoji} ${parent.name}（${parent.rel}）`, `好感度：${fav}/100`,
       [{label:'💬 问候叙话', sub:chatDone?'今年已叙话':'增进感情', cost:'', id:'chat'},
        ...(a>=8&&!giftDone?[{label:'🎁 孝敬父母', sub:'花费文钱，好感+', cost:'', id:'gift'}]:[]),
-       ...(canAsk?[{label:'🙏 向父母要钱', sub:'好感影响成功率', cost:'', id:'ask'}]:[])],
+       ...(canAsk?[{label:'🙏 开口要钱', sub:'好感影响成功率', cost:'', id:'ask'}]:[])],
       (id) => { AncientModal.closeModal(); if(id==='chat') AncientFamily.doParentChat(idx); else if(id==='gift') AncientFamily.doGiftParent(idx); else if(id==='ask') AncientFamily.doAskParent(idx); });
   },
 
@@ -45,11 +49,12 @@ const AncientFamily = {
 
   doAskParent: (idx) => {
     const p = AncientState.G.parents[idx]; if (!p) return;
-    if (AncientState.G.parentMoneyAskedThisYear){ AncientModal.showToast('今岁已向父母开口一次，不可贪多。'); return; }
+    const askKey = 'askParent_' + idx;
+    if (AncientActions.actionDone(askKey)){ AncientModal.showToast('今岁已向'+p.rel+'开口一次，不可再扰。'); return; }
     const bg = AncientFamilyData.FAMILY_BG[AncientState.G.familyBg] || AncientFamilyData.FAMILY_BG.normal;
     if (p.favor == null) p.favor = AncientState.G.parentFavor || 50;
     const rate = 0.1+(p.favor/100)*0.8;
-    AncientState.G.parentMoneyAskedThisYear = true;
+    AncientActions.markAction(askKey);
     if (AncientSave.roll(rate)){
       const [lo,hi] = bg.parentMoneyBase;
       const final = Math.min(lo+Math.floor(Math.random()*(hi-lo+1)), bg.parentMoneyLimit);

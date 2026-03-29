@@ -618,7 +618,7 @@ window.useFertilitySachet = (idx) => {
           AncientModal.closeModal();
           if (id === 'use') {
             G.inventory.splice(idx, 1);
-            G._pregnancyBoostSachet = true;  // 香囊效果 5%
+            G._pregnancyBoostSachetCount = (G._pregnancyBoostSachetCount || 0) + 1;  // 香囊使用数量 +1
             AncientSave.addLog(`🌸 悬催子香囊于 ${selected.name} 床头，愿老天开眼。`, 'event');
             AncientModal.showToast('香囊已悬好，愿老天开眼。');
             AncientSave.save();
