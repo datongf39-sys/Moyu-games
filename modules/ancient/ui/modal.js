@@ -27,6 +27,15 @@ const AncientModal = {
       [{label:`✅ 确认花费 ${cost}文`, sub:'', cost:'', id:'yes'}],
       (id) => { AncientModal.closeModal(); onConfirm(); });
   },
+
+  confirm: (title, sub, onConfirm) => {
+    AncientModal.showModal(title, sub,
+      [{label:'✅ 确认', sub:'', cost:'', id:'yes'}, {label:'↩ 取消', sub:'', cost:'', id:'no'}],
+      (id) => { 
+        AncientModal.closeModal(); 
+        if (id === 'yes') onConfirm(); 
+      });
+  },
   
   showToast: (msg) => {
     let t = document.getElementById('toast');
