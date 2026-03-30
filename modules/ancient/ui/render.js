@@ -179,12 +179,11 @@ const AncientRender = {
       <div class="ab-icon">💼</div><div class="ab-name">转换职业</div><div class="ab-cost">选择工作</div>
     </button>`;
     // 有深度玩法的职业加执务按钮
-    if (G.job === 'doctor' || G.job === 'merchant' || G.job === 'officer') {
-      const playDone = AncientActions.actionDone(G.job==='doctor'?'doctorPlay':G.job==='merchant'?'merchantPlay':'officerEdict');
-      const playLabels = {doctor:'⚕️ 坐堂行医', merchant:'🛒 出行跑商', officer:'📜 处理县务'};
+    if (G.job === 'doctor' || G.job === 'merchant') {
+      const playDone = AncientActions.actionDone(G.job==='doctor'?'doctorPlay':'merchantPlay');
       html += `<button class="action-btn ab-green" onclick="openJobPlay()" ${playDone?'disabled':''}>
-        <div class="ab-icon">${{doctor:'⚕️',merchant:'🛒',officer:'📜'}[G.job]}</div>
-        <div class="ab-name">${{doctor:'坐堂行医',merchant:'出行跑商',officer:'处理县务'}[G.job]}</div>
+        <div class="ab-icon">${G.job==='doctor'?'⚕️':'🛒'}</div>
+        <div class="ab-name">${G.job==='doctor'?'坐堂行医':'出行跑商'}</div>
         <div class="ab-cost">${playDone?'今年已执务':'开始专属玩法'}</div>
       </button>`;
     }
@@ -207,8 +206,17 @@ const AncientRender = {
         <div style="font-size:9px;color:var(--faint);margin-top:3px">职级路径：${job.ranks.join(' → ')}</div>
       </div>`;
       
-      // Render work tasks
-      if (job.tasks && job.tasks.length > 0) {
+      // 文官不显示工作任务，只走执务入口
+      if (job.id === 'officer') {
+        const playDone = AncientActions.actionDone('officerEdict');
+        html += `<div class="sec-head">县务</div><div class="action-grid">`;
+        html += `<button class="action-btn ab-green" onclick="openJobPlay()" ${playDone?'disabled':''}>
+          <div class="ab-icon">📜</div>
+          <div class="ab-name">处理县务</div>
+          <div class="ab-cost">${playDone?'今年已处理':'批公文·颁政策·调税率'}</div>
+        </button>`;
+        html += `</div>`;
+      } else if (job.tasks && job.tasks.length > 0) {
         // Initialize yearly tasks if not exists
         if (!G._yearTasks || G._yearTasksAge !== G.age || G._yearTasksJob !== G.job || G._yearTasksRank !== G.jobRank) {
           const unlocked = job.tasks.filter(t => t.minRank <= G.jobRank);
@@ -257,7 +265,7 @@ const AncientRender = {
     });
     html += `</div><div class="sec-head">商铺医馆学馆</div><div class="action-grid">`;
     AncientLocations.LOCATIONS.filter(l=>l.cat==='service'&&G.age>=l.minAge).forEach(loc => {
-      const cls = loc.id==='shopst'?'ab-amber':loc.id==='clinic'?'ab-red':loc.id==='wuguan'?'ab-orange':loc.id==='school'?'ab-indigo':'ab-blue';
+      const cls = loc.id==='shopst'?'ab-amber':loc.id==='clinic'?'ab-red':loc.id==='wuguan'?'ab-red':loc.id==='school'?'ab-indigo':'ab-blue';
       const statusNote = loc.id==='school'?(G.inSchool?'📖 就读中':'可入学'):loc.id==='wuguan'?(G.inWuguan?'🥋 在馆中':'可入馆'):'';
       html += `<button class="action-btn ${cls}" onclick="openVenue('${loc.id}')">
         <div class="ab-icon">${loc.icon}</div><div class="ab-name">${loc.name}${statusNote?`<span style="font-size:8px;opacity:.7"> ${statusNote}</span>`:''}</div><div class="ab-cost">${loc.desc}</div>
@@ -288,8 +296,9 @@ const AncientRender = {
       G.estates.forEach((e,i) => {
         const residents = e.residents || [];
         const occupied = residents.length;
-        const isResidential = e.type !== 'farm' && e.type !== 'shop';
-
+        const hasMinor = G.children.some(c => c.age<18 && residents.includes(c.name));
+        const isResidential = e.id !== 'farm' && e.id !== 'shop'; // 田庄和商铺不允许住人
+        
         html += `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px">
           <div style="display:flex;align-items:flex-start;gap:8px">
             <span style="font-size:22px">${e.icon}</span>
@@ -313,7 +322,7 @@ const AncientRender = {
     html += `<div class="sec-head">购置地产（当前余钱 🪙${G.money}文）</div><div class="shop-grid">`;
     AncientEstates.ESTATES.forEach(e => {
       const canBuy = G.money >= e.price;
-      const isResidential = e.type !== 'farm' && e.type !== 'shop';
+      const isResidential = e.id !== 'farm' && e.id !== 'shop';
       html += `<div class="shop-item${canBuy?'':' sold-out'}" onclick="${canBuy?`buyEstate('${e.id}')`:''}" >
         <div class="si-icon">${e.icon}</div>
         <div class="si-name">${e.name}${isResidential?` <span style="font-size:8px;color:var(--faint)">容${e.capacity}人</span>`:''}</div>
@@ -349,7 +358,7 @@ const AncientRender = {
         const fav = p.favor!=null?p.favor:(G.parentFavor||50);
         html += `<div class="family-item">
           <div class="fi-info">
-           <div class="fi-name">${p.name}</div><div class="fi-rel">${p.rel} · ${p.age||50}岁 · ${p.job||'无业'}</div>
+            <div class="fi-name">${p.name}</div><div class="fi-rel">${p.rel}</div>
             <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
               <span style="font-size:9px;color:var(--faint)">好感</span>
               <div style="width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="width:${Math.min(100,fav)}%;height:100%;background:var(--purple);border-radius:2px"></div></div>
@@ -365,7 +374,7 @@ const AncientRender = {
       <div class="family-item">
         <div class="fi-info">
           <div class="fi-name">${G.spouseName}</div>
-         <div class="fi-rel">${G.spouseGender==='male'?'夫君':'夫人'} · ${G.spouseAge||25}岁 · ${G.spouseJob||'无业'}</div>
+          <div class="fi-rel">${G.spouseGender==='male'?'夫君':'夫人'}</div>
           <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
             <div style="width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="width:${Math.min(100,G.spouseFavor||50)}%;height:100%;background:var(--purple);border-radius:2px"></div></div>
             <span style="font-size:9px;color:var(--purple)">${G.spouseFavor||50}</span>
@@ -377,13 +386,7 @@ const AncientRender = {
     if (G.concubines && G.concubines.length > 0){
       html += `<div class="sec-head">内室成员</div>`;
       G.concubines.forEach((c,i) => {
-       html += `<div class="family-item"><div class="fi-info"><div class="fi-name">${c.name}</div><div class="fi-rel">${c.role==='concubine'?'妾室':'面首'} · ${c.age||20}岁 · ${c.job||'无业'} · 好感${c.favor}</div></div><button class="fi-btn" onclick="openConcubineInteract(${i})">互动</button></div>`;
-      });
-    }
-     if (G.lovers && G.lovers.length > 0){
-      html += `<div class="sec-head">外室</div>`;
-      G.lovers.forEach((l,i) => {
-        html += `<div class="family-item"><div class="fi-info"><div class="fi-name">${l.name}</div><div class="fi-rel">外室 · ${l.age||25}岁 · ${l.job||'无业'}</div></div><button class="fi-btn" onclick="openLoverInteract(${i})">互动</button></div>`;
+        html += `<div class="family-item"><div class="fi-info"><div class="fi-name">${c.name}</div><div class="fi-rel">${c.role==='concubine'?'妾室':'面首'} · 好感${c.favor}</div></div><button class="fi-btn" onclick="openConcubineInteract(${i})">互动</button></div>`;
       });
     }
     if (G.children.length > 0){
@@ -394,8 +397,6 @@ const AncientRender = {
         let childType = '';
         if (c.motherType === 'concubine') {
           childType = ' <span style="font-size:9px;color:var(--amber)">（庶出）</span>';
-        } else if (c.motherType === 'lover') {
-          childType = ' <span style="font-size:9px;color:var(--red)">（私生）</span>';
         } else {
           childType = ' <span style="font-size:9px;color:var(--purple)">（嫡出）</span>';
         }
