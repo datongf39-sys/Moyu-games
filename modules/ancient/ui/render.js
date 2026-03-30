@@ -132,31 +132,28 @@ const AncientRender = {
     </button>`;
     html += `</div>`;
     
-    // Education section
-    const bgInfo = AncientFamilyData.FAMILY_BG[G.familyBg] || AncientFamilyData.FAMILY_BG.normal;
-    const freeSchoolAge = bgInfo.freeSchoolAge;
-    const canSchool = G.age >= 6 && G.age <= 18;
-    const isFree = freeSchoolAge > 0 && G.age < freeSchoolAge;
-    const schoolCostNote = G.inSchool ? '就读中' : (isFree ? '免费就读' : '费:20 文/年');
-    
-    html += `<div class="sec-head">求学</div><div class="action-grid">`;
-    html += `<button class="action-btn ${G.inSchool?'ab-green':'ab-blue'}" onclick="AncientSchool.toggleSchool(event)" ${!canSchool?'disabled':''}>
-      <div class="ab-icon">📖</div><div class="ab-name">入读学堂</div><div class="ab-cost">${schoolCostNote}</div>
-    </button>`;
+    // 求学问道区块
+    html += `<div class="sec-head">求学问道</div><div class="action-grid">`;
+    // 自学苦读保留
     const canSelfStudy = G.age >= 8;
-    const selfDone = AncientActions.actionDone('selfStudy');
-    html += `<button class="action-btn ab-blue" onclick="AncientSchool.selfStudy(event)" ${!canSelfStudy||selfDone?'disabled':''}>
-      <div class="ab-icon">📜</div><div class="ab-name">自学苦读</div><div class="ab-cost">${!canSelfStudy?'年龄太小':(selfDone?'今年已做':'智识 +，消耗心情')}</div>
+    const selfDone = AncientActions.actionDone('studySchool');
+    html += `<button class="action-btn ab-blue" onclick="AncientSchool.studyAtSchool(event)" ${!canSelfStudy||selfDone?'disabled':''}>
+      <div class="ab-icon">📖</div><div class="ab-name">挑灯苦读</div><div class="ab-cost">${!canSelfStudy?'年龄太小':(selfDone?'今年已读':'智识 +，消耗心情')}</div>
     </button>`;
-    if (G.inSchool) {
-      const examDone = AncientActions.actionDone('exam');
-      html += `<button class="action-btn ab-amber" onclick="AncientSchool.openExamModal(event)" ${examDone?'disabled':''}>
-        <div class="ab-icon">✍️</div><div class="ab-name">写文应考</div><div class="ab-cost">${examDone?'今年已考':`成绩：${G.schoolGrade||'F'}`}</div>
+    // 文试下场（需在学堂，入口移到地点tab，这里只做快捷入口）
+    if (G.inSchool && (G.civilExamLevel||0) < 6) {
+      const examDone = AncientActions.actionDone('civilExam');
+      const nextExamName = ['县试','府试','院试','乡试','会试','殿试'][(G.civilExamLevel||0)];
+      html += `<button class="action-btn ab-amber" onclick="openCivilExam()" ${examDone?'disabled':''}>
+        <div class="ab-icon">✍️</div><div class="ab-name">${nextExamName}</div><div class="ab-cost">${examDone?'今年已考':`文试第${(G.civilExamLevel||0)+1}关`}</div>
       </button>`;
     }
-    if (G.examRecommended || G.examPassed) {
-      html += `<button class="action-btn ab-amber" onclick="AncientSchool.takeExam(event)" ${G.examPassed||AncientActions.actionDone('takeExam')?'disabled':''} ${G.age<16?'disabled':''}>
-        <div class="ab-icon">🏛️</div><div class="ab-name">参加科举</div><div class="ab-cost">${G.examPassed?'已高中，可再考':(G.age<16?'年龄太小':'老师推荐！')}</div>
+    // 武试下场快捷入口
+    if (G.inWuguan && (G.militaryExamLevel||0) < 4) {
+      const mexamDone = AncientActions.actionDone('militaryExam');
+      const nextMExamName = ['武童试','武乡试','武会试','武殿试'][(G.militaryExamLevel||0)];
+      html += `<button class="action-btn ab-red" onclick="openMilitaryExam()" ${mexamDone?'disabled':''}>
+        <div class="ab-icon">⚔️</div><div class="ab-name">${nextMExamName}</div><div class="ab-cost">${mexamDone?'今年已考':`武试第${(G.militaryExamLevel||0)+1}关`}</div>
       </button>`;
     }
     html += `</div>`;
@@ -181,6 +178,16 @@ const AncientRender = {
     html += `<button class="action-btn ab-amber" onclick="openJobModal()">
       <div class="ab-icon">💼</div><div class="ab-name">转换职业</div><div class="ab-cost">选择工作</div>
     </button>`;
+    // 有深度玩法的职业加执务按钮
+    if (G.job === 'doctor' || G.job === 'merchant' || G.job === 'officer') {
+      const playDone = AncientActions.actionDone(G.job==='doctor'?'doctorPlay':G.job==='merchant'?'merchantPlay':'officerEdict');
+      const playLabels = {doctor:'⚕️ 坐堂行医', merchant:'🛒 出行跑商', officer:'📜 处理县务'};
+      html += `<button class="action-btn ab-green" onclick="openJobPlay()" ${playDone?'disabled':''}>
+        <div class="ab-icon">${{doctor:'⚕️',merchant:'🛒',officer:'📜'}[G.job]}</div>
+        <div class="ab-name">${{doctor:'坐堂行医',merchant:'出行跑商',officer:'处理县务'}[G.job]}</div>
+        <div class="ab-cost">${playDone?'今年已执务':'开始专属玩法'}</div>
+      </button>`;
+    }
     html += `</div>`;
     if(job && job.id !== 'none'){
       const rankLabel = job.ranks[Math.min(G.jobRank, job.ranks.length-1)];
@@ -248,11 +255,12 @@ const AncientRender = {
         <div class="ab-icon">${loc.icon}</div><div class="ab-name">${loc.name}</div><div class="ab-cost">${loc.desc}</div>
       </button>`;
     });
-    html += `</div><div class="sec-head">商铺医馆</div><div class="action-grid">`;
+    html += `</div><div class="sec-head">商铺医馆学馆</div><div class="action-grid">`;
     AncientLocations.LOCATIONS.filter(l=>l.cat==='service'&&G.age>=l.minAge).forEach(loc => {
-      const cls = loc.id==='shopst'?'ab-amber':loc.id==='clinic'?'ab-red':'ab-blue';
+      const cls = loc.id==='shopst'?'ab-amber':loc.id==='clinic'?'ab-red':loc.id==='wuguan'?'ab-orange':loc.id==='school'?'ab-indigo':'ab-blue';
+      const statusNote = loc.id==='school'?(G.inSchool?'📖 就读中':'可入学'):loc.id==='wuguan'?(G.inWuguan?'🥋 在馆中':'可入馆'):'';
       html += `<button class="action-btn ${cls}" onclick="openVenue('${loc.id}')">
-        <div class="ab-icon">${loc.icon}</div><div class="ab-name">${loc.name}</div><div class="ab-cost">${loc.desc}</div>
+        <div class="ab-icon">${loc.icon}</div><div class="ab-name">${loc.name}${statusNote?`<span style="font-size:8px;opacity:.7"> ${statusNote}</span>`:''}</div><div class="ab-cost">${loc.desc}</div>
       </button>`;
     });
     html += `</div>`;

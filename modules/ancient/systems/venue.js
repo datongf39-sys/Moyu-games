@@ -77,6 +77,80 @@ const AncientVenue = {
         </div>`;
       });
       html += `</div>`;
+    } else if (loc.id === 'school') {
+      const G = AncientState.G;
+      const level = G.civilExamLevel || 0;
+      const levelNames = ['白丁','县试','府试','院试·秀才','乡试·举人','会试·贡士','殿试·进士'];
+      const nextExam   = ['县试','府试','院试','乡试','会试','殿试','——'][level];
+      const intelReq   = level < 6 ? 20 + level * 10 : 0;
+      const alreadyStudied = AncientActions.actionDone('studySchool');
+      const alreadyExamed  = AncientActions.actionDone('civilExam');
+
+      html += `<div style="font-size:11px;color:var(--muted);margin-bottom:12px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px">
+        <div>📜 文试进度：<b>${levelNames[level]}</b>${level>=6?' 🏆 金榜题名':''}</div>
+        ${level<6?`<div style="margin-top:4px">下一关：${nextExam} · 需智识 ${intelReq}（当前 ${G.intel}）</div>`:''}
+        <div style="margin-top:4px">就读状态：${G.inSchool?'📖 在读':'未入学'}</div>
+      </div>`;
+
+      // 入退学按钮
+      html += `<div class="venue-spot" onclick="toggleSchool(event)" style="margin-bottom:10px">
+        <div class="venue-spot-name">${G.inSchool?'📚 退出学堂':'📖 叩门入学'}</div>
+        <div class="venue-spot-desc">${G.inSchool?'退学后仍可保留文试进度':'束脩20文，入学后可每年备考'}</div>
+      </div>`;
+
+      // 备考按钮
+      if (G.inSchool) {
+        html += `<div class="venue-spot${alreadyStudied?' sold-out':''}" onclick="${alreadyStudied?'':('studyAtSchool(event)')}" style="margin-bottom:10px">
+          <div class="venue-spot-name">📖 今岁备考</div>
+          <div class="venue-spot-desc">${alreadyStudied?'今岁已备考，来年再读':'苦读一载，提升智识'}</div>
+        </div>`;
+      }
+
+      // 下场应试按钮
+      if (G.inSchool && level < 6) {
+        html += `<div class="venue-spot${alreadyExamed?' sold-out':''}" onclick="${alreadyExamed?'':'openCivilExam()'}">
+          <div class="venue-spot-name">✍️ 下场应试（${nextExam}）</div>
+          <div class="venue-spot-desc">${alreadyExamed?'今岁已应试，来年再考':`智识需达 ${intelReq}，当前 ${G.intel}`}</div>
+        </div>`;
+      }
+
+    } else if (loc.id === 'wuguan') {
+      const G = AncientState.G;
+      const mlevel = G.militaryExamLevel || 0;
+      const mlevelNames = ['未入武试','武童试','武乡试','武会试','武殿试·授职'];
+      const nextMExam   = ['武童试','武乡试','武会试','武殿试','——'][mlevel];
+      const healthReq   = mlevel < 4 ? 20 + mlevel * 12 : 0;
+      const alreadyTrained = AncientActions.actionDone('trainWuguan');
+      const alreadyMExamed = AncientActions.actionDone('militaryExam');
+
+      html += `<div style="font-size:11px;color:var(--muted);margin-bottom:12px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px">
+        <div>⚔️ 武试进度：<b>${mlevelNames[mlevel]}</b>${mlevel>=4?' 🏆 授职入伍':''}</div>
+        ${mlevel<4?`<div style="margin-top:4px">下一关：${nextMExam} · 需体魄 ${healthReq}（当前 ${G.health}）</div>`:''}
+        <div style="margin-top:4px">就读状态：${G.inWuguan?'🥋 在馆':'未入馆'}</div>
+      </div>`;
+
+      // 入退馆按钮
+      html += `<div class="venue-spot" onclick="toggleWuguan(event)" style="margin-bottom:10px">
+        <div class="venue-spot-name">${G.inWuguan?'🥋 退出武馆':'🥋 叩门入馆'}</div>
+        <div class="venue-spot-desc">${G.inWuguan?'退馆后仍可保留武试进度':'束脩20文，入馆后可每年操练'}</div>
+      </div>`;
+
+      // 操练按钮
+      if (G.inWuguan) {
+        html += `<div class="venue-spot${alreadyTrained?' sold-out':''}" onclick="${alreadyTrained?'':'trainAtWuguan(event)'}" style="margin-bottom:10px">
+          <div class="venue-spot-name">🥋 今岁操练</div>
+          <div class="venue-spot-desc">${alreadyTrained?'今岁已操练，来年再练':'挥汗如雨，强健体魄'}</div>
+        </div>`;
+      }
+
+      // 下场武试按钮
+      if (G.inWuguan && mlevel < 4) {
+        html += `<div class="venue-spot${alreadyMExamed?' sold-out':''}" onclick="${alreadyMExamed?'':'openMilitaryExam()'}">
+          <div class="venue-spot-name">⚔️ 下场武试（${nextMExam}）</div>
+          <div class="venue-spot-desc">${alreadyMExamed?'今岁已应试，来年再战':`体魄需达 ${healthReq}，当前 ${G.health}`}</div>
+        </div>`;
+      }
+
     } else {
       loc.spots.forEach(spot => {
         const count = _venueSpotPeople[spot.id] || 0;

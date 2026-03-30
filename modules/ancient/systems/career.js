@@ -3,7 +3,8 @@ const AncientCareer = {
     const G = AncientState.G;
     const available = AncientJobs.JOBS.filter(j => {
       if (j.minAge > G.age || j.maxAge < G.age) return false;
-      if (j.examOnly && !G.examPassed) return false;
+      if (j.examType === 'civil'     && !G.examPassed)          return false;
+      if (j.examType === 'military'  && !G.militaryExamPassed)  return false;
       return true;
     });
     AncientModal.showModal('择业问仕','选定一行，勤勉任事，积累熟练可升迁晋级。每年岁末薪俸自行发放，勿需惦念。',

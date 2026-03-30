@@ -9,7 +9,7 @@ const AncientEstates = {
   ],
 
   LOCATIONS:[
-    // 社交场所（可探索结识人）
+    // ── 社交场所 ─────────────────────────────────────────
     {id:'tavern', name:'酒楼',    icon:'🍶',minAge:14,cat:'social',desc:'三教九流汇聚，江湖消息灵通',
      spots:[
       {id:'s1',name:'大堂雅座',  desc:'喧闹热情，豪客云集',     basePeople:3},
@@ -40,7 +40,8 @@ const AncientEstates = {
       {id:'g2',name:'假山石径',  desc:'公子哥儿，吟诗斗趣',     basePeople:2},
       {id:'g3',name:'宴客厅堂',  desc:'贵族聚会，高谈阔论',     basePeople:3},
      ]},
-    // 功能场所
+
+    // ── 功能场所 ─────────────────────────────────────────
     {id:'clinic', name:'医馆',    icon:'⚕️',minAge:0, cat:'service',desc:'悬壶济世，救死扶伤',
      spots:[
       {id:'c1',name:'诊室',      desc:'坐堂大夫，问诊把脉',     basePeople:1},
@@ -50,9 +51,14 @@ const AncientEstates = {
      spots:[
       {id:'sh1',name:'铺面',     desc:'掌柜伙计，热情迎客',     basePeople:1},
      ]},
-    {id:'school', name:'学堂',    icon:'🏫',minAge:6, cat:'service',desc:'读书识字，蒙学开智',
+    {id:'school', name:'学堂',    icon:'🏫',minAge:6, cat:'service',desc:'读书识字，蒙学开智，文试备考之所',
      spots:[
       {id:'sc1',name:'学堂内',   desc:'先生讲学，学童诵读',     basePeople:3},
+     ]},
+    {id:'wuguan', name:'武馆',    icon:'🥋',minAge:6, cat:'service',desc:'习武强身，武试备考之所',
+     spots:[
+      {id:'wu1',name:'演武场',   desc:'教头操练，刀枪对练',     basePeople:4},
+      {id:'wu2',name:'内功堂',   desc:'修习内功，强健体魄',     basePeople:2},
      ]},
   ]
 };

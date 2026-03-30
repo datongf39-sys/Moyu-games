@@ -850,14 +850,9 @@ const AncientLoop = {
 
     // School
     if (AncientState.G.inSchool){
-      const bg = AncientFamilyData.FAMILY_BG[AncientState.G.familyBg] || AncientFamilyData.FAMILY_BG.normal;
-      const isFree = bg.freeSchoolAge > 0 && AncientState.G.age < bg.freeSchoolAge;
-      if (AncientState.G.age > 18){
-        AncientState.G.inSchool=false;
-        AncientSave.addLog(`📚 年岁渐丰，已届离学之龄，求学生涯就此告一段落。`,'info');
-        yearEvents.push({icon:'📚', title:'离开学堂', body:`年岁渐丰，已届离学之龄，求学生涯就此告一段落。`, type:'info'});
-      }
-      else if (!isFree && AncientState.G.money >= 20){
+      const freeAge = {poor:0, normal:10, rich:16}[AncientState.G.familyBg] || 0;
+      const isFree = freeAge > 0 && AncientState.G.age < freeAge;
+      if (!isFree && AncientState.G.money >= 20){
         AncientState.G.money -= 20; AncientState.G.schoolYears++;
         const ev = AncientEvents.SCHOOL_EVENTS[Math.floor(Math.random()*AncientEvents.SCHOOL_EVENTS.length)];
         AncientState.G.intel = AncientState.clamp(AncientState.G.intel+4+(ev.intel||0)); AncientState.G.mood = AncientState.clamp(AncientState.G.mood+(ev.mood||0));
@@ -874,6 +869,29 @@ const AncientLoop = {
         AncientSave.addLog(`📖 ${ev.text}`, 'info');
         yearEvents.push({icon:'📖', title:'学堂见闻', body:ev.text, type:'info'});
       }
+    }
+
+    // Wuguan
+    if (AncientState.G.inWuguan){
+      const freeAge = {poor:0, normal:10, rich:16}[AncientState.G.familyBg] || 0;
+      const isFree = freeAge > 0 && AncientState.G.age < freeAge;
+      if (!isFree && AncientState.G.money >= 20){
+        AncientState.G.money -= 20;
+        AncientState.G.health = AncientState.clamp(AncientState.G.health + 2);
+        AncientSave.addLog(`🥋 武馆操练一年，束脩20文，体魄渐壮。`, 'info');
+      } else if (!isFree && AncientState.G.money < 20){
+        AncientState.G.inWuguan = false;
+        AncientSave.addLog(`🥋 囊中羞涩，无力缴纳束脩，不得不退出武馆。`, 'bad');
+        yearEvents.push({icon:'🥋', title:'退出武馆', body:`囊中羞涩，无力缴纳束脩，不得不退出武馆。`, type:'bad'});
+      } else {
+        AncientState.G.health = AncientState.clamp(AncientState.G.health + 2);
+        AncientSave.addLog(`🥋 武馆操练一年，家中供资，体魄渐壮。`, 'info');
+      }
+    }
+
+    // 官员年末结算
+    if (AncientState.G.job === 'officer' && window.AncientJobPlay) {
+      AncientJobPlay.Officer.yearEnd();
     }
 
     // Job age out
