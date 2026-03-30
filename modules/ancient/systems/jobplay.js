@@ -457,53 +457,41 @@ const AncientJobPlay = {
 
     _initCounty: () => {
       const G = AncientState.G;
-      // 根据品级选任职地
       const postings = AncientCivilData.OFFICIAL_POSTINGS;
       const posting  = postings[Math.min(G.jobRank, postings.length - 1)];
       const placeId  = posting.places[Math.floor(Math.random() * posting.places.length)];
       const place    = AncientPlacesData.PLACES.find(p => p.id === placeId) || AncientPlacesData.PLACES[0];
-
-      // 随机任期1-4年
-      const termLen = 1 + Math.floor(Math.random() * 4);
-
-      // 随机抽2-4个周期目标
+      const termLen  = 1 + Math.floor(Math.random() * 4);
       const goalPool  = AncientCivilData.TERM_GOALS;
       const goalCount = 2 + Math.floor(Math.random() * 3);
-      const goals     = goalPool.slice().sort(() => Math.random() - 0.5).slice(0, goalCount).map(g => {
+      const goals = goalPool.slice().sort(() => Math.random() - 0.5).slice(0, goalCount).map(g => {
         const goal = {...g};
         if (g.type === 'policy') {
           const policy = AncientCivilData.POLICIES[Math.floor(Math.random() * AncientCivilData.POLICIES.length)];
-          goal.targetValue = policy.name;
-          goal.targetPolicyId = policy.id;
-          goal.desc = g.desc.replace('{value}', policy.name);
-          goal.done = false;
+          goal.targetValue = policy.name; goal.targetPolicyId = policy.id;
+          goal.desc = g.desc.replace('{value}', policy.name); goal.done = false;
         } else {
           const [lo, hi] = g.valueRange;
           goal.targetValue = lo + Math.floor(Math.random() * (hi - lo));
           goal.desc = g.desc.replace('{value}', goal.targetValue);
-          goal.current = 0;
-          goal.done = false;
+          goal.current = 0; goal.done = false;
         }
         return goal;
       });
+      // 随机抽本年公文队列（2-4份）
+      const edictPool = AncientCivilData.EDICTS.slice().sort(() => Math.random() - 0.5)
+        .slice(0, 2 + Math.floor(Math.random() * 3)).map(e => e.id);
 
       G.countyData = {
-        placeId,
-        placeName: place.name,
-        placeIcon: place.icon,
-        termLen,
-        termYear: 0,         // 当前任期第几年
-        morale: 60,          // 民心（0-100）
-        population: 1000,    // 人口基数
-        taxRate: 50,         // 税率（%）
-        taxTotal: 0,         // 累计税收
-        merit: 0,            // 政绩
-        disastersHandled: 0, // 成功处理灾情次数
-        policies: [],        // 已颁布政策id列表
-        goals,
-        edictsDone: [],      // 本年已处理公文id
+        placeId, placeName: place.name, placeIcon: place.icon,
+        termLen, termYear: 0,
+        morale: 60, population: 1000,
+        taxRate: 25,   // 初始税率25%
+        taxTotal: 0, merit: 0, disastersHandled: 0,
+        policies: [], goals,
+        edictQueue: edictPool,   // 本年待批公文队列
+        edictsDone: [],          // 本年已处理公文
       };
-
       AncientSave.addLog(`🎖️ 奉旨赴任${place.icon}${place.name}，任期${termLen}年，立志造福一方。`, 'event');
     },
 
@@ -512,93 +500,84 @@ const AncientJobPlay = {
       const G  = AncientState.G;
       const cd = G.countyData;
       if (!cd) return;
-
-      const goalsHtml = cd.goals.map(g =>
-        `${g.done ? '✅' : '⬜'} ${g.name}：${g.desc}`
-      ).join('<br>');
+      const rankInfo  = AncientCivilData.OFFICER_RANKS[Math.min(G.jobRank, AncientCivilData.OFFICER_RANKS.length-1)];
+      const yearTax   = Math.round(cd.population * cd.taxRate / 100 * 10);
+      const goalsHtml = cd.goals.map(g => `${g.done ? '✅' : '⬜'} ${g.name}：${g.desc}`).join('<br>');
+      const edictLeft = (cd.edictQueue || []).filter(id => !cd.edictsDone.includes(id)).length;
 
       AncientModal.showModal(
         `${cd.placeIcon} ${cd.placeName} 县务总览`,
-        `任期：第 ${cd.termYear+1} / ${cd.termLen} 年<br>
+        `品级：${rankInfo.name} · 任期：第 ${cd.termYear+1} / ${cd.termLen} 年<br>
 民心：${cd.morale} · 人口：${cd.population} · 政绩：${cd.merit}<br>
-税率：${cd.taxRate}% · 累计税收：${cd.taxTotal}文<br><br>
+税率：${cd.taxRate}% · 本年预计税收：${yearTax}文 · 累计：${cd.taxTotal}文<br><br>
 <b>本任期目标：</b><br>${goalsHtml}`,
         [
-          {label:'📜 处理公文',  sub:`今年可处理${2+Math.floor(Math.random()*3)}份`,  cost:'', id:'edict'},
-          {label:'📋 颁布政策',  sub:'制定县政方针',                                   cost:'', id:'policy'},
-          {label:'💰 调整税率',  sub:`当前 ${cd.taxRate}%`,                            cost:'', id:'tax'},
-          {label:'↩ 稍后再议',   sub:'',                                                cost:'', id:'close'},
+          {label:'📜 批阅公文', sub: edictLeft > 0 ? `待批 ${edictLeft} 份` : '今年已批完', cost:'', id:'edict'},
+          {label:'📋 颁布政策', sub:'制定县政方针', cost:'', id:'policy'},
+          {label:'💰 调整税率', sub:`当前 ${cd.taxRate}%，本年税收 ${yearTax}文`, cost:'', id:'tax'},
+          {label:'↩ 稍后再议', sub:'', cost:'', id:'close'},
         ],
         (id) => {
           AncientModal.closeModal();
-          if      (id === 'edict')  setTimeout(() => AncientJobPlay.Officer._showEdicts(), 200);
+          if      (id === 'edict')  setTimeout(() => AncientJobPlay.Officer._showNextEdict(), 200);
           else if (id === 'policy') setTimeout(() => AncientJobPlay.Officer._showPolicies(), 200);
           else if (id === 'tax')    setTimeout(() => AncientJobPlay.Officer._showTax(), 200);
         }
       );
     },
 
-    // ── 公文处理 ────────────────────────────────────
-    _showEdicts: () => {
+    // ── 公文：点一次批一次 ──────────────────────────
+    _showNextEdict: () => {
       const G  = AncientState.G;
       const cd = G.countyData;
-      if (AncientActions.actionDone('officerEdict')) {
-        AncientModal.showToast('今年公文已处理完毕，明年再议！');
+      const pending = (cd.edictQueue || []).filter(id => !cd.edictsDone.includes(id));
+      if (pending.length === 0) {
+        AncientModal.showToast('今年公文已批阅完毕，明年再议！');
         return;
       }
-
-      // 随机抽2-4份公文（排除已处理的）
-      const pool = AncientCivilData.EDICTS
-        .filter(e => !cd.edictsDone.includes(e.id))
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 2 + Math.floor(Math.random() * 3));
-
-      if (pool.length === 0) {
-        AncientModal.showToast('今年无待处理公文。');
-        return;
-      }
-
-      AncientJobPlay.Officer._processEdict(pool, 0);
-    },
-
-    _processEdict: (pool, idx) => {
-      if (idx >= pool.length) {
-        AncientActions.markAction('officerEdict');
-        AncientModal.showToast('公文处理完毕，大人辛苦了。');
-        setTimeout(() => AncientJobPlay.Officer._showDashboard(), 300);
-        return;
-      }
-
-      const edict = pool[idx];
-      const G     = AncientState.G;
-      const cd    = G.countyData;
+      const edictId = pending[0];
+      const edict   = AncientCivilData.EDICTS.find(e => e.id === edictId);
+      if (!edict) { cd.edictsDone.push(edictId); AncientJobPlay.Officer._showNextEdict(); return; }
 
       AncientModal.showModal(
         `${edict.icon} 公文：${edict.name}`,
         edict.desc,
-        edict.options.map((o, i) => ({label:o.label, sub:'', cost:'', id:String(i)})),
+        edict.options.map((o, i) => ({label: o.label, sub:'', cost:'', id: String(i)})),
         (id) => {
           AncientModal.closeModal();
           const opt = edict.options[parseInt(id)];
-          // 应用效果
-          cd.morale     = AncientState.clamp(cd.morale + (opt.effect.moraleMod || 0), 0, 100);
-          cd.taxTotal  += opt.effect.taxMod || 0;
-          cd.population = Math.max(0, Math.round(cd.population * (1 + (opt.effect.populationMod || 0) / 100)));
-          cd.merit     += opt.merit || 0;
-          if (edict.type === 'disaster') cd.disastersHandled++;
-          cd.edictsDone.push(edict.id);
+          cd.edictsDone.push(edictId);
 
-          // 更新目标进度
+          // 判断成功/失败
+          const isSuccess = opt.successRate > 0 && Math.random() < opt.successRate;
+          const result    = isSuccess ? opt.success : opt.fail;
+
+          // 应用效果
+          cd.morale      = AncientState.clamp(cd.morale + (result.moraleMod || 0), 0, 100);
+          cd.taxTotal   += result.taxMod || 0;
+          cd.population  = Math.max(0, Math.round(cd.population + (result.populationMod || 0)));
+          cd.merit      += result.merit || 0;
+          if (isSuccess && edict.type === 'disaster') cd.disastersHandled++;
           AncientJobPlay.Officer._updateGoals(cd);
 
-          const profGain = Math.max(1, Math.round((opt.merit || 0) * 0.5 + 3));
+          const profGain = Math.max(0, Math.round((result.merit || 0) * 0.5 + (isSuccess ? 3 : 1)));
           G.jobProf += profGain;
-
-          AncientSave.addLog(`📜 处理公文【${edict.name}】：${opt.label}。民心${opt.effect.moraleMod>=0?'+':''}${opt.effect.moraleMod}，政绩+${opt.merit}。`, 'info');
+          AncientSave.addLog(
+            `📜 【${edict.name}】${opt.label}：${result.text}`,
+            isSuccess ? 'good' : 'bad'
+          );
           AncientSave.save();
-          AncientCareer.checkPromotion();
 
-          setTimeout(() => AncientJobPlay.Officer._processEdict(pool, idx + 1), 300);
+          // 显示结果反馈
+          setTimeout(() => {
+            AncientModal.showModal(
+              isSuccess ? `✅ 处置得当` : `❌ 事与愿违`,
+              `<b>${edict.name}</b><br><br>${result.text}<br><br>
+民心 ${result.moraleMod >= 0 ? '+' : ''}${result.moraleMod} · 政绩 ${result.merit >= 0 ? '+' : ''}${result.merit}`,
+              [{label: isSuccess ? '甚好，继续' : '唉，下次留意', sub:'', cost:'', id:'ok'}],
+              () => { AncientModal.closeModal(); AncientSave.save(); setTimeout(() => AncientJobPlay.Officer._showDashboard(), 200); }
+            );
+          }, 200);
         }
       );
     },
@@ -611,39 +590,29 @@ const AncientJobPlay = {
         AncientModal.showToast('今年已颁布政策，明年再议！');
         return;
       }
-
       const available = AncientCivilData.POLICIES.filter(p => !cd.policies.includes(p.id));
-      if (available.length === 0) {
-        AncientModal.showToast('所有政策均已颁布，无需重复。');
-        return;
-      }
+      if (available.length === 0) { AncientModal.showToast('所有政策均已颁布，无需重复。'); return; }
 
       AncientModal.showModal(
         '📋 颁布政策',
         '择一政策颁行，效果持续整个任期：',
         available.map(p => ({
-          label: p.name,
-          sub:   p.desc,
-          cost:  `民心${p.effect.moraleMod>=0?'+':''}${p.effect.moraleMod} 税收${p.effect.taxMod>=0?'+':''}${Math.round(p.effect.taxMod*100)}%`,
-          id:    p.id,
+          label: p.name, sub: p.desc,
+          cost: `民心${p.effect.moraleMod>=0?'+':''}${p.effect.moraleMod} 税${p.effect.taxMod>=0?'+':''}${Math.round(p.effect.taxMod*100)}%`,
+          id: p.id,
         })).concat([{label:'↩ 暂不颁布', sub:'', cost:'', id:'cancel'}]),
         (id) => {
           AncientModal.closeModal();
           if (id === 'cancel') return;
           const policy = AncientCivilData.POLICIES.find(p => p.id === id);
           if (!policy) return;
-
           cd.policies.push(id);
           cd.morale     = AncientState.clamp(cd.morale + (policy.effect.moraleMod || 0), 0, 100);
           cd.population = Math.round(cd.population * (1 + (policy.effect.populationMod || 0)));
           cd.merit     += 10;
           AncientActions.markAction('officerPolicy');
-
-          // 更新目标进度
           AncientJobPlay.Officer._updateGoals(cd);
-
           G.jobProf += 8;
-          AncientCareer.checkPromotion();
           AncientSave.addLog(`📋 颁布【${policy.name}】政策，${policy.desc}。政绩 +10。`, 'good');
           AncientSave.save();
           AncientModal.showToast(`已颁布【${policy.name}】`);
@@ -659,16 +628,17 @@ const AncientJobPlay = {
         AncientModal.showToast('今年税率已调整，明年再议！');
         return;
       }
+      const calcTax = (rate) => Math.round(cd.population * rate / 100 * 10);
 
       AncientModal.showModal(
         '💰 调整税率',
-        `当前税率：<b>${cd.taxRate}%</b><br>
-50%为基准：高于50%增加税收但降低民心，低于50%提升民心但减少税收。<br><br>
-民心：${cd.morale} · 预计年税收：${Math.round(cd.population * cd.taxRate / 100 * 10)}文`,
+        `当前税率：<b>${cd.taxRate}%</b> · 本年税收：<b>${calcTax(cd.taxRate)}文</b><br>
+25%为基准：高于25%增加税收但降低民心，低于25%提升民心但减少税收。<br><br>
+民心：${cd.morale}`,
         [
-          {label:'⬆️ 提高5%', sub:`→ ${cd.taxRate+5}%，税收+，民心-5`, cost:'', id:'up'},
-          {label:'⬇️ 降低5%', sub:`→ ${cd.taxRate-5}%，税收-，民心+5`, cost:'', id:'down'},
-          {label:'✅ 维持现状', sub:`保持${cd.taxRate}%`,               cost:'', id:'keep'},
+          {label:'⬆️ 提高5%', sub:`→ ${cd.taxRate+5}%，税收 ${calcTax(cd.taxRate+5)}文，民心-5`, cost:'', id:'up'},
+          {label:'⬇️ 降低5%', sub:`→ ${Math.max(0,cd.taxRate-5)}%，税收 ${calcTax(Math.max(0,cd.taxRate-5))}文，民心+5`, cost:'', id:'down'},
+          {label:'✅ 维持现状', sub:`${cd.taxRate}%，税收 ${calcTax(cd.taxRate)}文`, cost:'', id:'keep'},
         ],
         (id) => {
           AncientModal.closeModal();
@@ -680,17 +650,14 @@ const AncientJobPlay = {
             cd.morale  = AncientState.clamp(cd.morale + 5, 0, 100);
           }
           AncientActions.markAction('officerTax');
-          const yearTax = Math.round(cd.population * cd.taxRate / 100 * 10);
-          cd.taxTotal += yearTax;
-          G.money     += Math.floor(yearTax * 0.1); // 官员分成一成
-          G.totalMoney+= Math.floor(yearTax * 0.1);
-
-          // 更新目标进度
+          const yearTax = calcTax(cd.taxRate);
+          cd.taxTotal  += yearTax;
+          G.money      += Math.floor(yearTax * 0.1);
+          G.totalMoney += Math.floor(yearTax * 0.1);
           AncientJobPlay.Officer._updateGoals(cd);
-
           AncientSave.addLog(`💰 税率定为${cd.taxRate}%，本年税收${yearTax}文。`, 'info');
           AncientSave.save();
-          AncientModal.showToast(`税率已调整为 ${cd.taxRate}%，本年税收 ${yearTax}文`);
+          AncientModal.showToast(`税率 ${cd.taxRate}%，本年税收 ${yearTax}文`);
         }
       );
     },
@@ -699,41 +666,68 @@ const AncientJobPlay = {
     _updateGoals: (cd) => {
       cd.goals.forEach(g => {
         if (g.done) return;
-        if (g.type === 'min' && g.id === 'morale')      { if (cd.morale >= g.targetValue) g.done = true; }
-        if (g.type === 'total' && g.id === 'tax')        { g.current = cd.taxTotal; if (cd.taxTotal >= g.targetValue) g.done = true; }
-        if (g.type === 'total' && g.id === 'population') { g.current = cd.population; if (cd.population >= 1000 + g.targetValue) g.done = true; }
-        if (g.type === 'total' && g.id === 'disaster')   { g.current = cd.disastersHandled; if (cd.disastersHandled >= g.targetValue) g.done = true; }
-        if (g.type === 'policy') { if (cd.policies.includes(g.targetPolicyId)) g.done = true; }
+        if (g.type === 'min'    && g.id === 'morale')      { if (cd.morale >= g.targetValue) g.done = true; }
+        if (g.type === 'total'  && g.id === 'tax')          { g.current = cd.taxTotal;        if (cd.taxTotal >= g.targetValue) g.done = true; }
+        if (g.type === 'total'  && g.id === 'population')   { g.current = cd.population;      if (cd.population >= 1000 + g.targetValue) g.done = true; }
+        if (g.type === 'total'  && g.id === 'disaster')     { g.current = cd.disastersHandled;if (cd.disastersHandled >= g.targetValue) g.done = true; }
+        if (g.type === 'policy')                             { if (cd.policies.includes(g.targetPolicyId)) g.done = true; }
       });
     },
 
-    // ── 年末结算（由 loop.js 调用） ─────────────────
+    // ── 官员晋升：18级逐级，政绩斐然最多跳两级 ────
+    checkPromotion: () => {
+      const G = AncientState.G;
+      const cd = G.countyData;
+      if (!cd) return;
+      const maxRank = AncientCivilData.OFFICER_RANKS.length - 1; // 17
+      if (G.jobRank >= maxRank) return;
+
+      const jumpTwo = cd.merit >= 80;
+      const levels  = jumpTwo ? Math.min(2, maxRank - G.jobRank) : 1;
+      G.jobRank     = Math.min(maxRank, G.jobRank + levels);
+
+      const newRank  = AncientCivilData.OFFICER_RANKS[G.jobRank];
+      const reward   = 80 + G.jobRank * 30;
+      G.money       += reward;
+      G.totalMoney  += reward;
+      G.mood         = AncientState.clamp(G.mood + 15);
+      cd.merit       = 0;
+      AncientSave.addLog(`🎊 擢升为【${newRank.name}】${jumpTwo?'，政绩斐然，越级擢升！':''}，赐赏 ${reward}文！`, 'event');
+
+      setTimeout(() => AncientModal.showModal('🎊 擢升高位！',
+        `恭喜荣膺 <b>【${newRank.name}】</b>！${jumpTwo?'<br>政绩斐然，破格越级！':''}<br><br>🪙 朝廷赐赏：+${reward} 文<br>😊 心情 +15`,
+        [{label:'🎉 谢主隆恩！', sub:'', cost:'', id:'ok'}],
+        () => AncientModal.closeModal()), 300);
+    },
+
+    // ── 年末结算 ─────────────────────────────────────
     yearEnd: () => {
       const G  = AncientState.G;
       const cd = G.countyData;
       if (!cd || G.job !== 'officer') return;
 
       cd.termYear++;
-      cd.edictsDone = []; // 重置本年公文记录
+      // 重新生成下一年公文队列，保留税率
+      cd.edictQueue = AncientCivilData.EDICTS.slice().sort(() => Math.random() - 0.5)
+        .slice(0, 2 + Math.floor(Math.random() * 3)).map(e => e.id);
+      cd.edictsDone = [];
 
       const allDone = cd.goals.every(g => g.done);
 
       if (allDone || cd.termYear >= cd.termLen) {
-        // 任期结束，结算政绩
         const meritBonus = Math.round(cd.merit * 0.5);
-        G.jobProf += meritBonus;
-        G.money   += meritBonus * 2;
+        G.money      += meritBonus * 2;
         G.totalMoney += meritBonus * 2;
-        G.mood = AncientState.clamp(G.mood + (allDone ? 20 : 5));
-        AncientCareer.checkPromotion();
+        G.mood        = AncientState.clamp(G.mood + (allDone ? 20 : 5));
+        // 任期结束触发晋升判断
+        AncientJobPlay.Officer.checkPromotion();
         AncientSave.addLog(
           allDone
-            ? `🏆 任期目标全部完成，政绩卓著！朝廷嘉奖，获赏 ${meritBonus*2}文，熟练 +${meritBonus}。`
-            : `📋 任期届满，政绩 ${cd.merit}，获赏 ${meritBonus*2}文，熟练 +${meritBonus}。`,
+            ? `🏆 任期目标全部完成，政绩卓著！朝廷嘉奖 ${meritBonus*2}文。`
+            : `📋 任期届满，政绩 ${cd.merit}，获赏 ${meritBonus*2}文。`,
           allDone ? 'good' : 'info'
         );
-        // 重置县务，下次打开重新派任
-        G.countyData = null;
+        G.countyData = null; // 重置，下次重新派任
       } else {
         AncientSave.addLog(`📋 ${cd.placeName}任期第${cd.termYear}年结束，民心${cd.morale}，政绩${cd.merit}。`, 'info');
       }
