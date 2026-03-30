@@ -66,20 +66,12 @@ CHANGELOG -->
 
 <!-- 顶栏 -->
 <div class="topbar">
-  <div style="display:flex;align-items:center;gap:10px">
+  <div style="display:flex;align-items:center;gap:10px;flex:1">
     <button class="back" onclick="history.back()">← 返回</button>
-    <span class="topbar-title">🏯 古代人生模拟</span>
   </div>
-  <div style="display:flex;gap:5px;align-items:center">
-    <button onclick="st('white')" title="纸白" style="width:14px;height:14px;border-radius:50%;background:#f8f8f6;border:1px solid #ccc;cursor:pointer;padding:0"></button>
-    <button onclick="st('dark')"  title="暗黑" style="width:14px;height:14px;border-radius:50%;background:#191a19;border:1px solid #555;cursor:pointer;padding:0"></button>
-    <button onclick="st('mint')"  title="薄荷" style="width:14px;height:14px;border-radius:50%;background:#a8d5c2;border:1px solid #8abfaa;cursor:pointer;padding:0"></button>
-    <button onclick="st('sakura')"title="樱花" style="width:14px;height:14px;border-radius:50%;background:#f0b8cc;border:1px solid #d898b0;cursor:pointer;padding:0"></button>
-    <button onclick="st('sky')"   title="天空" style="width:14px;height:14px;border-radius:50%;background:#a8c4f0;border:1px solid #88a4d8;cursor:pointer;padding:0"></button>
-    <button onclick="st('warm')"  title="暖橙" style="width:14px;height:14px;border-radius:50%;background:#e8c878;border:1px solid #c8a858;cursor:pointer;padding:0"></button>
-  </div>
-  <div style="display:flex;align-items:center;gap:10px">
-    <button onclick="confirmRestart()" style="font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--red-l);color:var(--red);cursor:pointer;font-family:var(--mono)">⟳ 重开此生</button>
+  <span class="topbar-title" style="position:absolute;left:50%;transform:translateX(-50%)">🏯 古代人生模拟</span>
+  <div style="display:flex;align-items:center;gap:10px;flex:1;justify-content:flex-end">
+    <button onclick="openSettings()" style="font-size:16px;padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-family:var(--mono)">⚙️</button>
     <span style="font-size:9px;color:var(--faint);letter-spacing:.08em">ANCIENT · v4.2</span>
   </div>
 </div>
@@ -113,6 +105,25 @@ CHANGELOG -->
     <div class="stamina-bar"><div class="stamina-fill" id="stamina-fill"></div></div>
     <span style="font-size:9px;color:var(--muted)" id="stamina-val"></span>
     <button class="btn bg" onclick="restStamina()" style="font-size:9px;padding:3px 8px;margin-left:8px">休息补力</button>
+  </div>
+</div>
+
+<!-- 设置界面弹窗 -->
+<div class="modal-overlay" id="settings-modal" onclick="settingsModalBgClick(event)">
+  <div class="modal-box" style="max-width:500px">
+    <div class="modal-title">⚙️ 设置</div>
+    <div class="modal-sub" style="text-align:center;padding:10px 0">选择你喜欢的主题样式</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:10px">
+      <button onclick="st('white')" class="theme-btn" title="纸白" style="background:#f8f8f6;border:2px solid #ccc;height:60px;border-radius:8px;cursor:pointer;font-size:12px;font-family:var(--serif)">纸白</button>
+      <button onclick="st('dark')" class="theme-btn" title="暗黑" style="background:#191a19;border:2px solid #555;height:60px;border-radius:8px;cursor:pointer;font-size:12px;font-family:var(--serif);color:#fff">暗黑</button>
+      <button onclick="st('mint')" class="theme-btn" title="薄荷" style="background:#a8d5c2;border:2px solid #8abfaa;height:60px;border-radius:8px;cursor:pointer;font-size:12px;font-family:var(--serif)">薄荷</button>
+      <button onclick="st('sakura')" class="theme-btn" title="樱花" style="background:#f0b8cc;border:2px solid #d898b0;height:60px;border-radius:8px;cursor:pointer;font-size:12px;font-family:var(--serif)">樱花</button>
+      <button onclick="st('sky')" class="theme-btn" title="天空" style="background:#a8c4f0;border:2px solid #88a4d8;height:60px;border-radius:8px;cursor:pointer;font-size:12px;font-family:var(--serif)">天空</button>
+      <button onclick="st('warm')" class="theme-btn" title="暖橙" style="background:#e8c878;border:2px solid #c8a858;height:60px;border-radius:8px;cursor:pointer;font-size:12px;font-family:var(--serif)">暖橙</button>
+    </div>
+    <div class="modal-actions">
+      <button class="mclose" onclick="closeSettings()">关闭</button>
+    </div>
   </div>
 </div>
 
