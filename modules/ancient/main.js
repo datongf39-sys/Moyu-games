@@ -10,8 +10,26 @@ function confirmRestart(){
     (id)=>{ closeModal(); if(id==='yes'){ localStorage.removeItem('ancient'); location.reload(); } });
 }
 
+// Settings modal
+function openSettings(){
+  document.getElementById('settings-modal').classList.add('show');
+}
+
+function closeSettings(){
+  document.getElementById('settings-modal').classList.remove('show');
+}
+
+function settingsModalBgClick(e){
+  if (e.target === document.getElementById('settings-modal')) closeSettings();
+}
+
 // Escape key
-document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
+document.addEventListener('keydown', e => { 
+  if (e.key==='Escape') {
+    closeModal();
+    closeSettings();
+  }
+});
 
 // Expose all to window (for onclick= in HTML)
 Object.assign(window, {
@@ -26,6 +44,9 @@ Object.assign(window, {
   switchTab: window.AncientTabs ? window.AncientTabs.switchTab : null,
   restoreTab: window.AncientTabs ? window.AncientTabs.restoreTab : null,
   st,
+  openSettings,
+  closeSettings,
+  settingsModalBgClick,
   // systems
   openClinicTreatment: window.AncientDiseases ? window.AncientDiseases.openClinicTreatment : null,
   buyItemVenue: window.AncientShop ? window.AncientShop.buyItemVenue : null,
