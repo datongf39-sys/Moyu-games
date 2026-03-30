@@ -111,18 +111,26 @@ const AncientEstate = {
     const e = AncientState.G.estates[idx]; if (!e) return;
     const residents = e.residents || [];
     const isResidential = e.id !== 'farm' && e.id !== 'shop';
-    
-    if (!isResidential){
-      // 田庄和商铺只显示出售选项
+
+    if (e.type === 'shop') {
+      if (window.AncientShopPlay) { AncientShopPlay.openManageModal(idx); return; }
+      // 降级：没有经营系统时只显示出售
       AncientModal.showModal(`${e.icon} 管理【${e.name}】`,
-        `此乃<b>${e.type==='farm'?'田庄':'商铺'}</b>，非居所，不可留人入住。<br>年入：${e.incomePerYear||0}文`,
+        `此乃<b>商铺</b>，非居所，不可留人入住。<br>年入：${e.incomePerYear||0}文`,
         [{label:'🏠 立契出售', sub:`得 ${Math.floor(e.price*0.6)}文`, cost:'', id:'sell', style:'red'}],
-        (id) => {
-          AncientModal.closeModal();
-          if (id==='sell') AncientEstate.sellEstate(idx);
-        });
+        (id) => { AncientModal.closeModal(); if (id==='sell') AncientEstate.sellEstate(idx); });
       return;
     }
+
+    if (e.type === 'farm') {
+      AncientModal.showModal(`${e.icon} 管理【${e.name}】`,
+        `此乃<b>田庄</b>，非居所，不可留人入住。<br>年入：${e.incomePerYear||0}文`,
+        [{label:'🏠 立契出售', sub:`得 ${Math.floor(e.price*0.6)}文`, cost:'', id:'sell', style:'red'}],
+        (id) => { AncientModal.closeModal(); if (id==='sell') AncientEstate.sellEstate(idx); });
+      return;
+    }
+
+    if (!isResidential) return;
     
     // 住宅类地产：显示出售和人员配置选项
     const opts = [

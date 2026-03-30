@@ -894,6 +894,12 @@ const AncientLoop = {
       AncientJobPlay.Officer.yearEnd();
     }
 
+    // 商铺年末结算
+    if (window.AncientShopPlay) {
+      const shopEvents = AncientShopPlay.yearEnd();
+      if (shopEvents && shopEvents.length) shopEvents.forEach(e => yearEvents.push(e));
+    }
+
     // Job age out
     if (job && AncientState.G.job !== 'none'){
       if (AncientState.G.age > job.maxAge){
