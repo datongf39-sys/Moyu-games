@@ -174,7 +174,7 @@
         │   ├── career.js       # 职业系统
         │   ├── school.js       # 学校系统
         │   ├── jobplay.js      # 职业玩法系统
-        │   └── shopplay.js     # 商铺经营引擎（通用）
+        │   └── tavernplay.js   # 酒楼经营玩法系统
         ├── ui/                 # UI 模块
         │   ├── modal.js        # 模态框
         │   ├── render.js       # UI 渲染
@@ -994,7 +994,7 @@ const CorpClick = { doClick() {...}, ... };
 - `modules/ancient/systems/career.js` - 职业系统
 - `modules/ancient/systems/school.js` - 学校系统
 - `modules/ancient/systems/jobplay.js` - 职业玩法系统（药师/行商/官员）
-- `modules/ancient/systems/shopplay.js` - 商铺经营引擎（通用，驱动各业态）
+- `modules/ancient/systems/tavernplay.js` - 酒楼经营玩法（采购/研发/开业/结算）
 
 **UI 模块（ui/）**
 - `modules/ancient/ui/modal.js` - 模态框
@@ -1101,8 +1101,7 @@ const CorpClick = { doClick() {...}, ... };
 | 场所系统 | `systems/venue.js` |
 | 学校/武馆 | `systems/school.js` |
 | 职业玩法 | `systems/jobplay.js` |
-| 商铺经营引擎 | `systems/shopplay.js` |
-| 酒楼业态数据 | `data/tavern.js` |
+| 酒楼经营 | `data/tavern.js` + `systems/tavernplay.js` |
 | UI 渲染 | `ui/render.js` + `ui/modal.js` |
 | 游戏主循环 | `core/loop.js` |
 | 存档读档 | `save.js` |
