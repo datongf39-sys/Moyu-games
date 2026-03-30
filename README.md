@@ -143,16 +143,19 @@
     │   ├── save.js             # 存档系统
     │   ├── init.js             # 初始化
     │   └── main.js             # 数据合并和启动
-    └── ancient/                # 古代模块（已完全拆分）
+  └── ancient/                # 古代模块（已完全拆分）
         ├── ancient.css         # 页面专用样式
         ├── data/               # 数据模块
         │   ├── names.js        # 名字数据
         │   ├── family.js       # 家族数据
-        │   ├── estates.js      # 地产数据
+        │   ├── estates.js      # 地产&地点数据
         │   ├── jobs.js         # 职业数据
         │   ├── items.js        # 物品数据
         │   ├── events.js       # 事件数据
-        │   └── diseases.js     # 疾病数据
+        │   ├── diseases.js     # 疾病数据
+        │   ├── civil.js        # 科举数据
+        │   ├── locations.js    # 地图数据
+        │   └── tavern.js       # 酒楼业态数据
         ├── core/               # 核心模块
         │   ├── state.js        # 状态管理
         │   └── loop.js         # 游戏主循环
@@ -169,7 +172,9 @@
         │   ├── venue.js        # 场所系统
         │   ├── disease.js      # 疾病系统
         │   ├── career.js       # 职业系统
-        │   └── school.js       # 学校系统
+        │   ├── school.js       # 学校系统
+        │   ├── jobplay.js      # 职业玩法系统
+        │   └── shopplay.js     # 商铺经营引擎（通用）
         ├── ui/                 # UI 模块
         │   ├── modal.js        # 模态框
         │   ├── render.js       # UI 渲染
@@ -960,11 +965,14 @@ const CorpClick = { doClick() {...}, ... };
 **数据模块（data/）**
 - `modules/ancient/data/names.js` - 名字数据（姓氏、名字列表）
 - `modules/ancient/data/family.js` - 家族数据（家族成员、关系）
-- `modules/ancient/data/estates.js` - 地产数据（地产列表、效果）
+- `modules/ancient/data/estates.js` - 地产&地点数据（地产列表、场所列表）
 - `modules/ancient/data/jobs.js` - 职业数据（职业列表、收入）
 - `modules/ancient/data/items.js` - 物品数据（物品列表、效果）
 - `modules/ancient/data/events.js` - 事件数据（随机事件列表）
 - `modules/ancient/data/diseases.js` - 疾病数据（疾病列表、效果）
+- `modules/ancient/data/civil.js` - 科举数据（考试关卡、题目）
+- `modules/ancient/data/locations.js` - 地图数据（地点列表）
+- `modules/ancient/data/tavern.js` - 酒楼业态数据（菜谱、厨子、坐堂事件）
 
 **核心模块（core/）**
 - `modules/ancient/core/state.js` - 状态管理（游戏状态、属性）
@@ -985,6 +993,8 @@ const CorpClick = { doClick() {...}, ... };
 - `modules/ancient/systems/disease.js` - 疾病系统
 - `modules/ancient/systems/career.js` - 职业系统
 - `modules/ancient/systems/school.js` - 学校系统
+- `modules/ancient/systems/jobplay.js` - 职业玩法系统（药师/行商/官员）
+- `modules/ancient/systems/shopplay.js` - 商铺经营引擎（通用，驱动各业态）
 
 **UI 模块（ui/）**
 - `modules/ancient/ui/modal.js` - 模态框
@@ -1081,13 +1091,18 @@ const CorpClick = { doClick() {...}, ... };
 | 物品系统 | `data/items.js` |
 | 随机事件 | `data/events.js` |
 | 疾病系统 | `data/diseases.js` + `systems/disease.js` |
+| 科举系统 | `data/civil.js` + `systems/school.js` |
+| 地图数据 | `data/locations.js` |
 | 社交功能 | `features/social.js` |
 | 婚姻功能 | `features/marriage.js` |
 | 健康功能 | `features/health.js` |
 | 继承功能 | `features/inherit.js` |
 | 商店系统 | `systems/shop.js` |
 | 场所系统 | `systems/venue.js` |
-| 学校系统 | `systems/school.js` |
+| 学校/武馆 | `systems/school.js` |
+| 职业玩法 | `systems/jobplay.js` |
+| 商铺经营引擎 | `systems/shopplay.js` |
+| 酒楼业态数据 | `data/tavern.js` |
 | UI 渲染 | `ui/render.js` + `ui/modal.js` |
 | 游戏主循环 | `core/loop.js` |
 | 存档读档 | `save.js` |
