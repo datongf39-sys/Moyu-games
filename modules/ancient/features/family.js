@@ -11,7 +11,7 @@ const AncientFamily = {
     
     const giftDone = AncientActions.actionDone('giftParents_'+idx);
     const chatDone = AncientActions.actionDone('chatParent_'+idx);
-    AncientModal.showModal(`${parent.emoji} ${parent.name}（${parent.rel}）`, `好感度：${fav}/100`,
+    AncientModal.showModal(`${parent.name}（${parent.rel}）`, `${parent.job||'无业'} · ${parent.age||50}岁<br>好感度：${fav}/100`,
       [{label:'💬 问候叙话', sub:chatDone?'今年已叙话':'增进感情', cost:'', id:'chat'},
        ...(a>=8&&!giftDone?[{label:'🎁 孝敬父母', sub:'花费文钱，好感+', cost:'', id:'gift'}]:[]),
        ...(canAsk?[{label:'🙏 开口要钱', sub:'好感影响成功率', cost:'', id:'ask'}]:[])],
@@ -82,8 +82,8 @@ const AncientFamily = {
     }
     opts.push({label:'📜 和离书', sub:'两厢分离，各奔前程', cost:'', id:'divorce'});
     
-    AncientModal.showModal(`${AncientState.G.spouseEmoji||'👤'} ${AncientState.G.spouseName}`,
-      `${AncientState.G.spouseGender==='male'?'夫君':'夫人'}\n好感度：${AncientState.G.spouseFavor||50}/100`,
+    AncientModal.showModal(`${AncientState.G.spouseName}`,
+      `${AncientState.G.spouseGender==='male'?'夫君':'夫人'} · ${AncientState.G.spouseAge||25}岁 · ${AncientState.G.spouseJob||'无业'}<br>好感度：${AncientState.G.spouseFavor||50}/100`,
       opts,
       (id) => { 
         AncientModal.closeModal(); 
@@ -170,7 +170,7 @@ const AncientFamily = {
     AncientState.G.npcs = AncientState.G.npcs.filter(n => n.id !== npc.id);
     AncientSave.addLog(`🏮 ${npc.name} 含羞应允为${roleLabel}，待来年择吉日纳入府中。`, 'good');
     AncientModal.showModal('🏮 纳妾结果',
-      `${npc.emoji} ${npc.name} 含羞点头，应允为${roleLabel}。<br><br>待来年春暖花开，择吉日接入府中。`,
+      `${npc.name} 含羞点头，应允为${roleLabel}。<br><br>待来年春暖花开，择吉日接入府中。`,
       [{label:'🎉 翘首以盼',sub:'',cost:'',id:'ok'}], () => { AncientModal.closeModal(); AncientSave.save(); AncientRender.render(); });
   },
 
@@ -178,14 +178,34 @@ const AncientFamily = {
     const c = AncientState.G.concubines && AncientState.G.concubines[idx]; if (!c) return;
     const roleLabel = c.role==='concubine'?'妾室':'面首';
     const intimacyDone = AncientActions.actionDone('intimacyConcubine_'+idx);
+    const moneyDone = AncientActions.actionDone('giveMoneyConcubine_'+idx);
     
-    AncientModal.showModal(`${c.emoji} ${c.name}（${roleLabel}）`, `好感度：${c.favor}/100`,
+    AncientModal.showModal(`${c.name}（${roleLabel}）`, `${c.age||20}岁 · ${c.job||'无业'}<br>好感度：${c.favor}/100`,
       [{label:'💕 鱼水之欢', sub:intimacyDone?'今岁已有鱼水之欢':'来年或有子嗣之喜', cost:'', id:'intimacy'},
+       {label:'💰 给予钱财', sub:moneyDone?'今岁已给过':'散钱与妾室', cost:'', id:'money'},
        {label:'📜 遣散出府',sub:'',cost:'',id:'dismiss'}],
       (id) => { 
         AncientModal.closeModal(); 
         if(id==='intimacy') AncientFamily.intimacyConcubine(idx);
+        else if(id==='money') AncientFamily.giveMoneyConcubine(idx);
         else if(id==='dismiss') AncientFamily.dismissConcubine(idx); 
+      });
+  },
+
+  openLoverInteract: (idx) => {
+    const l = AncientState.G.lovers && AncientState.G.lovers[idx]; if (!l) return;
+    const intimacyDone = AncientActions.actionDone('intimacyLover_'+idx);
+    const moneyDone = AncientActions.actionDone('giveMoneyLover_'+idx);
+    
+    AncientModal.showModal(`${l.name}（外室）`, `${l.age||25}岁 · ${l.job||'无业'}<br>好感度：${l.favor||50}/100`,
+      [{label:'💕 鱼水之欢', sub:intimacyDone?'今岁已有鱼水之欢':'来年或有子嗣', cost:'', id:'intimacy'},
+       {label:'💰 给予钱财', sub:moneyDone?'今岁已给过':'散钱与外室', cost:'', id:'money'},
+       {label:'📜 断绝关系',sub:'从此陌路',cost:'',id:'break'}],
+      (id) => { 
+        AncientModal.closeModal(); 
+        if(id==='intimacy') AncientFamily.intimacyLover(idx);
+        else if(id==='money') AncientFamily.giveMoneyLover(idx);
+        else if(id==='break') AncientFamily.breakupLover(idx);
       });
   },
   
@@ -202,6 +222,23 @@ const AncientFamily = {
       [{label:'知晓',sub:'',cost:'',id:'ok'}], () => { closeModal(); AncientSave.save(); AncientRender.render(); });
   },
 
+  giveMoneyConcubine: (idx) => {
+    const c = AncientState.G.concubines[idx]; if (!c) return;
+    const alreadyGiven = AncientActions.actionDone('giveMoneyConcubine_'+idx);
+    if (alreadyGiven){ showToast('今岁已给过钱财！'); return; }
+    
+    const amount = prompt('请输入给予的金额：', '50');
+    if (!amount || isNaN(amount) || amount <= 0) return;
+    if (AncientState.G.money < amount){ showToast('钱财不足！'); return; }
+    
+    AncientState.G.money -= parseInt(amount);
+    c.favor = AncientState.clamp(c.favor + Math.floor(amount/10));
+    AncientActions.markAction('giveMoneyConcubine_'+idx);
+    AncientSave.addLog(`💰 给予 ${c.name} ${amount} 文钱。`, 'info');
+    showModal('💰 给予钱财', `${c.name} 接过钱财，眉开眼笑。<br><br>妾室好感 +${Math.floor(amount/10)}`,
+      [{label:'知晓',sub:'',cost:'',id:'ok'}], () => { closeModal(); AncientSave.save(); AncientRender.render(); });
+  },
+
   dismissConcubine: (idx) => {
     const c = AncientState.G.concubines && AncientState.G.concubines[idx]; if (!c) return;
     if (!confirm(`此举乃遣散之举，一旦为之，无可挽回，是否继续？`)) return;
@@ -212,6 +249,45 @@ const AncientFamily = {
     AncientSave.addLog(`📜 ${dismissedRole} ${dismissedName} 已扶持出府，就此别过。`, 'info'); AncientSave.save();
     AncientModal.showModal('📜 出府别离', `${dismissedRole} ${dismissedName} 携行囊离府，从此各不相干。`,
       [{label:'就此别过',sub:'',cost:'',id:'ok'}], () => { AncientModal.closeModal(); AncientRender.render(); });
+  },
+
+  intimacyLover: (idx) => {
+    const l = AncientState.G.lovers[idx]; if (!l) return;
+    if (AncientActions.actionDone('intimacyLover_'+idx)){ showToast('今岁已有幽会，不可贪多！'); return; }
+    if (!AncientEstate.hasAvailableCapacity(1)){ 
+      showToast('府中已住满，无处安置新生骨肉！'); 
+      return; 
+    }
+    AncientActions.markAction('intimacyLover_'+idx);
+    AncientSave.addLog(`💕 与 ${l.name} 幽会亲热。`, 'info');
+    showModal('💕 幽会亲热', `与 ${l.name} 共度良宵。<br><br>来年或有子嗣之喜。`,
+      [{label:'知晓',sub:'',cost:'',id:'ok'}], () => { closeModal(); AncientSave.save(); AncientRender.render(); });
+  },
+
+  giveMoneyLover: (idx) => {
+    const l = AncientState.G.lovers[idx]; if (!l) return;
+    const alreadyGiven = AncientActions.actionDone('giveMoneyLover_'+idx);
+    if (alreadyGiven){ showToast('今岁已给过钱财！'); return; }
+    
+    const amount = prompt('请输入给予的金额：', '50');
+    if (!amount || isNaN(amount) || amount <= 0) return;
+    if (AncientState.G.money < amount){ showToast('钱财不足！'); return; }
+    
+    AncientState.G.money -= parseInt(amount);
+    l.favor = AncientState.clamp((l.favor||50) + Math.floor(amount/10));
+    AncientActions.markAction('giveMoneyLover_'+idx);
+    AncientSave.addLog(`💰 给予 ${l.name} ${amount} 文钱。`, 'info');
+    showModal('💰 给予钱财', `${l.name} 接过钱财，眉开眼笑。<br><br>外室好感 +${Math.floor(amount/10)}`,
+      [{label:'知晓',sub:'',cost:'',id:'ok'}], () => { closeModal(); AncientSave.save(); AncientRender.render(); });
+  },
+
+  breakupLover: (idx) => {
+    const l = AncientState.G.lovers[idx]; if (!l) return;
+    if (!confirm(`此举乃断绝关系，一旦为之，无可挽回，是否继续？`)) return;
+    AncientState.G.lovers.splice(idx, 1);
+    AncientSave.addLog(`📜 与 ${l.name} 断绝关系，从此陌路。`, 'info');
+    showModal('📜 断绝关系', `与 ${l.name} 就此别过，从此陌路。`,
+      [{label:'知晓',sub:'',cost:'',id:'ok'}], () => { closeModal(); AncientSave.save(); AncientRender.render(); });
   },
 
   openChildInteract: (idx) => {
@@ -228,8 +304,8 @@ const AncientFamily = {
     opts.push({label:'💰 给零花钱', sub:alreadyMoney?'今岁已给过':'散钱与子女，骨肉情意深', cost:'', id:'money'});
     if (canArrangeMarriage) opts.push({label:'💕 为其觅配', sub:'操持婚事，觅得良缘', cost:'', id:'arrange'});
     
-    showModal(`${c.emoji} ${c.name}`,
-      `${c.gender==='male'?'子':'女'} · ${c.age}岁 · ${c.spouse?('配偶：'+c.spouseName+'（'+(c.spouseGender==='male'?'男':'女')+'）'):'未婚'}\n${c.favor!=null?`好感度：${c.favor}/100`:''}`,
+    showModal(`${c.name}`,
+        `${c.gender==='male'?'儿子':'女儿'} · ${c.age}岁 · ${c.job||'无业'} · ${c.spouse?('配偶：'+c.spouseName+'（'+(c.spouseGender==='male'?'男':'女')+'）'):'未婚'}<br>${c.favor!=null?`好感度：${c.favor}/100`:''}`,
       opts, (id) => {
         closeModal();
         if (id==='chat')       AncientFamily.doChildChat(idx);
@@ -399,7 +475,7 @@ const AncientFamily = {
     ];
     
     showModal(`🌸 ${lover.name} 上门`,
-      `${lover.emoji} ${lover.name} 抱着${babyEmoji} ${babyName} 找上门来。<br><br>「这是你的孩子，你要负责！」<br><br>请选择如何处理：`,
+      `${lover.name}（${lover.age||25}岁 · ${lover.job||'无业'}）抱着${babyEmoji} ${babyName} 找上门来。<br><br>「这是你的孩子，你要负责！」<br><br>请选择如何处理：`,
       opts, (id) => {
         closeModal();
         if (id==='estate') AncientFamily.loverVisitGiveEstate(loverIdx, babyName);
@@ -669,6 +745,7 @@ window.divorceSpouse = AncientFamily.divorceSpouse;
 window.offerConcubine = AncientFamily.offerConcubine;
 window.openConcubineInteract = AncientFamily.openConcubineInteract;
 window.dismissConcubine = AncientFamily.dismissConcubine;
+window.openLoverInteract = AncientFamily.openLoverInteract;
 window.openChildInteract = AncientFamily.openChildInteract;
 window.inheritChild = AncientInherit.inheritChild;
 window.offerLover = AncientFamily.offerLover;
