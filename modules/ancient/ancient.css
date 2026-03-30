@@ -8,6 +8,11 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .topbar-title{font-family:var(--serif);font-size:15px;font-weight:700}
 .main{padding:12px 14px 32px;max-width:960px;margin:0 auto}
 .main-grid{display:grid;grid-template-columns:300px 1fr;gap:12px;align-items:start}
+@media (max-width: 768px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:10px}
 .card:last-child{margin-bottom:0}
 .ct{font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
