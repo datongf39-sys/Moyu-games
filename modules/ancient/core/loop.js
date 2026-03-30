@@ -895,8 +895,8 @@ const AncientLoop = {
     }
 
     // 商铺年末结算
-    if (window.AncientShopPlay) {
-      const shopEvents = AncientShopPlay.yearEnd();
+    if (window.AncientTavernPlay) {
+      const shopEvents = AncientTavernPlay.yearEnd();
       if (shopEvents && shopEvents.length) shopEvents.forEach(e => yearEvents.push(e));
     }
 

@@ -113,7 +113,7 @@ const AncientEstate = {
     const isResidential = e.id !== 'farm' && e.id !== 'shop';
 
     if (e.type === 'shop') {
-      if (window.AncientShopPlay) { AncientShopPlay.openManageModal(idx); return; }
+      if (window.AncientTavernPlay) { AncientTavernPlay.openManageModal(idx); return; }
       // 降级：没有经营系统时只显示出售
       AncientModal.showModal(`${e.icon} 管理【${e.name}】`,
         `此乃<b>商铺</b>，非居所，不可留人入住。<br>年入：${e.incomePerYear||0}文`,
