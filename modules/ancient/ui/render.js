@@ -288,9 +288,8 @@ const AncientRender = {
       G.estates.forEach((e,i) => {
         const residents = e.residents || [];
         const occupied = residents.length;
-        const hasMinor = G.children.some(c => c.age<18 && residents.includes(c.name));
-        const isResidential = e.id !== 'farm' && e.id !== 'shop' && e.id !== 'tavern'; // 田庄、商铺和酒楼不允许住人
-        
+        const isResidential = e.type !== 'farm' && e.type !== 'shop';
+
         html += `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px">
           <div style="display:flex;align-items:flex-start;gap:8px">
             <span style="font-size:22px">${e.icon}</span>
@@ -314,7 +313,7 @@ const AncientRender = {
     html += `<div class="sec-head">购置地产（当前余钱 🪙${G.money}文）</div><div class="shop-grid">`;
     AncientEstates.ESTATES.forEach(e => {
       const canBuy = G.money >= e.price;
-      const isResidential = e.id !== 'farm' && e.id !== 'shop';
+      const isResidential = e.type !== 'farm' && e.type !== 'shop';
       html += `<div class="shop-item${canBuy?'':' sold-out'}" onclick="${canBuy?`buyEstate('${e.id}')`:''}" >
         <div class="si-icon">${e.icon}</div>
         <div class="si-name">${e.name}${isResidential?` <span style="font-size:8px;color:var(--faint)">容${e.capacity}人</span>`:''}</div>
