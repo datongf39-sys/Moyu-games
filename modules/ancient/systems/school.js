@@ -167,15 +167,20 @@ const AncientSchool = {
   _showQuestion: (examLevel, state, levelInfo) => {
     const q = state.questions[state.current];
     const isMulti = q.type === 'multi';
-    state.selected = null;
-    state.multiSelected = [];
+    if (!isMulti) state.selected = null;
 
-    const opts = q.opts.map((opt, i) => ({
-      label: `${['甲','乙','丙','丁'][i]}、${opt}`,
-      sub: isMulti ? '（可多选）' : '',
-      cost: '', id: String(i)
-    }));
-    if (isMulti) opts.push({label:'✅ 确认作答', sub:'', cost:'', id:'confirm'});
+    const opts = q.opts.map((opt, i) => {
+      const isChosen = isMulti ? state.multiSelected.includes(i) : false;
+      return {
+        label: `${isChosen ? '✅ ' : ''}${['甲','乙','丙','丁'][i]}、${opt}`,
+        sub:   isMulti ? (isChosen ? '已选（再点取消）' : '可多选') : '',
+        cost:  '', id: String(i),
+      };
+    });
+    if (isMulti) opts.push({
+      label: `✅ 确认作答（已选${state.multiSelected.length}项）`,
+      sub: '', cost: '', id: 'confirm',
+    });
 
     AncientModal.showModal(
       `📜 ${levelInfo.name} — 第${state.current+1}/5题${isMulti?' 【多选】':''}`,
@@ -185,9 +190,8 @@ const AncientSchool = {
         AncientModal.closeModal();
         if (isMulti) {
           if (id === 'confirm') {
-            // 判断多选
-            const correctSet = JSON.stringify(q.ans.slice().sort());
-            const selectedSet = JSON.stringify(state.multiSelected.slice().sort());
+            const correctSet  = JSON.stringify(q.ans.slice().sort((a,b)=>a-b));
+            const selectedSet = JSON.stringify(state.multiSelected.slice().sort((a,b)=>a-b));
             if (correctSet === selectedSet) state.correct++;
             AncientSchool._nextQuestion(examLevel, state, levelInfo);
           } else {
@@ -197,7 +201,6 @@ const AncientSchool = {
             } else {
               state.multiSelected.push(idx);
             }
-            // 重新显示同一题（高亮已选）
             setTimeout(() => AncientSchool._showQuestion(examLevel, state, levelInfo), 100);
           }
         } else {
