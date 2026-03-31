@@ -320,13 +320,14 @@ const AncientRender = {
     } else {
       html += `<div style="color:var(--faint);font-size:10px;text-align:center;padding:12px">名下尚无房产田产。</div>`;
     }
-    html += `<div class="sec-head">购置地产（当前余钱 🪙${G.money}文）</div><div class="shop-grid">`;
+        html += `<div class="sec-head">购置地产（当前余钱 🪙${G.money}文）</div><div class="shop-grid">`;
     AncientEstates.ESTATES.forEach(e => {
       const canBuy = G.money >= e.price;
-      const isResidential = e.id !== 'farm' && e.id !== 'shop';
+      // 只有住宅类房产才显示容客量（排除田庄、商铺、酒楼、客栈）
+      const isResidential = e.id !== 'farm' && e.id !== 'shop' && e.id !== 'tavern' && e.id !== 'inn';
       html += `<div class="shop-item${canBuy?'':' sold-out'}" onclick="${canBuy?`buyEstate('${e.id}')`:''}" >
         <div class="si-icon">${e.icon}</div>
-        <div class="si-name">${e.name}${isResidential?` <span style="font-size:8px;color:var(--faint)">容${e.capacity}人</span>`:''}</div>
+        <div class="si-name">${e.name}${isResidential && e.capacity ? ` <span style="font-size:8px;color:var(--faint)">容${e.capacity}人</span>`:''}</div>
         <div class="si-desc">${e.desc}</div>
         <div class="si-price">🪙 ${e.price}文${e.incomePerYear>0?' · 年入'+e.incomePerYear+'文':''}${!canBuy?' · 钱不够':''}</div>
       </div>`;
