@@ -20,6 +20,9 @@ const AncientInnPlay = (() => {
       shutdown:      false, // 本年是否被关店调查
       _yearOpened:   false, // 本年是否已安排入住
 
+      managed:       false,
+      managerName:   null,
+
       // 楼层解锁状态
       floors: { 1: true, 2: false, 3: false },
 
@@ -77,6 +80,12 @@ const AncientInnPlay = (() => {
   // ── 主管理入口 ────────────────────────────────────────────
   const openManageModal = (estateIdx) => {
     const { estate, inn } = _get(estateIdx);
+
+    if (inn.managed) {
+      _managedMenu(estateIdx);
+      return;
+    }
+
     const totalRooms = _totalRooms(inn);
     const unlockedFloors = Object.entries(inn.floors)
       .filter(([, v]) => v).map(([k]) => `${k}楼`).join('、');
@@ -93,6 +102,7 @@ const AncientInnPlay = (() => {
         { label:'🎨 装修布置',     sub:'为房间添置装饰，提升满意度',     cost:'', id:'decor'      },
         { label:'🏛 建设公共设施', sub:'澡堂、花园等提升整体口碑',       cost:'', id:'facility'   },
         { label:'🏮 开门迎客',     sub: inn._yearOpened?'今年已安排入住':'安排本年旅客入住', cost:'', id:'open' },
+        { label:'🗂 委托托管',     sub:'掌柜代营，抽成30%',              cost:'', id:'manage'   },
         { label:'📊 客栈状况',     sub:'查看声誉、设施与房间详情',        cost:'', id:'status'    },
         { label:'🏠 立契出售',     sub:`得 ${Math.floor(estate.price*0.6)} 文`, cost:'', id:'sell', style:'red' },
       ],
@@ -103,6 +113,7 @@ const AncientInnPlay = (() => {
         else if (id==='decor')       _doDecor(estateIdx);
         else if (id==='facility')    _doFacility(estateIdx);
         else if (id==='open')        _doOpen(estateIdx);
+        else if (id==='manage')      _doManagedOn(estateIdx);
         else if (id==='status')      _doStatus(estateIdx);
         else if (id==='sell')        AncientEstate.sellEstate(estateIdx);
       }
@@ -565,6 +576,57 @@ const AncientInnPlay = (() => {
     );
   };
 
+  // ── 托管 ──────────────────────────────────────────────────
+  const _doManagedOn = (estateIdx) => {
+    const { estate, inn } = _get(estateIdx);
+    if (inn.rooms.length === 0) {
+      AncientModal.showToast('没有客房，无法托管！');
+      return;
+    }
+    const name = ['王','李','张','刘','陈'][Math.floor(Math.random()*5)] +
+                 ['掌柜','大娘','先生'][Math.floor(Math.random()*3)];
+    AncientModal.showModal(
+      `🗂 委托托管`,
+      `将【${estate.name}】委托掌柜打理，每年收益扣除 <b>30%</b> 管理费。<br>` +
+      `托管期间无需亲自接客，年末自动结算。`,
+      [{ label:`✅ 委托 ${name}`, sub:'抽成 30%', cost:'', id:'yes' }],
+      (id) => {
+        AncientModal.closeModal();
+        if (id === 'yes') {
+          inn.managed = true;
+          inn.managerName = name;
+          AncientSave.addLog(`🗂 【${estate.name}】已委托 ${name} 托管。`, 'info');
+          AncientSave.save();
+          AncientRender.render();
+        }
+      }
+    );
+  };
+
+  const _managedMenu = (estateIdx) => {
+    const { estate, inn } = _get(estateIdx);
+    AncientModal.showModal(
+      `🗂 【${estate.name}】托管中`,
+      `掌柜 <b>${inn.managerName}</b> 打理中，年末自动结算（扣除 30% 管理费）。`,
+      [
+        { label:'🔓 解除托管，明年自营', sub:'', cost:'', id:'off' },
+        { label:'📊 客栈状况', sub:'', cost:'', id:'status' },
+      ],
+      (id) => {
+        AncientModal.closeModal();
+        if (id === 'off') {
+          inn.managed = false;
+          inn.managerName = null;
+          AncientSave.addLog(`🔓 【${estate.name}】已解除托管，明年起自营。`, 'info');
+          AncientSave.save();
+          AncientRender.render();
+        } else if (id === 'status') {
+          _doStatus(estateIdx);
+        }
+      }
+    );
+  };
+
   // ── 状况查看 ──────────────────────────────────────────────
   const _doStatus = (estateIdx) => {
     const { estate, inn } = _get(estateIdx);
@@ -602,30 +664,49 @@ const AncientInnPlay = (() => {
     if (!AncientState.G.estates) return events;
 
     AncientState.G.estates.forEach((estate) => {
-      // 只处理客栈类型（需在 estates.js 中将客栈 type 标记为 'inn'）
       if (estate.type !== 'inn') return;
       _init(estate);
       const inn = estate.inn;
 
-      const income = Math.max(0, inn._pendingIncome || 0);
+      let income = 0;
+
+      if (inn.managed) {
+        // 托管收益：平均来客数 × 各房间原价均值 = 理论最大收入 n，实得 n×70%
+        const D = AncientInnData;
+        const totalRooms = inn.rooms.length;
+        if (totalRooms > 0) {
+          // 平均来客数 = (1 + totalRooms) / 2
+          const avgGuests = (1 + totalRooms) / 2;
+          // 各房间每晚均价
+          const avgRoomPrice = inn.rooms.reduce((s, r) => {
+            const rt = D.ROOM_TYPES.find(x => x.id === r.type);
+            return s + (rt ? rt.pricePerNight : 0);
+          }, 0) / totalRooms;
+          const n = Math.floor(avgGuests * avgRoomPrice);
+          income  = Math.floor(n * 0.7);
+        }
+        inn.reputation = Math.max(0, inn.reputation - 1);
+      } else {
+        income = Math.max(0, inn._pendingIncome || 0);
+      }
+
       AncientState.G.money      += income;
       AncientState.G.totalMoney += income;
 
-      const shutdownNote = inn.shutdown
-        ? '本年曾停业整顿，实际收入为零。'
-        : '';
-
+      const shutdownNote = inn.shutdown ? '（本年曾停业整顿）' : '';
+      const managedNote  = inn.managed  ? '（托管，扣除30%管理费）' : '';
       AncientSave.addLog(
-        `🏯 【${estate.name}】年末结算，净收益 <b>${income}</b> 文入账。${shutdownNote}`,
+        `🏯 【${estate.name}】年末结算，净收益 <b>${income}</b> 文入账。${shutdownNote}${managedNote}`,
         income > 0 ? 'good' : 'info'
       );
 
       events.push({
         icon:  '🏯',
         title: `【${estate.name}】年末结算`,
-        body:  `客栈一年营收。声誉：<b>${inn.reputation}</b><br>` +
+        body:  `${inn.managed ? '托管' : '自营'}一年，声誉：<b>${inn.reputation}</b><br>` +
                `本年收益：<b style="color:var(--amber)">${income} 文</b>` +
-               (inn.shutdown ? `<br><b style="color:var(--red)">（曾停业整顿）</b>` : ''),
+               (inn.shutdown ? `<br><b style="color:var(--red)">（曾停业整顿，收入为零）</b>` : '') +
+               (inn.managed  ? `<br><small>理论最大收入已扣除30%管理费</small>` : ''),
         type:  income > 0 ? 'good' : 'info',
       });
 
@@ -634,11 +715,6 @@ const AncientInnPlay = (() => {
       inn._yearOpened    = false;
       inn.complaints     = 0;
       inn.shutdown       = false;
-
-      // 声誉自然微衰减（不经营会跌）
-      if (!inn._yearOpened) {
-        inn.reputation = Math.max(0, inn.reputation - 1);
-      }
     });
 
     return events;

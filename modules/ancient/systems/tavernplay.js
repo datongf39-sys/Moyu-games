@@ -63,6 +63,7 @@ const AncientTavernPlay = (() => {
       `食材库存：<b>${invTotal}</b> 份　已掌握菜谱：<b>${t.knownRecipes.length}</b> 道<br>` +
       `声誉：<b>${t.reputation}</b>`,
       [
+        { label:'📖 菜品图鉴',    sub:'查看所有菜品（不含配方）',      cost:'', id:'book'     },
         { label:'🛒 采购食材',    sub:'备好食材才能开业',         cost:'', id:'buy'      },
         { label:'📜 研发配方',    sub: t._yearResearched?'今年已研发':'尝试配对食材解锁菜谱', cost:'', id:'research'  },
         { label:'👨‍🍳 雇佣厨子',  sub:chefLabel,                  cost:'', id:'chef'     },
@@ -74,7 +75,8 @@ const AncientTavernPlay = (() => {
       ],
       (id) => {
         AncientModal.closeModal();
-        if      (id==='buy')      _doBuy(estateIdx);
+        if      (id==='book')     _doRecipeBook(estateIdx);
+        else if (id==='buy')      _doBuy(estateIdx);
         else if (id==='research') _doResearch(estateIdx);
         else if (id==='chef')     _doHireChef(estateIdx);
         else if (id==='waiter')   _doHireWaiter(estateIdx);
@@ -83,6 +85,26 @@ const AncientTavernPlay = (() => {
         else if (id==='status')   _doStatus(estateIdx);
         else if (id==='sell')     AncientEstate.sellEstate(estateIdx);
       }
+    );
+  };
+
+  // ── 菜品图鉴 ──────────────────────────────────────────────
+  const _doRecipeBook = (estateIdx) => {
+    const D = AncientTavernData;
+    // 按菜系分组
+    const cuisines = [...new Set(D.RECIPES.map(r => r.cuisine))];
+    const lines = cuisines.map(c => {
+      const dishes = D.RECIPES.filter(r => r.cuisine === c)
+        .map(r => `${r.icon}${r.name}（${r.price}文）`)
+        .join('　');
+      return `<b>${c}</b>：${dishes}`;
+    }).join('<br>');
+
+    AncientModal.showModal(
+      `📖 菜品图鉴`,
+      `共 <b>${D.RECIPES.length}</b> 道菜，通过研发配方解锁。<br><br>${lines}`,
+      [{ label:'知道了', sub:'', cost:'', id:'ok' }],
+      () => { AncientModal.closeModal(); setTimeout(() => openManageModal(estateIdx), 200); }
     );
   };
 
@@ -641,6 +663,21 @@ const AncientTavernPlay = (() => {
   // ── 托管 ──────────────────────────────────────────────────
   const _doManagedOn = (estateIdx) => {
     const { estate, t } = _get(estateIdx);
+
+    // 前置检查：必须有厨子、小二、至少一道菜谱
+    if (!t.chef) {
+      AncientModal.showToast('没有厨子，无法托管！');
+      return;
+    }
+    if (!t.waiter) {
+      AncientModal.showToast('没有小二，无法托管！');
+      return;
+    }
+    if (t.knownRecipes.length === 0) {
+      AncientModal.showToast('没有菜品，无法托管！');
+      return;
+    }
+
     const cut = Math.round(AncientTavernData.MANAGER_CUT * 100);
     const name = _genName('掌柜');
 
@@ -719,20 +756,47 @@ const AncientTavernPlay = (() => {
       let income = 0;
 
       if (t.managed) {
-        // 托管：按声誉估算收益
-        const base = 100 + t.reputation * 2;
-        income = Math.floor(base * (1 - AncientTavernData.MANAGER_CUT));
-        t.reputation = Math.max(0, t.reputation - 2); // 托管声誉自然微跌
+        // 托管收益计算：
+        // 1. 已掌握菜谱的平均菜价
+        // 2. 顾客类型的平均点单数
+        // 3. 假设每天10桌客人
+        // 4. 扣除厨子、小二、食材成本
+        // 5. 再扣30%管理费
+        const D = AncientTavernData;
+        const knownRecipes = t.knownRecipes.map(id => D.RECIPES.find(r => r.id === id)).filter(Boolean);
+
+        if (knownRecipes.length === 0 || !t.chef || !t.waiter) {
+          // 不满足托管条件，收益为0
+          income = 0;
+        } else {
+          const avgDishPrice   = knownRecipes.reduce((s, r) => s + r.price, 0) / knownRecipes.length;
+          const avgOrderCount  = D.CUSTOMER_TYPES.reduce((s, c) => s + c.orderCount, 0) / D.CUSTOMER_TYPES.length;
+          const tablesPerYear  = 10; // 托管每年固定估算桌数
+          const grossRevenue   = Math.floor(avgDishPrice * avgOrderCount * tablesPerYear);
+
+          // 食材成本：每道菜平均食材数×食材均价×总出菜数
+          const avgIngCount    = knownRecipes.reduce((s, r) => s + r.ingredients.length, 0) / knownRecipes.length;
+          const avgIngPrice    = D.INGREDIENTS.reduce((s, i) => s + i.price, 0) / D.INGREDIENTS.length;
+          const totalDishes    = Math.floor(avgOrderCount * tablesPerYear);
+          const ingredientCost = Math.floor(avgIngCount * avgIngPrice * totalDishes);
+
+          const staffCostManaged = (t.chef ? t.chef.cost : 0) + (t.waiter ? t.waiter.cost : 0);
+          const n = Math.max(0, grossRevenue - ingredientCost - staffCostManaged);
+          income  = Math.floor(n * (1 - AncientTavernData.MANAGER_CUT));
+        }
+        t.reputation = Math.max(0, t.reputation - 2);
       } else {
         // 自营：取当日流水
         income = AncientState.G.pendingTavernIncome || 0;
         AncientState.G.pendingTavernIncome = 0;
       }
 
-      // 扣除人员工钱
+      // 自营才需单独扣人员工钱（托管已在收益计算中扣除）
       let staffCost = 0;
-      if (t.chef)   staffCost += t.chef.cost;
-      if (t.waiter) staffCost += t.waiter.cost;
+      if (!t.managed) {
+        if (t.chef)   staffCost += t.chef.cost;
+        if (t.waiter) staffCost += t.waiter.cost;
+      }
       const netIncome = Math.max(0, income - staffCost);
 
       AncientState.G.money      += netIncome;
