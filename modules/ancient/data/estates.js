@@ -7,6 +7,7 @@ const AncientEstates = {
     {id:'farm',   name:'田庄',  icon:'🌾',price:300, type:'farm', desc:'附带农田，每年有额外收入', incomePerYear:30},
     {id:'shop',   name:'商铺',  icon:'🏪',price:400, type:'shop', desc:'坐商铺子，每年稳定收入',   incomePerYear:50},
     {id:'tavern', name:'酒楼',  icon:'🍶',price:800, type:'shop', shopSubtype:'tavern', desc:'坐拥一楼，宾客盈门，可自营或托管', incomePerYear:0},
+    {id:'inn',    name:'客栈',  icon:'🏯',price:600, type:'inn',  desc:'南来北往，旅人歇脚之所，可购置房间与设施经营', incomePerYear:0},
   ],
 
   LOCATIONS:[
