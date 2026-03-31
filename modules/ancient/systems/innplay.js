@@ -462,28 +462,27 @@ const AncientInnPlay = (() => {
         const diffKey   = String(Math.max(-2, Math.min(2, diff)));
         const rule      = D.ROOM_MATCH_RULES[diffKey] || D.ROOM_MATCH_RULES['0'];
 
-        // 基础房费
-        const basePrice  = rt ? rt.pricePerNight : 15;
-        // 满意度加成 → 影响实际收费（满意度越高，客人愿意多给小费）
-        const satisfyScore = _roomSatisfy(room, inn);
-        const satisfyMul   = rule.satisfyMul;
-        const tipBonus     = satisfyMul > 0 ? Math.floor(satisfyScore * 0.2 * satisfyMul) : 0;
-        let income         = Math.floor((basePrice + tipBonus) * satisfyMul);
+        // 收费计算
+        const basePrice = rt ? rt.pricePerNight : 15;
+        const priceCap  = D.GUEST_PRICE_CAP[g.tier.tier] || basePrice;
+        let income;
+        if (rule.compensate) {
+          // 升级住：客人觉得被宰，玩家赔出房间原价
+          income = -basePrice;
+        } else if (rule.halfPrice) {
+          // 降级住：给半价，但不超过该客人等级的价格上限
+          income = Math.min(Math.floor(basePrice * 0.5), priceCap);
+        } else {
+          // 正常：原价
+          income = basePrice;
+        }
 
         // 声誉变化
         let repDelta = rule.repDelta;
         inn.reputation = _clamp(inn.reputation + repDelta);
 
-        // 投诉与赔偿处理
-        let compensate = 0;
-        if (rule.complaint) {
-          inn.complaints += 1;
-        }
-        if (rule.compensate) {
-          // 赔偿：不仅收不到钱，还需赔出本单应收的费用
-          compensate = basePrice;
-          income     = -compensate;
-        }
+        // 投诉计次
+        if (rule.complaint) inn.complaints += 1;
 
         totalIncome    += income;
         totalRepDelta  += repDelta;
