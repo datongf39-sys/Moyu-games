@@ -364,6 +364,28 @@ const AncientLoop = {
         
         // 年龄增长
         sib.age += 1;
+        
+        // 兄弟姐妹职业分配（18 岁成年时）
+        if (sib.age === 18 && !sib.job && sib.job !== 'official') {
+          // 高智识有概率当官
+          const intelligence = sib.intelligence || (30 + Math.floor(Math.random() * 40));
+          const officialChance = intelligence >= 80 ? 0.4 : intelligence >= 60 ? 0.2 : intelligence >= 40 ? 0.1 : 0.05;
+          
+          if (Math.random() < officialChance) {
+            sib.job = 'official';
+            sib.jobRank = 0;
+            sib.jobProf = 0;
+            AncientSave.addLog(`🎓 ${sib.name} 考取功名，当官为宦。`, 'good');
+          } else {
+            // 随机分配职业
+            const availableJobs = AncientJobs.JOBS.filter(j => j.id !== 'none' && j.id !== 'official');
+            const randomJob = availableJobs[Math.floor(Math.random() * availableJobs.length)];
+            sib.job = randomJob.id;
+            sib.jobRank = 0;
+            sib.jobProf = 0;
+            AncientSave.addLog(`💼 ${sib.name} 找到工作：${randomJob.name}。`, 'event');
+          }
+        }
       });
     }
 
@@ -500,6 +522,29 @@ const AncientLoop = {
     AncientState.G.children.forEach(c => c.age += 1);
     if (AncientState.G.illegitimateChildren) {
       AncientState.G.illegitimateChildren.forEach(c => c.age += 1);
+    }
+    
+    // ========== NPC 年龄增长与职业分配 ==========
+    // 1. NPC 年龄增长
+    if (AncientState.G.npcs) {
+      AncientState.G.npcs.forEach(npc => {
+        npc.age += 1;
+        
+        // 2. 确保成年 NPC（18 岁）必须有职业
+        if (npc.age === 18 && (!npc.job || npc.job === 'none')) {
+          // 从可用职业中随机分配一个（排除 'none'）
+          const availableJobs = AncientNames.NPC_JOBS.filter(j => j.id !== 'none');
+          const assignedJob = availableJobs[Math.floor(Math.random() * availableJobs.length)];
+          npc.job = assignedJob.id || assignedJob;
+          AncientSave.addLog(`💼 ${npc.name} 年满 18 岁，开始工作：${assignedJob.name}。`, 'event');
+        }
+        
+        // 3. 老年人（65 岁+）有 30% 概率退休
+        if (npc.age === 65 && npc.job && npc.job !== 'none' && Math.random() < 0.3) {
+          npc.job = 'none';
+          AncientSave.addLog(`👴 ${npc.name} 年事已高，退休在家。`, 'info');
+        }
+      });
     }
     
     // ========== 学费扣费逻辑（从大到小） ==========
@@ -892,6 +937,40 @@ const AncientLoop = {
     // 官员年末结算
     if (AncientState.G.job === 'officer' && window.AncientJobPlay) {
       AncientJobPlay.Officer.yearEnd();
+    }
+    
+    // ========== 家庭成员年龄增长 ==========
+    // 1. 配偶年龄增长
+    if (AncientState.G.married && AncientState.G.spouseName) {
+      if (!AncientState.G.spouseAge) {
+        // 初次设置配偶年龄（假设比玩家大 0-5 岁或小 0-3 岁）
+        AncientState.G.spouseAge = AncientState.G.age + (Math.random() > 0.5 ? Math.floor(Math.random() * 5) : -Math.floor(Math.random() * 3));
+      } else {
+        AncientState.G.spouseAge += 1;
+      }
+    }
+    
+    // 2. 妾室年龄增长
+    if (AncientState.G.concubines && AncientState.G.concubines.length > 0) {
+      AncientState.G.concubines.forEach(c => {
+        c.age += 1;
+      });
+    }
+    
+    // 3. 外室年龄增长
+    if (AncientState.G.lovers && AncientState.G.lovers.length > 0) {
+      AncientState.G.lovers.forEach(l => {
+        l.age += 1;
+      });
+    }
+    
+    // 4. 父母年龄增长
+    if (AncientState.G.parents && AncientState.G.parents.length > 0) {
+      AncientState.G.parents.forEach(p => {
+        if (p.alive && p.age) {
+          p.age += 1;
+        }
+      });
     }
 
     // 商铺年末结算
