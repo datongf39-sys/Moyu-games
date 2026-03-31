@@ -297,7 +297,8 @@ const AncientRender = {
         const residents = e.residents || [];
         const occupied = residents.length;
         const hasMinor = G.children.some(c => c.age<18 && residents.includes(c.name));
-        const isResidential = e.id !== 'farm' && e.id !== 'shop'; // 田庄和商铺不允许住人
+        // 田庄、商铺、客栈、酒楼不允许住人（不显示入住信息）
+        const isResidential = e.id !== 'farm' && e.id !== 'shop' && e.id !== 'tavern' && e.id !== 'inn';
         
         html += `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px">
           <div style="display:flex;align-items:flex-start;gap:8px">
