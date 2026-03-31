@@ -7,7 +7,38 @@ const AncientSocial = {
     const bg = AncientNames.NPC_BG[Math.floor(Math.random()*AncientNames.NPC_BG.length)];
     const [mlo, mhi] = AncientNames.NPC_BG_MONEY[bg];
     const money = mlo + Math.floor(Math.random()*(mhi-mlo));
-    const job = AncientNames.NPC_JOBS[Math.floor(Math.random()*AncientNames.NPC_JOBS.length)];
+    
+    // 合理的年龄分配逻辑
+    // 14-17 岁：少年，可能无业
+    // 18-60 岁：成年，必须有职业
+    // 60+ 岁：老年，可能退休无业
+    const ageRoll = Math.random();
+    let age;
+    let job;
+    
+    if (ageRoll < 0.2) {
+      // 20% 概率是少年（14-17 岁）
+      age = 14 + Math.floor(Math.random() * 4);
+      // 少年 50% 概率无业，50% 概率有简单职业
+      job = Math.random() < 0.5 ? 'none' : AncientNames.NPC_JOBS[Math.floor(Math.random()*AncientNames.NPC_JOBS.length)];
+    } else if (ageRoll < 0.85) {
+      // 65% 概率是青壮年（18-50 岁），必须有职业
+      age = 18 + Math.floor(Math.random() * 33);
+      // 成年必须有职业，从可用职业中选择（排除 'none'）
+      const availableJobs = AncientNames.NPC_JOBS.filter(j => j.id !== 'none');
+      job = availableJobs[Math.floor(Math.random() * availableJobs.length)];
+    } else {
+      // 15% 概率是老年（51-75 岁）
+      age = 51 + Math.floor(Math.random() * 25);
+      // 老年人 70% 概率退休无业，30% 概率继续工作
+      if (Math.random() < 0.7) {
+        job = 'none';
+      } else {
+        const availableJobs = AncientNames.NPC_JOBS.filter(j => j.id !== 'none');
+        job = availableJobs[Math.floor(Math.random() * availableJobs.length)];
+      }
+    }
+    
     const trait = AncientNames.NPC_TRAITS[Math.floor(Math.random()*AncientNames.NPC_TRAITS.length)];
     const emoji = (isMale ? AncientNames.MALE_EMOJI : AncientNames.FEMALE_EMOJI)[Math.floor(Math.random()*3)];
     let estates = [];
@@ -18,7 +49,7 @@ const AncientSocial = {
       estates = [{...AncientEstates.ESTATES[0], eid:'nse_'+Date.now()+Math.floor(Math.random()*9999), residents:[]}];
     }
     return {id:'npc_'+Date.now()+'_'+Math.floor(Math.random()*9999), name:surname+given, gender, emoji,
-      age:14+Math.floor(Math.random()*30), job, bg, money, trait, estates, favor:0, role:'friend', venue:''};
+      age, job: job.id || job, bg, money, trait, estates, favor:0, role:'friend', venue:''};
   },
 
   genNPC: () => {
