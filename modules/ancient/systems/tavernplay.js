@@ -133,6 +133,10 @@ const AncientTavernPlay = (() => {
         if (!ing) return;
         if (AncientState.G.money < ing.price) { AncientModal.showToast('囊中羞涩，买不起！'); return; }
         AncientState.G.money -= ing.price;
+        // 记录食材采购投入
+        if (window.AncientYearLedger) {
+          window.AncientYearLedger.record(`酒楼食材${ing.name}`, -ing.price, 'business_out');
+        }
         t.inventory[ing.id] = (t.inventory[ing.id]||0) + 1;
         AncientSave.addLog(`🛒 采购 ${ing.icon}${ing.name} ×1，花费 ${ing.price} 文。`,'info');
         AncientSave.save();
@@ -801,6 +805,13 @@ const AncientTavernPlay = (() => {
 
       AncientState.G.money      += netIncome;
       AncientState.G.totalMoney += netIncome;
+
+      // 记录酒楼经营收入
+      if (window.AncientYearLedger) {
+        if (netIncome > 0) {
+          window.AncientYearLedger.record('酒楼经营', netIncome, 'business_in');
+        }
+      }
 
       const staffNote = staffCost > 0 ? `（扣除人员工钱 ${staffCost} 文）` : '';
       AncientSave.addLog(`🏪 【${estate.name}】年末结算，净收益 <b>${netIncome}</b> 文入账。${staffNote}`, 'good');

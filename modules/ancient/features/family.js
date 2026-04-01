@@ -58,7 +58,12 @@ const AncientFamily = {
     if (AncientSave.roll(rate)){
       const [lo,hi] = bg.parentMoneyBase;
       const final = Math.min(lo+Math.floor(Math.random()*(hi-lo+1)), bg.parentMoneyLimit);
-      AncientState.G.money += final; AncientSave.addLog(`🙏 向${p.rel}撒娇，得到 ${final}文。`, 'good'); AncientSave.save(); AncientRender.render();
+      AncientState.G.money += final;
+      // 记录向家人撒娇所得
+      if (window.AncientYearLedger) {
+        window.AncientYearLedger.record(`向${p.rel}撒娇`, final, 'income');
+      }
+      AncientSave.addLog(`🙏 向${p.rel}撒娇，得到 ${final}文。`, 'good'); AncientSave.save(); AncientRender.render();
       AncientModal.showModal('🙏 父母慷慨解囊', `获得 +${final} 文`,
         [{label:'叩谢爹娘',sub:'',cost:'',id:'ok'}], () => AncientModal.closeModal());
     } else {

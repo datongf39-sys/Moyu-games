@@ -165,6 +165,12 @@ const AncientLoop = {
     AncientState.G._pregnancyBoostSachetCount = 0;
     if (!AncientState.G.diseases) AncientState.G.diseases = [];
     if (!AncientState.G.npcs) AncientState.G.npcs = [];
+    
+    // ========== 显示上年账单（在年龄推进后） ==========
+    if (window.AncientYearLedger) {
+      window.AncientYearLedger.showYearEndLedger();
+    }
+    // ========== 上年账单显示结束 ==========
 
     // ========== 兄弟姐妹系统 ==========
     // 1. 出生时有 10% 概率已经有哥哥姐姐（只在 3 岁及以后触发，避免每年重复）
@@ -524,6 +530,12 @@ const AncientLoop = {
       AncientState.G.illegitimateChildren.forEach(c => c.age += 1);
     }
     
+    // ========== 抓周系统（1 岁时触发） ==========
+    if (window.AncientZhuazhou) {
+      window.AncientZhuazhou.checkZhuazhou();
+    }
+    // ========== 抓周系统结束 ==========
+    
     // ========== NPC 年龄增长与职业分配 ==========
     // 1. NPC 年龄增长
     if (AncientState.G.npcs) {
@@ -549,6 +561,7 @@ const AncientLoop = {
     
     // ========== 学费扣费逻辑（从大到小） ==========
     const G = AncientState.G;
+    let schoolMoneySpent = 0;
     
     // 收集所有在学的子嗣（含私生子），按年龄从大到小排序
     const allInSchoolChildren = [];
@@ -579,6 +592,7 @@ const AncientLoop = {
       if (moneyLeft >= 20) {
         // 钱够，继续上学
         moneyLeft -= 20;
+        schoolMoneySpent += 20;
       } else {
         // 钱不够，退学
         child.inSchool = false;
@@ -589,6 +603,13 @@ const AncientLoop = {
           type:'bad'
         });
         AncientSave.addLog(`💸 ${child.name} 因家贫退学。`, 'bad');
+      }
+    }
+    
+    // 记录学费支出
+    if (schoolMoneySpent > 0) {
+      if (window.AncientYearLedger) {
+        window.AncientYearLedger.record('束脩从学', -schoolMoneySpent, 'study');
       }
     }
     
@@ -798,11 +819,19 @@ const AncientLoop = {
       if (AncientSave.roll(0.75 + AncientState.G.jobRank * 0.04)){
         const earned = lo + Math.floor(Math.random() * (hi-lo+1));
         AncientState.G.money += earned; AncientState.G.totalMoney += earned;
+        // 记录薪俸收入
+        if (window.AncientYearLedger) {
+          window.AncientYearLedger.record('职业薪俸', earned, 'income');
+        }
         yearEvents.push({icon:'💰', title:`【${rankLabel}】薪俸到手`, body:`本年薪俸已结清。<br><br>入账 <b style="color:var(--amber)">+${earned} 文</b><br>当前余钱：${AncientState.G.money} 文`, type:'good'});
         AncientSave.addLog(`💰 【${rankLabel}】薪俸 +${earned}文。`, 'good');
       } else {
         const ded = Math.floor((lo+hi)/4);
         AncientState.G.money = Math.max(0, AncientState.G.money - ded);
+        // 记录业绩扣款
+        if (window.AncientYearLedger) {
+          window.AncientYearLedger.record('薪俸被扣', -ded, 'penalty');
+        }
         yearEvents.push({icon:'😤', title:'业绩扣款', body:`今年差事办得不妥，被扣去 <b style="color:var(--red)">${ded} 文</b>。`, type:'bad'});
         AncientSave.addLog(`😤 业绩不佳，被扣 ${ded}文。`, 'bad');
       }
@@ -814,6 +843,10 @@ const AncientLoop = {
       AncientState.G.estates.forEach(e => { if (e.incomePerYear > 0) estateIncome += e.incomePerYear + (Math.floor(Math.random()*10)-5); });
       if (estateIncome > 0){
         AncientState.G.money += estateIncome; AncientState.G.totalMoney += estateIncome;
+        // 记录地产收入
+        if (window.AncientYearLedger) {
+          window.AncientYearLedger.record('地产收入', estateIncome, 'business_in');
+        }
         AncientSave.addLog(`🏠 地产收入 +${estateIncome}文。`, 'good');
         yearEvents.push({icon:'🏠', title:'地产收入', body:`今年地产收益颇丰。<br><br>入账 <b style="color:var(--amber)">+${estateIncome} 文</b><br>当前余钱：${AncientState.G.money} 文`, type:'good'});
       }

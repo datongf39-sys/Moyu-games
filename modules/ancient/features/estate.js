@@ -43,8 +43,18 @@ const AncientEstate = {
   buyEstate: (estateId) => {
     const tmpl = AncientEstates.ESTATES.find(e => e.id === estateId); if (!tmpl) return;
     if (AncientState.G.money < tmpl.price){ AncientModal.showToast('囊中羞涩，钱财不足以置产！'); return; }
-    AncientModal.confirmSpend(tmpl.price, `${tmpl.icon} 购置【${tmpl.name}】\n可容 ${tmpl.capacity} 口`, () => {
+    
+    let typeText = '';
+    if (tmpl.type === 'house') typeText = `可容 ${tmpl.capacity} 口`;
+    else if (tmpl.type === 'farm') typeText = `年入 ${tmpl.incomePerYear} 文`;
+    else if (tmpl.type === 'business') typeText = `年入 ${tmpl.incomePerYear} 文`;
+    
+    AncientModal.confirmSpend(tmpl.price, `${tmpl.icon} 购置【${tmpl.name}】\n${typeText}`, () => {
       AncientState.G.money -= tmpl.price;
+      // 记录地产支出
+      if (window.AncientYearLedger) {
+        window.AncientYearLedger.record(`购置${tmpl.name}`, -tmpl.price, 'estate');
+      }
       if (!AncientState.G.estates) AncientState.G.estates = [];
       AncientState.G.estates.push({...tmpl, eid:'e_'+Date.now(), residents:[]});
       AncientSave.addLog(`🏠 购置【${tmpl.name}】，费银 ${tmpl.price}文，已纳入名下恒产。`, 'event');
@@ -64,7 +74,12 @@ const AncientEstate = {
       (id) => {
         AncientModal.closeModal();
         if (id==='yes'){
-          AncientState.G.money += sellPrice; AncientState.G.estates.splice(idx, 1);
+          AncientState.G.money += sellPrice;
+          // 记录地产出售收入
+          if (window.AncientYearLedger) {
+            window.AncientYearLedger.record(`售出${e.name}`, sellPrice, 'estate');
+          }
+          AncientState.G.estates.splice(idx, 1);
           AncientSave.addLog(`🏠 立契售出【${e.name}】，得银 ${sellPrice}文。`, 'info');
           AncientSave.save(); AncientRender.render();
         }
@@ -87,8 +102,8 @@ const AncientEstate = {
   // 检查地产是否可以安置某人（外室约束）
   canPlaceResident: (estateIdx, residentName, residentType) => {
     const e = AncientState.G.estates[estateIdx]; if (!e) return {can:false, reason:''};
-    const isResidential = e.id !== 'farm' && e.id !== 'shop';
-    if (!isResidential) return {can:false, reason:'此乃田庄商铺，非居所，不可安置人口'};
+    const isResidential = e.type === 'house';
+    if (!isResidential) return {can:false, reason:'此乃田庄产业，非居所，不可安置人口'};
     
     const residents = e.residents || [];
     if (residentType === 'lover'){
@@ -110,13 +125,13 @@ const AncientEstate = {
   openManageModal: (idx) => {
     const e = AncientState.G.estates[idx]; if (!e) return;
     const residents = e.residents || [];
-    const isResidential = e.id !== 'farm' && e.id !== 'shop';
+    const isResidential = e.type === 'house';
 
-    if (e.type === 'shop') {
+    if (e.type === 'business') {
       if (window.AncientTavernPlay) { AncientTavernPlay.openManageModal(idx); return; }
       // 降级：没有经营系统时只显示出售
       AncientModal.showModal(`${e.icon} 管理【${e.name}】`,
-        `此乃<b>商铺</b>，非居所，不可留人入住。<br>年入：${e.incomePerYear||0}文`,
+        `此乃<b>产业</b>，非居所，不可留人入住。<br>年入：${e.incomePerYear||0}文`,
         [{label:'🏠 立契出售', sub:`得 ${Math.floor(e.price*0.6)}文`, cost:'', id:'sell', style:'red'}],
         (id) => { AncientModal.closeModal(); if (id==='sell') AncientEstate.sellEstate(idx); });
       return;
@@ -124,7 +139,7 @@ const AncientEstate = {
 
     if (e.type === 'farm') {
       AncientModal.showModal(`${e.icon} 管理【${e.name}】`,
-        `此乃<b>田庄</b>，非居所，不可留人入住。<br>年入：${e.incomePerYear||0}文`,
+        `此乃<b>田产</b>，非居所，不可留人入住。<br>年入：${e.incomePerYear||0}文`,
         [{label:'🏠 立契出售', sub:`得 ${Math.floor(e.price*0.6)}文`, cost:'', id:'sell', style:'red'}],
         (id) => { AncientModal.closeModal(); if (id==='sell') AncientEstate.sellEstate(idx); });
       return;

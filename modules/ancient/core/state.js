@@ -24,6 +24,7 @@ const AncientState = {
       mood:   AncientState.clamp(60 + Math.floor(Math.random() * 30)),
       intel:  AncientState.clamp(15 + Math.floor(Math.random() * 35)),
       charm:  AncientState.clamp(20 + Math.floor(Math.random() * 40)),
+      luck:   AncientState.clamp(10 + Math.floor(Math.random() * 80)),  // 运气属性
       parentFavor: baseFavor,
       money: startMoney,
       job: 'none', jobRank: 0, jobProf: 0,
@@ -73,6 +74,7 @@ const AncientState = {
       will: null,
       diseases: [],
       venueStamina: 100,
+      yearLedger: [],  // 年末账单记录
       _yearTasks: null, _yearTasksAge: -1, _yearTasksJob: '', _yearTasksRank: -1,
       _shopSeed: false, _shopYear: -1, _shopPool: [],
       _pregnancyBoostDoctor: false,

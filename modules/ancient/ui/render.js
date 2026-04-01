@@ -291,48 +291,124 @@ const AncientRender = {
     const G = AncientState.G;
     if (!G.estates) G.estates = [];
     let html = `<div class="ct">地产 — 安居乐业，广置田产</div>`;
+    
+    // 分类显示已有地产
     if (G.estates.length > 0){
-      html += `<div class="sec-head">名下地产</div>`;
-      G.estates.forEach((e,i) => {
-        const residents = e.residents || [];
-        const occupied = residents.length;
-        const hasMinor = G.children.some(c => c.age<18 && residents.includes(c.name));
-        // 田庄、商铺、客栈、酒楼不允许住人（不显示入住信息）
-        const isResidential = e.id !== 'farm' && e.id !== 'shop' && e.id !== 'tavern' && e.id !== 'inn';
-        
-        html += `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px">
-          <div style="display:flex;align-items:flex-start;gap:8px">
-            <span style="font-size:22px">${e.icon}</span>
-            <div style="flex:1">
-              <div style="font-size:11px;font-weight:600">${e.name}</div>
-              <div style="font-size:9px;color:var(--faint)">${e.desc}</div>
-              ${e.incomePerYear>0?`<div style="font-size:9px;color:var(--green)">每年收入 +${e.incomePerYear}文</div>`:''}
-              ${isResidential?`<div style="font-size:9px;color:var(--amber);margin-top:4px">入住：${occupied}/${e.capacity}人</div>`:''}
-              ${isResidential && residents.length>0?`<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:3px">
-                ${residents.map(r=>`<span class="estate-resident-chip">${r}</span>`).join('')}
-              </div>`:''}
-              ${isResidential && residents.length===0?`<span style="font-size:9px;color:var(--faint)">空置</span>`:''}
+      // 房产
+      const houses = G.estates.filter(e => (e.type || e.id === 'shack' || e.id === 'cottage' || e.id === 'house' || e.id === 'mansion') === 'house');
+      // 田产
+      const farms = G.estates.filter(e => (e.type || '') === 'farm');
+      // 产业
+      const businesses = G.estates.filter(e => (e.type || '') === 'business');
+      
+      // 房产
+      if (houses.length > 0) {
+        html += `<div class="sec-head">🏠 房产</div>`;
+        houses.forEach((e, i) => {
+          const actualIndex = G.estates.findIndex(x => x.eid === e.eid);
+          const residents = e.residents || [];
+          const occupied = residents.length;
+          html += `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px">
+            <div style="display:flex;align-items:flex-start;gap:8px">
+              <span style="font-size:22px">${e.icon}</span>
+              <div style="flex:1">
+                <div style="font-size:11px;font-weight:600">${e.name}</div>
+                <div style="font-size:9px;color:var(--faint)">${e.desc}</div>
+                <div style="font-size:9px;color:var(--amber);margin-top:4px">入住：${occupied}/${e.capacity}人</div>
+                ${residents.length>0?`<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:3px">
+                  ${residents.map(r=>`<span class="estate-resident-chip">${r}</span>`).join('')}
+                </div>`:''}
+                ${residents.length===0?`<span style="font-size:9px;color:var(--faint)">空置</span>`:''}
+              </div>
+              <button class="fi-btn" onclick="openEstateManageModal(${actualIndex})">管理</button>
             </div>
-            <button class="fi-btn" onclick="openEstateManageModal(${i})">管理</button>
-          </div>
-        </div>`;
-      });
+          </div>`;
+        });
+      }
+      
+      // 田产
+      if (farms.length > 0) {
+        html += `<div class="sec-head">🌾 田产</div>`;
+        farms.forEach((e, i) => {
+          const actualIndex = G.estates.findIndex(x => x.eid === e.eid);
+          html += `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px">
+            <div style="display:flex;align-items:flex-start;gap:8px">
+              <span style="font-size:22px">${e.icon}</span>
+              <div style="flex:1">
+                <div style="font-size:11px;font-weight:600">${e.name}</div>
+                <div style="font-size:9px;color:var(--faint)">${e.desc}</div>
+                ${e.incomePerYear>0?`<div style="font-size:9px;color:var(--green)">每年收入 +${e.incomePerYear}文</div>`:''}
+              </div>
+              <button class="fi-btn" onclick="openEstateManageModal(${actualIndex})">管理</button>
+            </div>
+          </div>`;
+        });
+      }
+      
+      // 产业
+      if (businesses.length > 0) {
+        html += `<div class="sec-head">🏪 产业</div>`;
+        businesses.forEach((e, i) => {
+          const actualIndex = G.estates.findIndex(x => x.eid === e.eid);
+          html += `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px">
+            <div style="display:flex;align-items:flex-start;gap:8px">
+              <span style="font-size:22px">${e.icon}</span>
+              <div style="flex:1">
+                <div style="font-size:11px;font-weight:600">${e.name}</div>
+                <div style="font-size:9px;color:var(--faint)">${e.desc}</div>
+                ${e.incomePerYear>0?`<div style="font-size:9px;color:var(--green)">每年收入 +${e.incomePerYear}文</div>`:''}
+              </div>
+              <button class="fi-btn" onclick="openEstateManageModal(${actualIndex})">管理</button>
+            </div>
+          </div>`;
+        });
+      }
     } else {
       html += `<div style="color:var(--faint);font-size:10px;text-align:center;padding:12px">名下尚无房产田产。</div>`;
     }
-        html += `<div class="sec-head">购置地产（当前余钱 🪙${G.money}文）</div><div class="shop-grid">`;
-    AncientEstates.ESTATES.forEach(e => {
+    
+    // 购置地产（分类显示）
+    html += `<div class="sec-head">💰 购置地产（当前余钱 🪙${G.money}文）</div>`;
+    
+    // 房产
+    html += `<div class="sec-head" style="margin-top:12px">🏠 房产</div><div class="shop-grid">`;
+    AncientEstates.ESTATES.filter(e => e.type === 'house').forEach(e => {
       const canBuy = G.money >= e.price;
-      // 只有住宅类房产才显示容客量（排除田庄、商铺、酒楼、客栈）
-      const isResidential = e.id !== 'farm' && e.id !== 'shop' && e.id !== 'tavern' && e.id !== 'inn';
       html += `<div class="shop-item${canBuy?'':' sold-out'}" onclick="${canBuy?`buyEstate('${e.id}')`:''}" >
         <div class="si-icon">${e.icon}</div>
-        <div class="si-name">${e.name}${isResidential && e.capacity ? ` <span style="font-size:8px;color:var(--faint)">容${e.capacity}人</span>`:''}</div>
+        <div class="si-name">${e.name} <span style="font-size:8px;color:var(--faint)">容${e.capacity}人</span></div>
+        <div class="si-desc">${e.desc}</div>
+        <div class="si-price">🪙 ${e.price}文${!canBuy?' · 钱不够':''}</div>
+      </div>`;
+    });
+    html += `</div>`;
+    
+    // 田产
+    html += `<div class="sec-head" style="margin-top:12px">🌾 田产</div><div class="shop-grid">`;
+    AncientEstates.ESTATES.filter(e => e.type === 'farm').forEach(e => {
+      const canBuy = G.money >= e.price;
+      html += `<div class="shop-item${canBuy?'':' sold-out'}" onclick="${canBuy?`buyEstate('${e.id}')`:''}" >
+        <div class="si-icon">${e.icon}</div>
+        <div class="si-name">${e.name}</div>
         <div class="si-desc">${e.desc}</div>
         <div class="si-price">🪙 ${e.price}文${e.incomePerYear>0?' · 年入'+e.incomePerYear+'文':''}${!canBuy?' · 钱不够':''}</div>
       </div>`;
     });
     html += `</div>`;
+    
+    // 产业
+    html += `<div class="sec-head" style="margin-top:12px">🏪 产业</div><div class="shop-grid">`;
+    AncientEstates.ESTATES.filter(e => e.type === 'business').forEach(e => {
+      const canBuy = G.money >= e.price;
+      html += `<div class="shop-item${canBuy?'':' sold-out'}" onclick="${canBuy?`buyEstate('${e.id}')`:''}" >
+        <div class="si-icon">${e.icon}</div>
+        <div class="si-name">${e.name}</div>
+        <div class="si-desc">${e.desc}</div>
+        <div class="si-price">🪙 ${e.price}文${e.incomePerYear>0?' · 年入'+e.incomePerYear+'文':''}${!canBuy?' · 钱不够':''}</div>
+      </div>`;
+    });
+    html += `</div>`;
+    
     return html;
   },
 

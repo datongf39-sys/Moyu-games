@@ -1,13 +1,20 @@
 const AncientEstates = {
   ESTATES:[
-    {id:'shack',  name:'茅草屋',icon:'🏚️',price:80,  capacity:3, desc:'简陋草屋，勉强遮风挡雨', incomePerYear:0},
-    {id:'cottage',name:'小院',  icon:'🏠',price:200, capacity:5, desc:'带院子的小房，温馨宜居',  incomePerYear:0},
-    {id:'house',  name:'宅院',  icon:'🏡',price:500, capacity:8, desc:'宽敞宅院，颇具体面',       incomePerYear:0},
-    {id:'mansion',name:'大宅',  icon:'🏛️',price:1500,capacity:14,desc:'豪门大宅，富贵气象',       incomePerYear:0},
-    {id:'farm',   name:'田庄',  icon:'🌾',price:300, type:'farm', desc:'附带农田，每年有额外收入', incomePerYear:30},
-    {id:'shop',   name:'商铺',  icon:'🏪',price:400, type:'shop', desc:'坐商铺子，每年稳定收入',   incomePerYear:50},
-    {id:'tavern', name:'酒楼',  icon:'🍶',price:800, type:'shop', shopSubtype:'tavern', desc:'坐拥一楼，宾客盈门，可自营或托管', incomePerYear:0},
-    {id:'inn',    name:'客栈',  icon:'🏯',price:600, type:'inn',  desc:'南来北往，旅人歇脚之所，可购置房间与设施经营', incomePerYear:0},
+    // 房产（能住人的）
+    {id:'shack',  name:'茅草屋',icon:'🏚️',price:80,  capacity:3, desc:'简陋草屋，勉强遮风挡雨', incomePerYear:0, type:'house'},
+    {id:'cottage',name:'小院',  icon:'🏠',price:200, capacity:5, desc:'带院子的小房，温馨宜居',  incomePerYear:0, type:'house'},
+    {id:'house',  name:'宅院',  icon:'🏡',price:500, capacity:8, desc:'宽敞宅院，颇具体面',       incomePerYear:0, type:'house'},
+    {id:'mansion',name:'大宅',  icon:'🏛️',price:1500,capacity:14,desc:'豪门大宅，富贵气象',       incomePerYear:0, type:'house'},
+    
+    // 田产（种地的）
+    {id:'farm',   name:'田庄',  icon:'🌾',price:300, capacity:0, desc:'附带农田，每年有额外收入', incomePerYear:30, type:'farm'},
+    {id:'field',  name:'良田',  icon:'🌱',price:150, capacity:0, desc:'肥沃田地，稳定产出',       incomePerYear:15, type:'farm'},
+    {id:'orchard',name:'果园',  icon:'🍎',price:250, capacity:0, desc:'四季果香，收益颇丰',       incomePerYear:25, type:'farm'},
+    
+    // 产业（商铺等经营性）
+    {id:'shop',   name:'商铺',  icon:'🏪',price:400, capacity:0, desc:'坐商铺子，每年稳定收入',   incomePerYear:50, type:'business'},
+    {id:'tavern', name:'酒楼',  icon:'🍶',price:800, capacity:0, desc:'坐拥一楼，宾客盈门，可自营或托管', incomePerYear:0, type:'business', shopSubtype:'tavern'},
+    {id:'inn',    name:'客栈',  icon:'🏯',price:600, capacity:0, desc:'南来北往，旅人歇脚之所，可购置房间与设施经营', incomePerYear:0, type:'business'},
   ],
 
   LOCATIONS:[

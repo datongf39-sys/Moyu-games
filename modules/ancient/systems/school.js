@@ -46,11 +46,22 @@ const AncientSchool = {
         AncientModal.showResult(btn, '入学', 'good');
         AncientSave.save(); AncientRender.render();
         AncientModal.showModal('📖 入读学堂',
-          `寒窗苦读，方有出头之日。<br>${isFree?'家中供读，无需束脩。':'每年需缴束脩20文。'}<br>每年可于学堂备考，成绩积累后方可下场应试。`,
+          `寒窗苦读，方有出头之日。<br>${isFree?'家中供读，无需束脩。':'每年需缴束脩 20 文。'}<br>每年可于学堂备考，成绩积累后方可下场应试。`,
           [{label:'谨遵教诲，定当用功', sub:'', cost:'', id:'ok'}], () => AncientModal.closeModal());
       };
       if (!isFree && G.money < 20) { AncientModal.showToast('囊中羞涩，束脩尚缺 20 文，无力入学！'); return; }
-      if (!isFree) { AncientModal.confirmSpend(20, '📖 备好束脩，叩门入学', () => { G.money -= 20; enroll(); AncientModal.closeModal(); }); return; }
+      if (!isFree) { 
+        AncientModal.confirmSpend(20, '📖 备好束脩，叩门入学', () => { 
+          G.money -= 20; 
+          // 记录学堂束脩
+          if (window.AncientYearLedger) {
+            window.AncientYearLedger.record('学堂束脩', -20, 'study');
+          }
+          enroll(); 
+          AncientModal.closeModal(); 
+        }); 
+        return; 
+      }
       enroll();
     }
     AncientSave.save(); AncientRender.render();
@@ -80,7 +91,18 @@ const AncientSchool = {
           [{label:'谨遵教头，勤加操练', sub:'', cost:'', id:'ok'}], () => AncientModal.closeModal());
       };
       if (!isFree && G.money < 20) { AncientModal.showToast('囊中羞涩，束脩尚缺 20 文！'); return; }
-      if (!isFree) { AncientModal.confirmSpend(20, '🥋 缴纳束脩，入读武馆', () => { G.money -= 20; enroll(); AncientModal.closeModal(); }); return; }
+      if (!isFree) { 
+        AncientModal.confirmSpend(20, '🥋 缴纳束脩，入读武馆', () => { 
+          G.money -= 20; 
+          // 记录武馆束脩
+          if (window.AncientYearLedger) {
+            window.AncientYearLedger.record('武馆束脩', -20, 'study');
+          }
+          enroll(); 
+          AncientModal.closeModal(); 
+        }); 
+        return; 
+      }
       enroll();
     }
     AncientSave.save(); AncientRender.render();
@@ -228,18 +250,23 @@ const AncientSchool = {
       G.civilExamLevel = examLevel;
       const titleStr = levelInfo.title ? `，荣获【${levelInfo.title}】功名` : '';
       G.mood = AncientState.clamp(G.mood + 15);
-      G.money += 50 * examLevel;
-      G.totalMoney += 50 * examLevel;
+      const reward = 50 * examLevel;
+      G.money += reward;
+      G.totalMoney += reward;
+      // 记录文试奖励
+      if (window.AncientYearLedger) {
+        window.AncientYearLedger.record(`${levelInfo.name}奖励`, reward, 'income');
+      }
       AncientSave.addLog(`🎉 ${levelInfo.name}高中${titleStr}，答对 ${state.correct}/5 题！`, 'good');
       AncientModal.showModal('🎉 高中！',
-        `${levelInfo.name}顺利通过！<br>答对：${state.correct} / 5 题${titleStr}<br><br>🪙 朝廷赐赏：+${50*examLevel} 文<br>😊 心情 +15${examLevel < 5 ? '<br><br>下一关：'+AncientCivilData.CIVIL_LEVELS[examLevel+1].name : '<br><br>下一关：殿试'}`,
+        `${levelInfo.name}顺利通过！<br>答对：${state.correct} / 5 题${titleStr}<br><br>🪙 朝廷赐赏：+${reward} 文<br>😊 心情 +15${examLevel < 5 ? '<br><br>下一关：'+AncientCivilData.CIVIL_LEVELS[examLevel+1].name : '<br><br>下一关：殿试'}`,
         [{label:'金榜有名，扬眉吐气！', sub:'', cost:'', id:'ok'}],
         () => { AncientModal.closeModal(); AncientRender.render(); });
     } else {
       G.mood = AncientState.clamp(G.mood - 10);
       AncientSave.addLog(`😞 ${levelInfo.name}落第，答对 ${state.correct}/5 题，来年再图。`, 'bad');
       AncientModal.showModal('😞 落第',
-        `${levelInfo.name}未能通过。<br>答对：${state.correct} / 5 题（需3题）<br><br>心情 -10，来年可再度下场。`,
+        `${levelInfo.name}未能通过。<br>答对：${state.correct} / 5 题（需 3 题）<br><br>心情 -10，来年可再度下场。`,
         [{label:'来年再战', sub:'', cost:'', id:'ok'}],
         () => { AncientModal.closeModal(); AncientRender.render(); });
     }
@@ -291,6 +318,10 @@ const AncientSchool = {
       G.jobRank = 0; G.jobProf = 0;
       const reward = 300 + Math.floor(Math.random() * 200);
       G.money += reward; G.totalMoney += reward;
+      // 记录殿试奖励
+      if (window.AncientYearLedger) {
+        window.AncientYearLedger.record('殿试奖励', reward, 'income');
+      }
       G.mood = AncientState.clamp(G.mood + 25);
       G.charm = AncientState.clamp(G.charm + 10);
       AncientSave.addLog(`🏆 殿试高中进士！风格：${style.name}，内容：${content.name}，得分${finalScore}，入朝为官！`, 'good');
@@ -405,6 +436,10 @@ const AncientSchool = {
         G.jobRank = 0; G.jobProf = 0;
         const reward = 200 + Math.floor(Math.random() * 150);
         G.money += reward; G.totalMoney += reward;
+        // 记录武殿试奖励
+        if (window.AncientYearLedger) {
+          window.AncientYearLedger.record('武殿试奖励', reward, 'income');
+        }
         G.mood = AncientState.clamp(G.mood + 20);
         AncientSave.addLog(`🏆 武殿试高中，授职入伍！赐赏 ${reward}文。`, 'good');
         AncientModal.showModal('🏆 武艺超群，授职入伍！',
@@ -415,6 +450,10 @@ const AncientSchool = {
         G.mood = AncientState.clamp(G.mood + 12);
         const reward = 30 * bs.examLevel;
         G.money += reward; G.totalMoney += reward;
+        // 记录武试奖励
+        if (window.AncientYearLedger) {
+          window.AncientYearLedger.record(`${bs.examData.name}奖励`, reward, 'income');
+        }
         AncientSave.addLog(`🎉 ${bs.examData.name}通过！赐赏 ${reward}文，晋级下一关。`, 'good');
         AncientModal.showModal(`🎉 ${bs.examData.name}通过！`,
           `你赢得 ${bs.playerWins}/${bs.totalRounds} 场<br><br>🪙 赐赏：+${reward} 文<br>😊 心情 +12<br><br>下一关：${MILITARY_EXAM.levels[bs.examLevel].name}`,

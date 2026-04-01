@@ -301,6 +301,10 @@ const AncientShopPlay = (() => {
         if (AncientState.G.money < cost) { AncientModal.showToast('囊中羞涩，买不起！'); return; }
         AncientModal.confirmSpend(cost, `采购${supplyTiers[lv-1]}${supplyLabel}`, () => {
           AncientState.G.money -= cost;
+          // 记录商铺货架装饰投入
+          if (window.AncientYearLedger) {
+            window.AncientYearLedger.record(`商铺货架${supplyTiers[lv-1]}`, -cost, 'decor');
+          }
           s.supplyTier = lv;
           AncientSave.addLog(`🛒 【${estate.name}】采购${supplyTiers[lv-1]}${supplyLabel}，花费 ${cost} 文。`, 'info');
           AncientSave.save();
@@ -360,6 +364,10 @@ const AncientShopPlay = (() => {
         if (!recipe) return;
         AncientModal.confirmSpend(cost, `研发【${recipe.name}】`, () => {
           AncientState.G.money -= cost;
+          // 记录商铺研发科技投入
+          if (window.AncientYearLedger) {
+            window.AncientYearLedger.record(`商铺研发${recipe.name}`, -cost, 'business_out');
+          }
           s.unlockedRecipes.push(recipe.id);
           s._yearResearched = true;
           AncientSave.addLog(`📜 【${estate.name}】研发出新${config.recipeName||'配方'}：${recipe.icon}${recipe.name}，食客称赞！`, 'good');
@@ -501,6 +509,13 @@ const AncientShopPlay = (() => {
 
       AncientState.G.money      += income;
       AncientState.G.totalMoney += income;
+
+      // 记录商铺经营收入
+      if (window.AncientYearLedger) {
+        if (income > 0) {
+          window.AncientYearLedger.record('商铺经营', income, 'business_in');
+        }
+      }
 
       AncientSave.addLog(
         `🏪 【${estate.name}】年末结算，${s.managed?'托管':'自营'}收益 <b>${income}</b> 文入账。`,

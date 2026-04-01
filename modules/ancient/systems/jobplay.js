@@ -406,6 +406,11 @@ const AncientJobPlay = {
       ts.totalProfit += totalGet;
       ts.cargo = ts.cargo.filter(c => c.id !== goodId);
 
+      // 记录行商收入（按利润）
+      if (window.AncientYearLedger && profit > 0) {
+        window.AncientYearLedger.record(`行商·${cargoItem.name}`, profit, 'business_in');
+      }
+
       // 熟练度按利润计
       const profGain = Math.max(2, Math.round(Math.abs(profit) / 20));
       ts.profGain += profGain;

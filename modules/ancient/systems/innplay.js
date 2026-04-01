@@ -156,6 +156,10 @@ const AncientInnPlay = (() => {
           return;
         }
         AncientState.G.money -= rt.unlockCost;
+        // 记录客房购置投入
+        if (window.AncientYearLedger) {
+          window.AncientYearLedger.record(`购置${rt.name}`, -rt.unlockCost, 'business_out');
+        }
         // 生成房间编号
         const existCount = inn.rooms.filter(r => r.type === id).length + 1;
         const labelMap = { ren:'人字', di:'地字', tian:'天字' };
@@ -289,6 +293,10 @@ const AncientInnPlay = (() => {
           return;
         }
         AncientState.G.money -= decor.cost;
+        // 记录客栈装饰投入
+        if (window.AncientYearLedger) {
+          window.AncientYearLedger.record(`客栈装饰${decor.name}`, -decor.cost, 'decor');
+        }
         room.decor.push(decor.id);
         AncientSave.addLog(
           `🎨 为「${room.roomLabel}」添置 ${decor.icon}${decor.name}，花费 ${decor.cost} 文。满意度 +${decor.satisfyBonus}。`,
@@ -337,6 +345,10 @@ const AncientInnPlay = (() => {
           return;
         }
         AncientState.G.money -= fac.unlockCost;
+        // 记录公共设施投入
+        if (window.AncientYearLedger) {
+          window.AncientYearLedger.record(`客栈设施${fac.name}`, -fac.unlockCost, 'decor');
+        }
         inn.facilities.push(fac.id);
         AncientSave.addLog(
           `🏛 建成 ${fac.icon}${fac.name}，花费 ${fac.unlockCost} 文。所有客房满意度 +${fac.satisfyBonus}。`,
@@ -693,8 +705,17 @@ const AncientInnPlay = (() => {
       AncientState.G.money      += income;
       AncientState.G.totalMoney += income;
 
+      // 记录客栈经营收入/亏耗
+      if (window.AncientYearLedger) {
+        if (income > 0) {
+          window.AncientYearLedger.record('客栈经营', income, 'business_in');
+        } else if (income < 0) {
+          window.AncientYearLedger.record('客栈赔付', income, 'business_out');
+        }
+      }
+
       const shutdownNote = inn.shutdown ? '（本年曾停业整顿）' : '';
-      const managedNote  = inn.managed  ? '（托管，扣除30%管理费）' : '';
+      const managedNote  = inn.managed  ? '（托管，扣除 30% 管理费）' : '';
       AncientSave.addLog(
         `🏯 【${estate.name}】年末结算，净收益 <b>${income}</b> 文入账。${shutdownNote}${managedNote}`,
         income > 0 ? 'good' : 'info'

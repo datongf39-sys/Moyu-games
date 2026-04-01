@@ -57,6 +57,10 @@ const AncientCareer = {
       AncientState.G.jobProf -= needed; AncientState.G.jobRank++;
       lastRank = job.ranks[AncientState.G.jobRank]; lastBonus = 50 + AncientState.G.jobRank*30;
       AncientState.G.money += lastBonus; AncientState.G.totalMoney += lastBonus; AncientState.G.mood = AncientState.clamp(AncientState.G.mood+20);
+      // 记录升职奖励
+      if (window.AncientYearLedger) {
+        window.AncientYearLedger.record('升职奖励', lastBonus, 'income');
+      }
       AncientSave.addLog(`🎊 擢升为【${lastRank}】，朝廷赐赏 ${lastBonus}文！`, 'event');
       promoted = true; AncientState.G._yearTasksAge = -1;
     }
