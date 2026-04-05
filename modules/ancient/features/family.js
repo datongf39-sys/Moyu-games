@@ -527,7 +527,7 @@ const AncientFamily = {
       return;
     }
     const role = AncientState.G.gender==='male'?'concubine':'lover';
-    const c = {name:lover.name, gender:lover.gender, emoji:lover.emoji, age:lover.age, favor:lover.favor, role, estateId:spareEstate.eid||spareEstate.id};
+    const c = {name:lover.name, gender:lover.gender, emoji:lover.emoji, age:lover.age, job:lover.job, favor:lover.favor, role, estateId:spareEstate.eid||spareEstate.id};
     if (!AncientState.G.concubines) AncientState.G.concubines = [];
     AncientState.G.concubines.push(c);
     if (!spareEstate.residents) spareEstate.residents = [];
@@ -724,7 +724,7 @@ const AncientFamily = {
           const estateIdx = parseInt(id);
           // 将 NPC 收为外室并安置
           if (!G.lovers) G.lovers = [];
-          const lover = {name:npc.name, gender:npc.gender, emoji:npc.emoji, age:npc.age, favor:npc.favor, estateId:G.estates[estateIdx].eid||G.estates[estateIdx].id};
+          const lover = {name:npc.name, gender:npc.gender, emoji:npc.emoji, age:npc.age, job:npc.job, favor:npc.favor, estateId:G.estates[estateIdx].eid||G.estates[estateIdx].id};
           G.lovers.push(lover);
           // 安置到房产
           const estate = G.estates[estateIdx];

@@ -51,6 +51,7 @@ const AncientMarriage = {
     if (!AncientState.G.npcs) AncientState.G.npcs = [];
     AncientState.G.npcs = AncientState.G.npcs.filter(n => n.id !== npc.id);
     AncientState.G.married=true; AncientState.G.spouseName=npc.name; AncientState.G.spouseGender=npc.gender;
+    AncientState.G.spouseAge=npc.age; AncientState.G.spouseJob=npc.job;
     AncientState.G.spouseBg=npc.bg; AncientState.G.spouseMoney=npc.money; AncientState.G.spouseEstates=npc.estates||[]; AncientState.G.spouseFavor=80;
     AncientState.G.sameGenderMarriage = sameGender || false;
     if (npc.estates && npc.estates.length > 0)
@@ -81,6 +82,7 @@ const AncientMarriage = {
         const rate = AncientState.clamp(0.15+(AncientState.G.charm/100)*0.55, 0.05, 0.7);
         if (AncientSave.roll(rate)){
           AncientState.G.married=true; AncientState.G.spouseName=candidate.name; AncientState.G.spouseGender=candidate.gender;
+          AncientState.G.spouseAge=candidate.age; AncientState.G.spouseJob=candidate.job;
           AncientState.G.spouseBg=candidate.bg; AncientState.G.spouseMoney=candidate.money; AncientState.G.spouseEstates=candidate.estates||[]; AncientState.G.spouseFavor=70; AncientState.G.sameGenderMarriage=sameGender;
           if (candidate.estates) candidate.estates.forEach(est => AncientState.G.estates.push({...est, eid:'se_'+Date.now()+Math.random(), residents:[]}));
           AncientState.G.mood = AncientState.clamp(AncientState.G.mood+15);

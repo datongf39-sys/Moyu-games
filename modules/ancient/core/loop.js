@@ -530,6 +530,57 @@ const AncientLoop = {
       AncientState.G.illegitimateChildren.forEach(c => c.age += 1);
     }
     
+    // ========== 子女成年职业分配（18 岁） ==========
+    // 亲生子女
+    if (AncientState.G.children) {
+      AncientState.G.children.forEach(c => {
+        if (c.age === 18 && (!c.job || c.job === 'none')) {
+          // 根据智识分配职业
+          const officialChance = c.intel >= 80 ? 0.4 : c.intel >= 60 ? 0.2 : c.intel >= 40 ? 0.1 : 0.05;
+          
+          if (Math.random() < officialChance) {
+            // 当官
+            c.job = 'officer';
+            c.jobRank = 0;
+            c.jobProf = 0;
+            AncientSave.addLog(`🎓 ${c.name} 考取功名，当官为宦。`, 'good');
+          } else {
+            // 随机分配其他职业
+            const availableJobs = AncientJobs.JOBS.filter(j => j.id !== 'none' && j.id !== 'officer' && j.id !== 'soldier');
+            const assignedJob = availableJobs[Math.floor(Math.random() * availableJobs.length)];
+            c.job = assignedJob.id;
+            c.jobRank = 0;
+            c.jobProf = 0;
+            AncientSave.addLog(`💼 ${c.name} 年满 18 岁，开始工作：${assignedJob.name}。`, 'event');
+          }
+        }
+      });
+    }
+    
+    // 私生子
+    if (AncientState.G.illegitimateChildren) {
+      AncientState.G.illegitimateChildren.forEach(c => {
+        if (c.age === 18 && (!c.job || c.job === 'none')) {
+          const officialChance = c.intel >= 80 ? 0.3 : c.intel >= 60 ? 0.15 : c.intel >= 40 ? 0.08 : 0.03;
+          
+          if (Math.random() < officialChance) {
+            c.job = 'officer';
+            c.jobRank = 0;
+            c.jobProf = 0;
+            AncientSave.addLog(`🎓 ${c.name} 考取功名，当官为宦。`, 'good');
+          } else {
+            const availableJobs = AncientJobs.JOBS.filter(j => j.id !== 'none' && j.id !== 'officer' && j.id !== 'soldier');
+            const assignedJob = availableJobs[Math.floor(Math.random() * availableJobs.length)];
+            c.job = assignedJob.id;
+            c.jobRank = 0;
+            c.jobProf = 0;
+            AncientSave.addLog(`💼 ${c.name} 年满 18 岁，开始工作：${assignedJob.name}。`, 'event');
+          }
+        }
+      });
+    }
+    // ========== 子女成年职业分配结束 ==========
+    
     // ========== 抓周系统（1 岁时触发） ==========
     if (window.AncientZhuazhou) {
       window.AncientZhuazhou.checkZhuazhou();

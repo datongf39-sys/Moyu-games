@@ -55,8 +55,8 @@ const AncientState = {
       children: [],
       siblings: [],
       parents: inheritFrom ? [] : [
-        {name: surname+AncientNames.MALE_NAMES[Math.floor(Math.random()*AncientNames.MALE_NAMES.length)], rel:'父亲', emoji:'👨', alive:true, favor:baseFavor},
-        {name: AncientNames.SURNAMES[Math.floor(Math.random()*AncientNames.SURNAMES.length)]+AncientNames.FEMALE_NAMES[Math.floor(Math.random()*AncientNames.FEMALE_NAMES.length)], rel:'母亲', emoji:'👩', alive:true, favor:baseFavor},
+        {name: surname+AncientNames.MALE_NAMES[Math.floor(Math.random()*AncientNames.MALE_NAMES.length)], rel:'父亲', emoji:'👨', alive:true, favor:baseFavor, age: 28 + Math.floor(Math.random()*20), job: AncientJobs.JOBS[Math.floor(Math.random()*6)+1].id}, // 随机从 farmer 到 dancer 中选
+        {name: AncientNames.SURNAMES[Math.floor(Math.random()*AncientNames.SURNAMES.length)]+AncientNames.FEMALE_NAMES[Math.floor(Math.random()*AncientNames.FEMALE_NAMES.length)], rel:'母亲', emoji:'👩', alive:true, favor:baseFavor, age: 25 + Math.floor(Math.random()*18), job: AncientJobs.JOBS[Math.floor(Math.random()*6)+1].id}, // 随机从 farmer 到 dancer 中选
       ],
       ancestors: inheritFrom ? [{name:inheritFrom.name,emoji:inheritFrom.emoji,age:inheritFrom.age,rel:'先祖'}] : [],
       familyBg: bgKey,

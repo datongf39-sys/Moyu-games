@@ -432,11 +432,12 @@ const AncientRender = {
     if (G.parents && G.parents.length > 0){
       html += `<div class="sec-head">父母</div>`;
       G.parents.forEach((p,i) => {
-        if (!p.alive){ html+=`<div class="family-item"><div class="fi-info"><div class="fi-name">${p.name}</div><div class="fi-rel">${p.rel} · 已故</div></div></div>`; return; }
+        if (!p.alive){ html+=`<div class="family-item"><div class="fi-info"><div class="fi-name">${p.name}</div><div class="fi-rel">${p.rel} · 享年${p.age||'?'}岁${p.job?` · ${AncientJobs.JOBS.find(j=>j.id===p.job)?.name||''}`:''} · 已故</div></div></div>`; return; }
         const fav = p.favor!=null?p.favor:(G.parentFavor||50);
+        const jobName = p.job ? AncientJobs.JOBS.find(j => j.id === p.job)?.name : '';
         html += `<div class="family-item">
           <div class="fi-info">
-            <div class="fi-name">${p.name}</div><div class="fi-rel">${p.rel}</div>
+            <div class="fi-name">${p.name}</div><div class="fi-rel">${p.rel}${p.age?` · ${p.age}岁`:''}${jobName?` · ${jobName}`:''}</div>
             <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
               <span style="font-size:9px;color:var(--faint)">好感</span>
               <div style="width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="width:${Math.min(100,fav)}%;height:100%;background:var(--purple);border-radius:2px"></div></div>
@@ -452,7 +453,7 @@ const AncientRender = {
       <div class="family-item">
         <div class="fi-info">
           <div class="fi-name">${G.spouseName}</div>
-          <div class="fi-rel">${G.spouseGender==='male'?'夫君':'夫人'}</div>
+          <div class="fi-rel">${G.spouseGender==='male'?'夫君':'夫人'}${G.spouseAge?` · ${G.spouseAge}岁`:''}${G.spouseJob?` · ${G.spouseJob}`:''}</div>
           <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
             <div style="width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="width:${Math.min(100,G.spouseFavor||50)}%;height:100%;background:var(--purple);border-radius:2px"></div></div>
             <span style="font-size:9px;color:var(--purple)">${G.spouseFavor||50}</span>
@@ -464,7 +465,7 @@ const AncientRender = {
     if (G.concubines && G.concubines.length > 0){
       html += `<div class="sec-head">内室成员</div>`;
       G.concubines.forEach((c,i) => {
-        html += `<div class="family-item"><div class="fi-info"><div class="fi-name">${c.name}</div><div class="fi-rel">${c.role==='concubine'?'妾室':'面首'} · 好感${c.favor}</div></div><button class="fi-btn" onclick="openConcubineInteract(${i})">互动</button></div>`;
+        html += `<div class="family-item"><div class="fi-info"><div class="fi-name">${c.name}</div><div class="fi-rel">${c.role==='concubine'?'妾室':'面首'}${c.age?` · ${c.age}岁`:''}${c.job?` · ${c.job}`:''} · 好感${c.favor}</div></div><button class="fi-btn" onclick="openConcubineInteract(${i})">互动</button></div>`;
       });
     }
     if (G.children.length > 0){
